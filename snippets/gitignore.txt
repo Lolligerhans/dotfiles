@@ -1,0 +1,20 @@
+# Build files
+*.d
+*.o
+.debug
+.profile
+
+# Project data (outputs, ephemeral data, ...)
+/data
+
+# Editing artifacts
+Session.vim
+Session_make.vim
+tags
+*.swp
+
+# Profiling
+#profile_output.txt
+
+# Debugging
+breaks.gdb

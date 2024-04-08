@@ -1,0 +1,11 @@
+# Move this file to "~/.ssh/config"
+
+Host github.com
+ HostName github.com
+ IdentityFile ~/.ssh/id_ed25519
+
+# TOKEN_DOTFILES_USER_CREDENTIALS
+#Host github.com
+# HostName github.com
+# PreferredAuthentications publickey
+# IdentityFile ~/.ssh/my_identity

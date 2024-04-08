@@ -1,0 +1,7 @@
+# behind="$(git_behind_count)";
+#           ^--------------^ SC2119 (info): Use git_behind_count "$@" if function's $1 should mean script's $1.
+disable=SC2119
+
+# pushd ~/github;
+# ^------------^ SC2164 (warning): Use 'pushd ... || exit' or 'pushd ... || return' in case pushd fails.
+disable=SC2164

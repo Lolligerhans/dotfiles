@@ -1,0 +1,833 @@
+" .vimrc
+
+filetype plugin indent on
+
+" ______________________________________________________________________________
+" Plugins with Vundle
+
+set nocompatible              " be iMproved, required
+filetype off                  " required
+
+" set the runtime path to include Vundle and initialize
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+call vundle#rc()
+" alternatively, pass a path where Vundle should install plugins
+"call vundle#begin('~/some/path/here')
+
+" let Vundle manage Vundle, required
+Plugin 'VundleVim/Vundle.vim'
+
+" Vundle Instructions:
+" The following are examples of different formats supported.
+" Keep Plugin commands between vundle#begin/end.
+" plugin on GitHub repo
+"Plugin 'tpope/vim-fugitive'
+" plugin from http://vim-scripts.org/vim/scripts.html
+" Plugin 'L9'
+" Git plugin not hosted on GitHub
+"Plugin 'git://git.wincent.com/command-t.git'
+" git repos on your local machine (i.e. when working on your own plugin)
+"Plugin 'file:///home/gmarik/path/to/plugin'
+" The sparkup vim script is in a subdirectory of this repo called vim.
+" Pass the path to set the runtimepath properly.
+"Plugin 'rstacruz/sparkup', {'rtp': 'vim/'}
+" Install L9 and avoid a Naming conflict if you've already installed a
+" different version somewhere else.
+" Plugin 'ascenator/L9', {'name': 'newL9'}
+
+" C++ syntax highlighting plugin
+Plugin 'octol/vim-cpp-enhanced-highlight'
+
+" Typescript syntax highlighting
+Plugin 'leafgarland/typescript-vim'
+
+" Colorscheme "gruvbox"
+Plugin 'morhetz/gruvbox'
+
+" Colorscheme "ayu/ayucolor"
+"Plugin 'ayu-theme/ayu-vim' Old, no longer maintained. Still works though.
+Plugin 'Luxed/ayu-vim'
+
+" Colorized status line plugin
+Plugin 'itchyny/lightline.vim'
+
+" Indentation guidelines (colored spaces)
+Plugin 'nathanaelkane/vim-indent-guides'
+
+" Indentation guidelines (ASCII lines)
+"Plugin 'Yggdroot/indentLine'
+
+" Rainbow braces
+"Plugin 'luochen1990/rainbow'
+"Plugin 'oblitum/rainbow' " Luo Chen fork coloring operators, too
+Plugin 'frazrepo/vim-rainbow'
+
+" Tagbar to show class and other tags at side bar
+Plugin 'majutsushi/tagbar'
+
+" fzf-vim plugin to open files by name easier
+  Plugin 'junegunn/fzf'
+  " Use this line to automatically update the plugin
+  "Plugin 'junegunn/fzf', { 'do': { -> fzf#install() } }
+  Plugin 'junegunn/fzf.vim'
+
+" Fugitive git plugin for vim that is needed for the fzf pluging :Commits
+" command (to check out older versions of a file).
+Plugin 'tpope/vim-fugitive'
+
+Plugin 'tpope/vim-unimpaired'
+
+" Plugin to add, remoe, change surrounding quotes and brackets
+Plugin 'tpope/vim-surround'
+
+" Plugin for AI completion
+Plugin 'Exafunction/codeium.vim'
+
+" Plugin to show diff/vimdiff on word level. ]b ]e to jump.
+Plugin 'rickhowe/diffchar.vim'
+
+" All of your Plugins must be added before the following line
+call vundle#end()            " required
+filetype plugin indent on    " required
+
+" To ignore plugin indent changes, instead use:
+"filetype plugin on
+"
+" Brief help
+" :PluginList       - lists configured plugins
+" :PluginInstall    - installs plugins; append `!` to update or just :PluginUpdate
+" :PluginSearch foo - searches for foo; append `!` to refresh local cache
+" :PluginClean      - confirms removal of unused plugins; append `!` to auto-approve removal
+"
+" see :h vundle for more details or wiki for FAQ
+" Put your non-Plugin stuff after this line
+
+" activate filetypes again
+filetype on
+
+" ______________________________________________________________________________
+" pre-plugin
+
+    " highlight cursorline (before setting colorscheme)
+    set cursorline
+    highlight CursorLine term=bold cterm=NONE ctermfg=white ctermbg=NONE gui=NONE guifg=white guibg=NONE
+
+" ______________________________________________________________________________
+" Plugin configuration
+
+" colorschemes
+
+    " ayu
+    if 0
+    if exists('+termguicolors')
+        set termguicolors     " enable true colors support
+    else
+        echo "ERROR: no termguicolors for ayucolor"
+    endif
+    let ayucolor="dark" | set background=dark " for dark version of theme
+    "let ayucolor="light" | set background=light  " for light version of theme
+    "let ayucolor="mirage" | set background=dark " for mirage version of theme
+    colorscheme ayu
+    endif
+
+    " gruvbox
+    if 1
+    if exists('+termguicolors')
+        "echo "could also use ayucolor"
+        set termguicolors
+    else
+        "echo "using gruvbox despite missing termguicolors option"
+    endif
+    let g:gruvbox_italic = '0'
+    "let g:gruvbox_contrast_dark = 'hard'
+    let g:gruvbox_contrast_dark = 'medium'
+    "let g:gruvbox_contrast_dark = 'soft'
+    "let g:gruvbox_contrast_light = 'hard'
+    let g:gruvbox_contrast_light = 'soft'
+    "let g:gruvbox_contrast_light = 'medium'
+    colorscheme gruvbox
+    "set background=dark
+    set background=dark
+    endif
+
+" lightline
+    " show line
+    set laststatus=2
+    " remove lightline
+    "set noshowmode
+    " set colorscheme for status line to match colorscheme
+    let g:lightline = {
+        \ 'colorscheme': 'wombat'
+        \ }
+    "    \ 'colorscheme': 'solarized'
+
+" Indentation guidelines (colored spaces)
+
+    " activate indentation blocks
+    " Commands:
+    ":IndentGuides{Enable,Disable,Toggle}
+    let g:indent_guides_enable_on_vim_startup = 0
+    hi IndentGuidesOdd ctermbg=DarkGrey
+
+" Indentation guidelines (ASCII lines)
+
+  " activate indentation guidelines by default
+    "let g:indentLine_enabled = 1
+    "let g:indentLine_setColors = 1 "TODO ?
+    "let g:indentLine_color_term = 15
+    "let g:indentLine_color_tty_light = 7
+    "let g:indentLine_color_dary = 2
+    "let g:indentLine_char = '|'
+
+" syntax highlighting
+
+    "if !exists("g:syntax_on")
+      syntax enable
+    "endif
+
+  " Config octocol Cpp advanced syntax highlighting plugin: EVERYTHING
+    " Highlighting of class scope is disabled by default. To enable set
+    let g:cpp_class_scope_highlight = 1
+    " Highlighting of member variables is disabled by default. To enable set
+    let g:cpp_member_variable_highlight = 1
+    " Highlighting of class names in declarations is disabled by default. To enable
+    " set
+    let g:cpp_class_decl_highlight = 1
+    " There are two ways to highlight template functions. Either
+    "let g:cpp_experimental_simple_template_highlight = 1
+    " which works in most cases, but can be a little slow on large files.
+    " Alternatively set
+    let g:cpp_experimental_template_highlight = 1
+    " which is a faster implementation but has some corner cases where it doesn't
+    " work.
+    " Note: C++ template syntax is notoriously difficult to parse, so don't expect
+    " this feature to be perfect.
+    " Highlighting of library concepts is enabled by
+    let g:cpp_concepts_highlight = 1
+    " This will highlight the keywords concept and requires as well as all named
+    " requirements (like DefaultConstructible) in the standard library.
+    " Highlighting of user defined functions can be disabled by
+    let g:cpp_no_function_highlight = 1
+    " Vim tend to a have issues with flagging braces as errors, see for example
+    " https://github.com/vim-jp/vim-cpp/issues/16. A workaround is to set
+    let c_no_curly_error = 1
+
+    " Typescript highlighting
+    " Disable typescript syntax plugin's own indenter
+    "let g:typescript_indent_disable = 1
+
+" Config plugin rainbow braces (frazrepo)
+
+    " activate globally
+    let g:rainbow_active = 1 " toggle with :RainbowToggle (<f5>)
+    " activate for filetype
+    au FileType c,cpp,py,c++ call rainbow#load()
+
+" operator highlight
+
+    " change highlight color
+    " TODO does not work
+    "let g:ophigh_color = "#FF6633"
+
+" Configure fzf plugin
+
+  " Initialize configuration dictionary (required)
+  let g:fzf_vim = {}
+
+" ______________________________________________________________________________
+" colorschemes (non-Plugin)
+
+" wombat
+    " TODO not working at all RIP
+    "colo wombat256mod
+
+" solarized
+    "set background=dark
+    " dont set colorscheme as long as it looks this shitty
+    "colorscheme solarized
+
+" operator colors
+    " TODO does not work (must be done in after/syntax stuff)
+    "syntax match _Operator "[-+&|<>=!\/~.,;:*%&^?()\[\]{}]"
+    "syntax match _OperatorTest "[-+&|=!\/~.,;:*%&^?]"
+    "hi _OperatorTest guifg=#FF6633 guibg=NONE gui=none
+
+" highlight cursorline number
+    hi CursorLineNR cterm=bold
+    augroup CLNRSet
+        autocmd! ColorScheme * hi CursorLineNR cterm=bold
+    augroup END
+
+" show line number
+  set number
+  set relativenumber
+
+" ______________________________________________________________________________
+" FILES, BUFFERS, WINDOWS, DIRECTORIES
+"
+" FIXME: This is basically all out of date
+" Set up so that new files can be found with fzf using :F.
+" After having the filename present on the bufflist, close them with normal mode
+" command Q. This way the name resides in the bufflist even after unloading:
+" The completion for the buffer split normal mode command ß is configured to
+" consider buffers names only. These commands exclude hidden files. If you dont
+" know the buffer or file name, split the current window with ß, then fzf the
+" file with , or <F7>.
+
+" Fzf based
+"   open in this window (fzf interactive):          ,     :F    :Files
+"   Select file from buflist                        <F7>
+"   Quit all (and update everything)                Q
+"   unload current buffer (e.g., if laggy)                :Q
+"
+" Fallback
+"   Open in split window (buffer completion):       ß     :V
+"   Find normally starting in pwd                               :fin
+
+  " recursive searches in workspace
+  " TODO: If the broad inclusion becomes a problem, exclude files using
+  "       :h wildignore.
+  set path+=**
+
+" Fzf based
+  " TODO We want these shorters to clobber namespaces?
+  "command! -nargs=0 F Files
+  " Find file (<c-x>, <c-v>, <c-t> to split, vert, tab open them)
+  nnoremap , :Files<cr>
+  " Find buffer in buffer list
+  nnoremap <F7> :Buffers<cr>
+  " TODO <F7> is a bit far away for a kinda crucial mapping swap with ß?
+
+" Fallback non-fzf file operations. Use when fzf not available, and hidden
+  " Split buffer vertically. Alternative would be to use :vsp followd by :b. If
+  " you want to switch buffer in current window use <F7> instead
+  command -nargs=* -complete=buffer V vert sb <args>
+
+  " FIXME: no longer used
+  "nnoremap ß :ls<space>t<cr>:V<space>
+
+  " TODO Which version do we prefer?
+  " Soft delete ALL buffers with :Q by unloading them buf keep in buffer list to
+  " access with :b
+  command -nargs=* -complete=buffer Q bufdo bunload
+  " Soft delete CURRENT buffers with :Q by unloading them buf keep in buffer
+  " list to access with :b
+  "command -nargs=* -complete=buffer Q bunload <args>
+
+" ______________________________________________________________________________
+" TAGS
+
+" Create tags using ctags
+"command! MakeTags !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q . *.h *.inc *.cpp
+command! MakeTags !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q *.h *.inc *.cpp *.test
+
+" ______________________________________________________________________________
+" File type config
+
+  " Treat specialized file types as CPP source code
+  autocmd BufRead,BufNewFile *.inc se ft=cpp " treat include files as c++ sources
+  autocmd BufRead,BufNewFile *.test se ft=cpp " treat include files as c++ sources
+  autocmd BufRead,BufNewFile *.sh se ft=bash " treat .sh files as bash scripts
+
+" ______________________________________________________________________________
+" shifting and code style options
+
+  filetype plugin indent on
+  set expandtab " when pressing tab, give N spaces
+  set tabstop=2 " show tabs as 2 characters
+  set softtabstop=2
+  " Allow enetering tab characters but keep sing <c-i> for spaces
+  inoremap <S-Tab> <C-V><Tab>
+
+  " (default)
+  "set smarttab
+  set shiftwidth=2 " use '>' to shift 2
+  set cindent
+  " Wrap after 80c in insert mode
+  set textwidth=80
+  " :h fo-table
+  " TODO Do we need to autocmd this?
+  " TODO I found these
+  " Add t to auto-wrap code, too. c wraps comments.
+  set formatoptions=crqn1j
+
+" Text/Line wrapping
+  " Disable visual line wrapping
+  "set nowrap
+  " Break lines at word (requires 'set wrap')
+  set nolinebreak
+  " Scroll with screen lines
+  set smoothscroll
+
+
+" ______________________________________________________________________________
+" EDITING
+
+" comment/uncomment lines (exclude commented and empty lines).
+"  Comment non-empty non-comment lines only.
+"  Uncomment lines starting with the comment marker only (zero indentation)
+
+  " Comments using #
+  autocmd FileType sh,bash,gitconfig,python nnoremap <leader>c :s/^\($\)\@!\(\s*#\)\@!/#<CR>
+  autocmd FileType sh,bash,gitconfig,python vnoremap <leader>c :s/^\($\)\@!\(\s*#\)\@!/#<CR>
+  autocmd FileType sh,bash,gitconfig,python nnoremap <leader>C :s/^#//<cr>
+  autocmd FileType sh,bash,gitconfig,python vnoremap <leader>C :s/^#//<cr>
+
+  " TODO If I remove the autocmd and just ise this as 'default' is does not work
+  " Comments using /
+  autocmd FileType c,inc,cpp,jave,javascript nnoremap <leader>c :s/^\($\)\@!\(\s*\/\/\)\@!/\/\/<CR>
+  autocmd FileType c,inc,cpp,jave,javascript vnoremap <leader>c :s/^\($\)\@!\(\s*\/\/\)\@!/\/\/<CR>
+  autocmd FileType c,inc,cpp,jave,javascript nnoremap <leader>C :s/^\/\///<cr>
+  autocmd FileType c,inc,cpp,jave,javascript vnoremap <leader>C :s/^\/\///<cr>
+
+" Braces and other special characters
+  " Use lower case öä for [], captial ÖÄ for {}
+  " TODO Maybe use on specific filetypes only in the future. Or rather, use normal ones on .txt only.
+  " Remap Umlaute:
+    " operator-pending mode (move commands etc)
+    "onoremap ö [
+    "onoremap Ö {
+    "onoremap ä ]
+    "onoremap Ä }
+    inoremap ö [
+    inoremap Ö {
+    inoremap ä ]
+    inoremap Ä }
+    " TODO lmap doesnt work for ome reason
+    " Modes: insert, command-line, search-patterns, text-input, input()
+    lnoremap ö [
+    lnoremap Ö {
+    lnoremap ä ]
+    lnoremap Ä }
+  " Start block with {{
+  inoremap {{ {<cr>}<esc>O
+  " TODO Erroneously also maps ö (small Ö) to do the same
+  inoremap ÖÖ {<cr>}<esc>O
+  " Preserve normal meaning using CTRL
+  " TODO Does not work. Use <c-v> ö in the meantime
+  "inoremap <C-ö> ö
+  "inoremap <C-ä> ä
+
+  " Delete whitespace between WORDS
+  nnoremap <leader>d<space> BElcw<space><esc>
+  " Delete whitespace padding within () TODO
+  "nnoremap <leader>d( <esc>
+
+" ______________________________________________________________________________
+" TEXT NAVIGATION, SEARCH, JUMPS, MOVES
+
+  " fold by indentation (syntax can be slow)
+  se foldmethod=indent
+  " Use se fo[ldenable] to enable folding
+  se nofoldenable
+
+" Fzf mappings to search within text (<c-[txv]> to split-open the result)
+  " Fzf search lines using \ü, tags using ü
+    " In current buffer, or
+    " In buffers from buffer list (even unloaded)
+    nnoremap ß :BLines<cr>
+    " There is no capital ß available so use leader instead.
+    nnoremap <leader>ß :Lines<cr>
+  " Fzf search for tags
+    nnoremap ü :BTags<cr>
+    nnoremap Ü :Tags<cr>
+
+" ______________________________________________________________________________
+" DISPLAY
+
+"nnoremap <esc> <esc>:silent nohl<cr>
+nnoremap <Space> :silent nohl<cr>
+":setlocal foldmethod=syntax
+
+" ______________________________________________________________________________
+" file handling
+
+"set autoread
+" Save whenever switching windows or leaving vim. This is useful when running
+" the tests inside vim without having to save all files first.
+"au FocusLost,WinLeave * :silent! wa
+
+" Trigger autoread when changing buffers or coming back to vim.
+"au FocusGained,BufEnter * :silent! !
+
+" ______________________________________________________________________________
+" windows,tabs,splits
+
+" split windows to the right (deactivated to :20vsp .)
+set splitright
+set splitbelow
+
+nnoremap <C-l> gt
+nnoremap <C-Right> gt
+nnoremap <C-h> gT
+nnoremap <C-Left> gT
+
+" ______________________________________________________________________________
+" convenience
+
+set showcmd
+
+set showmatch
+set hlsearch
+set incsearch
+" FIXME
+" NOTE  seems to work on lubuntu with guicolors even if not set
+"hi IncSearch
+" ignore case in seach (use \c to toggle)
+set ignorecase
+" case-sensitive search when using capital letters. (requires ignorecae)
+" override with \c\C in pattern
+set smartcase
+
+set mouse=a
+
+" save current vim session as 'Session.vim'
+inoremap <c-s> <c-o>:w<cr>
+nnoremap <c-s> :mksession<cr>
+" Save and suspend use <C-z> or :sus to suspend without saving
+nnoremap Q :silent! :wa\|:suspend<cr>
+" Quit and write short term session (easier to do by accident)
+nnoremap <leader>q :silent! :mks Session_long.vim\|mksession!\|xa<cr>
+" Quit and write long term session (more difficult to do accidentally)
+nnoremap <leader>Q :mksession! Session_long.vim\|xa
+
+" Retired
+"nnoremap <leader>w :silent! mksession Session2.vim\|unsilent xa
+"nnoremap <leader>Q :mksession!\|xa
+
+" ______________________________________________________________________________
+" HIGHLIGHTING
+
+  " Type this to show the highlghting settings
+  "hi MatchParen
+  "hi Folded
+  "hi WarningMsg
+  "hi ErrorMsg
+  "hi Difftext
+
+" ______________________________________________________________________________
+" Shortcuts
+" TODO Find a more systematic way of utilizing the F keys
+
+" build and run
+nnoremap <F1> :call GoGarb()\|make<cr>
+" TODO We dont really need this since we got <tab>e now, running the same
+nnoremap <F2> :!./run.sh<cr>
+nnoremap <F3> :cN<cr>zz
+nnoremap <F4> :cn<cr>zz
+" TOggle Rainbow braces
+nnoremap <f5> :RainbowToggle<cr>
+" tuning number handling
+nnoremap <F6> :%s/^\(.*\)\n\(.*\)$/S(\1,\2)/gc<cr>
+" Reload all files opened in a window. Alternatives include ":bufdo e" or
+" appending "!"
+nnoremap <f8> :tabdo windo e<cr>
+" Promt shell input
+nnoremap <F9> :!
+nnoremap <F10> :TagbarToggle<cr>
+nnoremap <s-F11> :IndentGuidesToggle<cr>
+" Re-process .vimrc
+nnoremap <f12> :so $MYVIMRC<cr>
+
+" ______________________________________________________________________________
+" fishdev
+
+    " Add bench in register + to bottom of file
+    nnoremap <leader>b m`GooCBench: *``
+
+    " Run averaging script on normal fens
+    " Run averaging script on closed fens
+    " Run averaging script on fewer mixed fens
+    nnoremap <leader>an :!./avg n<CR>
+    nnoremap <leader>ac :!./avg c<CR>
+    nnoremap <leader>as :!./avg s<CR>
+
+" ______________________________________________________________________________
+" TODO: Anything below this is not sorted or integrated well.
+
+"vnoremap > >gv " try doing this with numbers instead?
+"vnoremap < <gv
+se makeprg=./run.sh\ make
+inoremap <expr> <C-r>L line(".")
+"set diffexpr=""
+se nojoinspaces
+" Remove trailing whitespace
+command! Rtw %s/\s\+$//c
+  " Remove ANSII escape codes
+  command Unsi %s/[[:escape:]].\{-}m//gc
+
+" switch between {source, header, include, test} file
+  nnoremap <leader>h :fin %:t:r.h<cr>
+  nnoremap <leader>s :fin %:t:r.cpp<cr>
+  nnoremap <leader>i :fin %:t:r.inc<cr>
+  nnoremap <leader>t :fin %:t:r.test<cr>
+
+" Insist on linux file endings
+se ff=unix
+
+" Highlight column 80
+se colorcolumn=81 " se cc=81
+
+se ttimeoutlen=50 " set key code delay to 50ms
+
+" Use Ctrl-C to exit insert mode and visual mode, but like using Esc
+inoremap <C-c> <esc>
+vnoremap <C-c> <esc>
+
+" Do not search /usr/include for insert mode completion
+se complete-=t
+
+" Read output of vim normal mode command
+  nnoremap <leader>: :enew\|pu=execute(':help')<c-f>T:ve
+
+" shift-altgr-7: Search for word under corsor in split window
+  nnoremap ⅞ yiw<c-w>vh/\<<c-r>0\><cr>
+
+" Read project vimrc
+  " Prevents specific commands
+  set secure
+  " Load .vimrc from current directory
+  set exrc
+
+" Move visually in wrapped lines
+  nnoremap k gk
+  nnoremap j gj
+  nnoremap <Up> gk
+  inoremap <Up> <C-O>gk
+  nnoremap <Down> gj
+  inoremap <Down> <C-O>gj
+  " Move as usual by holding Alt
+  "nnoremap <M-k> k
+  "nnoremap <M-j> j
+  "nnoremap <M-Up> <Up>
+  "inoremap <M-Up> <Up>
+  "nnoremap <M-Down> <Down>
+  "inoremap <M-Down> <Down>
+
+" Our own common digraphs (with mnemonic)
+  " Space symbol for vertical space (not the space character). Use <sp><sp> for
+  " non-breaking space character.
+  digraph sp 9251 " ␣
+  " Heavy Round-Tipped Rightwards Arrow. Use AltGr-i ( → ) for normal arrow.
+  digraph -> 10140 " ➜
+  digraph OO 9679 " ●  Dot-shaped (larger) bullet(-point) (normal size is 8226 oo)
+  " White dot-shaped bullet(-point)
+  digraph ._ 9702 " ◦
+  " Source codeable symbols
+  digraph ky 128713 " ⚿  Key
+  digraph KY 128447 " 🗝 Old key
+  digraph II 8505 " ℹ  Information - fancy ornament i
+  digraph ii 128712 " 🛈  Information i circled
+  digraph en 9881 " ⚙  engine/gear/settings/running
+  digraph to 128736 " 🛠 Toools
+  digraph fo 128448 " 🗀  folder
+  digraph bo 128366 " 🕮   book
+  digraph ve 127301 " 🅅  Letter v in box ('version')
+  " xx/ok symbols in variants
+  digraph xx 10006 " ✕  Multipliction x
+  digraph Xx 10006 " ✖  Heavy multipliction x
+  digraph ok 10004 " Heavy check mark ✔
+  digraph ** 10033 " Heavy Asterisk ✱
+  digraph xX 10062 " ❎
+  digraph oK 9989 " ✅
+  digraph XX 10060 " ❌
+  digraph -- 128711 " 🛇
+  digraph _- 128683 " 🚫
+  digraph -_ 9940 " ⛔  No entry sign
+  " Ornament exclamation and question marks to mark stuff in code
+  digraph ?? 10068 "❔
+  digraph !! 10069 "❕
+  digraph ?. 10067 "❓
+  digraph !. 10071 "❗
+  " git branch
+  digraph gb 9095 " ⎇
+  " Round <num-pad-position> box-drawing corner
+  digraph r7 9581 " ╭
+  digraph r9 9582 " ╮
+  digraph r3 9583 " ╯
+  digraph r1 9584 " ╰
+  " test digraph
+  digraph te 2139
+" Other unicode/utf characters
+  " Superscript letters
+  inoremap <leader>ua <c-v>u1d43
+  inoremap <leader>ub <c-v>u1d47
+  inoremap <leader>uc <c-v>u1d9c
+  inoremap <leader>ud <c-v>u1d48
+  inoremap <leader>ue <c-v>u1d49
+  inoremap <leader>uf <c-v>u1da0
+  inoremap <leader>ug <c-v>u1d4d
+  inoremap <leader>uh <c-v>u02b0
+  inoremap <leader>ui <c-v>u2071
+  inoremap <leader>uj <c-v>u02b2
+  inoremap <leader>uk <c-v>u1d4f
+  inoremap <leader>ul <c-v>u02e1
+  inoremap <leader>um <c-v>u1d50
+  inoremap <leader>un <c-v>u207f
+  inoremap <leader>uo <c-v>u1d52
+  inoremap <leader>up <c-v>u1d56
+  inoremap <leader>uq <c-v>U000107a5
+  inoremap <leader>ur <c-v>u02b3
+  inoremap <leader>us <c-v>u02e2
+  inoremap <leader>ut <c-v>u1d57
+  inoremap <leader>uu <c-v>u1d58
+  inoremap <leader>uv <c-v>u1d5b
+  inoremap <leader>uw <c-v>u02b7
+  inoremap <leader>ux <c-v>u02e3
+  inoremap <leader>uy <c-v>u02b8
+  inoremap <leader>uz <c-v>u1dbb
+
+  " Use fzf to search current buffer lines within pwd
+  nnoremap <leader>/ :BLines<cr>
+
+"let $BASH_ENV = "~/.bash_aliases"
+let $BASH_ENV = "~/dotfiles/vim_bashenv.sh"
+
+" Relics:
+  "nnoremap <tab>c :!c<cr>
+  "nnoremap <tab>c :call GoGarb()\|Git ci\|only!\|vert Git di --staged\|wincmd w<cr>
+  "nnoremap <tab>ca :call GoGarb()\|Git cia\|only!\|vert Git di --staged\|wincmd w<cr>
+
+" Consider:
+  "set autowriteall
+  "set hidden
+
+" Garbtab: Use last tab as garbage (quickfix tab) to move to when using commands
+" that add and change window layouts etc Like :make so we can open errors and
+" not mess uo our screen
+" TODO: These commands should probably to :tabl\|only\|... to utilize this
+"       feature:
+"   :make
+"   fugitive
+"     :Git ...
+
+  " Makes the function easier to access
+  command Gogarb :call GoGarb()
+
+  " Save tab before leaving for garbage tab
+  if !exists('g:lasttab')
+    let g:lasttab = 1
+  endif
+
+  function GoGarb()
+    if (tabpagenr() != tabpagenr('$'))
+      let g:lasttab = tabpagenr()
+      "echo 'Setting last tab number '.g:lasttab
+    endif
+    if (tabpagenr('$') == 1)
+      "echoerr 'GoGarb: Creating garbage tab'
+      execute 'tabnew'
+    endif
+    execute 'tabl'
+    " I think it is better to do this manually in case we are already in garb
+    " tab and want to keep the previous stuff
+    "execute 'only'
+  endfunction
+
+  " Move to last saved tab
+  " Mnemonic: back
+  nnoremap <Leader>B :exe "tabn ".g:lasttab<CR>
+  " Alternatively: set last tab with every tab change (?)
+  "autocmd TabLeave * let g:lasttab = tabpagenr()
+
+  " A map using garb tab
+  nnoremap <tab>g :call GoGarb()<cr>:Git<space>
+  "nnoremap <tab>g :call GoGarb()<cr>
+
+  " Is this needed? Do they get overwritten?
+  autocmd BufNewFile,BufRead * setlocal formatoptions=crqn1j
+
+  " Show tab characters
+  set list
+  set listchars=tab:│· "Use digraph .M for smallest centre dot
+  set listchars+=trail:▓ " Show trailing spaces cause else its invisible
+  set listchars+=nbsp:␣
+
+  "set listchars+=extends:…
+  "set listchars+=precedes:…
+  set listchars+=conceal:┊
+
+
+  " Overwrite <F3> <F4> mappings in diff mode (for git difftool)
+  if &diff
+    " use <F3><F4> to move diffs instead of quick fix entries
+    nnoremap <F3> [czz
+    nnoremap <F4> ]czz
+  endif
+
+  " Do not clear clipboard (!?)
+  autocmd VimLeave * call system("xsel -ib", getreg('+'))
+
+" Maps for codemium
+  "set statusline+=\{…\}%3{codeium#GetStatusString()}
+
+  " Disable:
+  "let g:codeium_enabled = v:false
+  " Manual:
+  "
+  "let g:codeium_manual = v:true
+
+  " Completion keybindings
+  let g:codeium_disable_bindings = 0
+  "inoremap <script><silent><nowait><expr> <tab> codeium#Accept()
+  "inoremap <c-ä>   <Cmd>call codeium#CycleCompletions(1)<CR>
+  "inoremap <c-ö>   <Cmd>call codeium#CycleCompletions(-1)<CR>
+  "inoremap <c-?>   <Cmd>call codeium#Clear()<CR>
+  " activate (?)
+  "inoremap <left> <Cmd>call codeium#Complete()<cr>
+
+  "let g:codeium_filetypes = {
+  "    "bash": v:false,
+  "    "typescript": v:true,
+  "    }
+
+  " Terminal:
+  nnoremap <C-w>t :tab terminal<cr>
+  tnoremap <C-h> <c-w>:-tabnext<cr>
+  tnoremap <C-l> <c-w>:+tabnext<cr>
+  "nnoremap <C-w>T :terminal ++curwin<cr>
+  "nnoremap <C-w>o :terminal ++curwin ++close<cr>
+
+  " Invert wrap setting with <leadder>w
+  nnoremap <leader>w <cmd>set invwrap<cr>
+
+  " These interfere with fzf file search at the moment.
+  " Resolution: move file search to ß isntead.
+  "nnoremap ,a <cmd>term git add -p<cr>
+  "nnoremap ,p <cmd>term git di-p<cr>
+  "nnoremap ,r <cmd>term git di-r<cr>
+
+  set fillchars+=vert:\│
+
+  " Read modelines if found
+  set modeline
+
+" custom filetypes (we snatched this from :help tagbar
+  augroup filetypedetect
+    au! BufRead,BufNewFile *.inc setfiletype cpp
+    au! BufRead,BufNewFile *.test setfiletype cpp
+  augroup END
+
+
+" Test if this makes bash work :(
+" It does :O
+  let g:tagbar_type_bash = {
+    \ 'kinds' : [
+        \ 'f:functions',
+        \ 'a:aliases:0:0',
+        \ 's:script files:0:0',
+    \ ],
+\ }
+
+" Show autocomplete wildcard menu (in command) instead of status line
+set wildmenu
+
+" Tagbar: :help tagbar-autoopen
+  " Wrecks closing tab by closing last non-tag window
+  "autocmd BufEnter * nested :call tagbar#autoopen(0)
+
+" Shorthand to window quit. Not to be confused with Q which is quitting vim
+nnoremap <c-q> :q<cr>
+nnoremap <c-w><c-t> :tab split<cr>
+set undofile "check external files for testing for availability

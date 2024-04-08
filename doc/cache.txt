@@ -1,0 +1,6 @@
+• Cache is read/written automatically
+• Do not use manually
+• All use MUST recover from wiping the .cache directory entirely
+
+• Uses:
+  · Do updates at most once every day

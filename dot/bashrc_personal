@@ -1,0 +1,135 @@
+#echo "=== LOADING OH MY BASH NOW ===";
+#. ~/.oh-my-bash/templates/bashrc.osh-template;
+
+# Add aliases in case the (default) bashrc didnt
+#echo "=== LOADING ALIASES ===";
+. ~/.bash_aliases # File is a symlink to dotfiles aliases
+
+# Add some environment paths
+  # CUDA
+  export PATH="${PATH}:/usr/local/cuda/bin";
+  export LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}";
+
+  # NOTE Tilde notation works here despite not being expanded in the string
+  export PATH="$PATH:~/.local/bin";
+  #?
+  export PATH="$PATH:~/.local/lib/python3.9/site-packages";
+
+  # openssl
+  export PATH="${PATH}:/usr/bin/openssl/apps";
+
+  # Path for git diff-highlight
+  export PATH="${PATH}:/usr/share/doc/git/contrib/diff-highlight";
+
+  # Path to start IDEA from
+  export PATH="${PATH}:${HOME}/Downloads/idea-IDE/bin"; # Written in command_install_idea
+
+  # homebrew
+  #eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)";
+
+# Start program 'thefuck'
+#  eval $(thefuck --alia)
+#  eval $(thefuck --alias FUCK)
+
+# disable software flow control (XON/XOFF) via <C-s>
+# to allow <C-s> and <C-q> in terminal (vim)
+stty -ixon
+
+shopt -s autocd;
+shopt -s histappend;
+
+# Bash prompt with git branch
+  source ~/dotfiles/extern/git-prompt.sh;
+  # Unstaged: *
+  # staged: +
+  GIT_PS1_SHOWDIRTYSTATE=1
+  # Stashed: $
+  GIT_PS1_SHOWSTASHSTATE=1
+  # Untracked file: %
+  GIT_PS1_SHOWUNTRACKEDFILES=1
+  # Head behind upstream: <
+  # Head ahead of upstream: >
+  # Diverge: <>
+  # Same: =
+  GIT_PS1_SHOWUPSTREAM="auto";
+  # Separater branch from symbols with this separator
+  #GIT_PS1_STATESEPARATOR=":"; # Default: space
+  # Show sparse checkout with symbol instead
+  #GIT_PS1_COMPRESSSPARSESTATE
+  #GIT_PS1_OMITSPARSESTATE
+  # Add "|CONFLICT" to the prompt when there are conflicts
+  GIT_PS1_SHOWCONFLICTSTATE="yes";
+  # Describe detached HEAD with specific info (doesnt seem to work)
+  #GIT_PS1_DESCRIBE_STYLE="branch";
+  # Colored hint about directory state
+  GIT_PS1_SHOWCOLORHINTS=1
+  # Do not emit prompt when inside ignored directory
+  GIT_PS1_HIDE_IF_PWD_IGNORED=0;
+
+  # TODO Read diff --numstat with read command, add lines and print 10+-20 with colours and variable amount of + and -
+  source ~/dotfiles/scripts/termcap.sh;
+  #declare -r _before_git_ps1='\[${text_bdy}\]\D{%F} \[${text_bly}\]\A\[${text_normal}\] \[${text_gray}\]\u@\H\[${text_normal}\]\n\[${text_italic}\]\[${text_blb}\]\w\[${text_normal}\]';
+  #declare -r _after_git_ps1=' $(((\j!=0))&&printf "\[${text_bc}\][\[${text_blc}\]\j\[${text_bc}\]]\[${text_normal}\] ")\[${text_normal}\]\[${text_normal}\]\[${text_bold}\]$( (($_ret!=0)) && printf "\[${text_red}\]")\$›\[${text_normal}\]';
+  # Termcap for bold text has a fallthrough in the __git_ps1 format string
+#  PROMPT_COMMAND='declare _ret="$?" _base="$(basename "$(git rev-parse --show-toplevel)")"; __git_ps1 "$_before_git_ps1" "$_after_git_ps1" " (\[${text_bdiw}\]$(git config --get user.name)\[$text_normal${text_blg}\]⎇  %s)"';
+
+  PROMPT_COMMAND='_prompt_command_wrapper';
+  _prompt_command_wrapper()
+  {
+    # Working dir
+    declare -g _pwd_dir="${PWD/#"${HOME}"/"~"}";  # == "~/example/dir"
+    [[ "${_pwd_dir}" == "~" ]] && _pwd_dir="~/";  # We match '/' so it must be there
+    declare -g _pwd_name="${_pwd_dir##*/}";       # == "dir"
+    _pwd_dir="${_pwd_dir%/*}";                    # == "~/example"
+#    1>&2 echo "DEBUG: _pwd=\"${_pwd}\" _pwd_dir=\"${_pwd_dir}\" _pwd_name=\"${_pwd_name}\"";
+
+    # Add git repo
+    declare -g _prompt_ret="$?";
+    declare -g _git_col="";
+    declare -g _git_repo="$(git rev-parse --show-toplevel 2> /dev/null)";
+    if [[ -n "$_git_repo" ]]; then
+      if [[ "$_git_repo" == "$(pwd)" ]]; then
+        _git_repo="";
+      else
+        _git_repo=" $(basename "$_git_repo")";
+        # Light blue italic text
+        _git_col="${text_ib}";
+      fi
+    fi
+
+    # Add virtual env
+    if [[ -n "$VIRTUAL_ENV" ]]; then
+      declare -g _venv_dir="$(dirname "$VIRTUAL_ENV")"; # TODO use bash internals
+      declare -g _venv_base="$(basename "$VIRTUAL_ENV")";
+    else
+      :;
+      #declare -g _venv_base='';
+      #declare -g _venv_dir='';
+    fi
+
+    # Add 'dirs' count
+    declare -g _dirs_count="$(dirs -0 -v)"; # == " 2 /home/example"
+    _dirs_count="${_dirs_count//[^0-9]/}";  # == "2"
+
+    # Command counters and bash version
+    #  \[${text_dim}\]\! \# \s\V\[${text_normal}\] (\l)
+
+    # TODO Move this out of funciton. Is static anyway
+    declare -r _new_before_git_ps1='\[${text_bdy}\]\D{%F} \[${text_bly}\]\A\[${text_normal}\]$([[ -n "$VIRTUAL_ENV" ]] && printf " \[${text_purple}\]${_venv_dir}/\[${text_normal}${text_blp}\]${_venv_base}\[${text_normal}\]") \[${text_brightblack}\]\u@\H\[${text_normal}\]\n\[${text_italic}${text_blue}\]${_pwd_dir}/\[${text_blb}\]${_pwd_name}\[${text_normal}\]$(((_dirs_count!=0))&&printf " %s" "\[${text_bb}\]<\[${text_blb}\]$((_dirs_count+1))\[${text_bb}\]>\[${text_normal}\]")';
+    declare -r _new_after_git_ps1=' $(((\j!=0))&&printf "\[${text_bc}\][\[${text_blc}\]\j\[${text_bc}\]]\[${text_normal}\] ")\[${text_normal}\]\[${text_normal}\]$( (($_prompt_ret!=0)) && printf "\[${text_br}\]" || printf "\[${text_bg}\]")\$›\[$text_normal\] ';
+    declare -r _new_git_ps1_format=' (\[${text_dim}$text_white\]$(git config --get user.name)\[${text_normal}\]\[${_git_col}\]$_git_repo\[$text_green\]⎇\[${text_normal}\]  %s)';
+#    declare _ret="$?";
+    # Termcap for bold text has a fallthrough in the __git_ps1 format string
+    __git_ps1 "$_new_before_git_ps1" "$_new_after_git_ps1" "$_new_git_ps1_format";
+  }
+
+# The other bash prompt parts
+  # After the input
+  PS0="\[$text_normal\]";
+  # Secondary prompt
+  PS2="\[$text_user\]›\[${text_normal}\]";
+  # Select prompt
+  declare -x PS3="${text_user_hard}№›${text_normal} ";
+
+# Was nice but pytorch is clobbering the "." directory
+#  cd ~/dotfiles;

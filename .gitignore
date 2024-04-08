@@ -1,0 +1,9 @@
+Session.vim
+Session2.vim
+system_info.txt
+*.swp
+#.vim/
+**/run.sh
+
+# Dotfiles (TODO: move to some directory)
+shellcheck.txt

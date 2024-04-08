@@ -1,0 +1,315 @@
+Implementation: scripts/setargs.sh version 0.0.0
+
+TODO: Add eval mode using return value ❓
+TODO: Make sure that optionals always being declared is correct here.
+
+┏━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Setargs ┃ Bash helper to parse arguments                                    ┃
+┣━━━━━━━━━┛                                                                   ┃
+┃                                                                             ┃
+┃ Setars offers a simple interface to read arguments from $@ and declare bash ┃
+┃ variables appropriately.                                                    ┃
+┃                                                                             ┃
+┃ ╭─────────┬────────────────────────────────────────────────╮                ┃
+┃ │ Example │ [Global mode: Requires unset_args]             │                ┃
+┃ ├─────────╯                                                │                ┃
+┃ │                                                          │                ┃
+┃ │        Parameter string                        Arguments │                ┃
+┃ │               ↓                                    ↓     │                ┃
+┃ │  example1()                                              │                ┃
+┃ │  {                                                       │                ┃
+┃ │      set_args "--file-required= --mode=default -x" "$@"  │ ← Set globally ┃
+┃ │                                                          │                ┃
+┃ │      echo "Parsed --file-required = $__file_required"    │ ← Use          ┃
+┃ │      echo "Parsed --mode = $__mode"                      │                ┃
+┃ │      if [[ -v _x ]]; then echo "-x was set to $_x"; fi   │                ┃
+┃ │                                                          │                ┃
+┃ │      unset_args;                                         │ ← Unset        ┃
+┃ │  }                                                       │                ┃
+┃ │      ↑                                                   │                ┃
+┃ │     Deletes variables                                    │                ┃
+┃ ╰──────────────────────────────────────────────────────────╯                ┃
+┃ ╭─────────┬────────────────────────────────────────────────╮                ┃
+┃ │ Example │ [Eval mode: Does not require unset_args]       │                ┃
+┃ ├─────────╯                                                │                ┃
+┃ │                                                          │                ┃
+┃ │                Parameter string  Arguments               │                ┃
+┃ │                       ↓              ↓                   │                ┃
+┃ │  example2()                                              │                ┃
+┃ │  {                                                       │                ┃
+┃ │      set_args "--r= -f=d -y" "$@"                        │                ┃
+┃ │      eval "$get_args"                                    │ ← Get locally  ┃
+┃ │                                                          │                ┃
+┃ │      echo "Parsed --r = $r"                              │ ← Use          ┃
+┃ │      echo "Parsed -f = $f"                               │                ┃
+┃ │      if [[ -v y ]]; then echo "parsed y = $y"; fi        │                ┃
+┃ │  }                                                       │                ┃
+┃ ╰──────────────────────────────────────────────────────────╯                ┃
+┃ ╭─────────┬────────────────────────────────────────────────╮                ┃
+┃ │ Example │ [Call]                                         │                ┃
+┃ ├─────────╯                                                │                ┃
+┃ │                                                          │                ┃
+┃ │  # Do not give 'optional' parameter -x                   │                ┃
+┃ │  example1 --file=foo.txt --mode=bar                      │                ┃
+┃ │                                                          │                ┃
+┃ │  # Leave 'defaulted' parameter -f at default value       │                ┃
+┃ │  example2 --r=baz.txt -y                                 │                ┃
+┃ ╰──────────────────────────────────────────────────────────╯                ┃
+┃                                                                             ┃
+┃ Setargs is provided a (typically hardcoded) 'parameter' string. This string ┃
+┃ determines the names which can be provided. Depending on the syntax used,   ┃
+┃ they become 'required', 'defaulted' or 'optional'.                          ┃
+┃                                                                             ┃
+┃ Setargs is further provided "$@" as 'arguments'. Setargs declares global    ┃
+┃ variables with names derived from the parameter/argument names by replacing ┃
+┃ dashes "-" with underscores "_".                                            ┃
+┃                                                                             ┃
+┃ When 'eval "$get_args"' is used, variable names are declared locally,       ┃
+┃ losing leading underscores "_". This is the preferred method!               ┃
+┃                                                                             ┃
+┃ Calling unset_args will unset previously declared variables (example1).     ┃
+┃ Alternatively, evaluating global variable "get_args" will declare           ┃
+┃ corresponding global variables locally WITHOUT the leading underscores      ┃
+┃ (example2).                                                                 ┃
+┃                                                                             ┃
+┃━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┃
+┃                                                                             ┃
+┃ The special parameter --help generates a sed -e expression highlighting     ┃
+┃ available parameter names in a help string. The help string                 ┃
+┃ [command_name]_help_string is printed and colourized.                       ┃
+┃                                                                             ┃
+┃                                                                             ┃
+┃ ╭─────────┬────────────────────────────────────────────────╮                ┃
+┃ │ Example │ [Help string: Autoformat using sed]            │                ┃
+┃ ├─────────╯                                                │                ┃
+┃ │                                                          │                ┃
+┃ │  example3()                                              │                ┃
+┃ │  {                                                       │                ┃
+┃ │      declare example3_help_string="Header linection      │ ← Help string  ┃
+┃ │                                                          │                ┃
+┃ │        Full description below. May contain --mode=value  │                ┃
+┃ │        and other parameter names.";                      │                ┃
+┃ │                                                          │                ┃
+┃ │      set_args "--example= --mode=default --help"         │                ┃
+┃ │      eval "$get_args";                                   │ ← Colour help  ┃
+┃ │      # if [[ -v help ]]; then                            │ ← (implicit)   ┃
+┃ │      #   sed -e "$help" <<< "$example3_help_string";     │                ┃
+┃ │      #   return 0;                                       │                ┃
+┃ │      # fi                                                │                ┃
+┃ │  }                                                       │                ┃
+┃ ╰──────────────────────────────────────────────────────────╯                ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+┌────────────┬────────────────────────────────────────────────────────────────┐
+│ Parameters │ Typically hardcoded. Specify allowed arguments.                │
+├────────────┘                                                                │
+│                                                                             │
+│ ✖ Names MUST start with "-"                                                 │
+│ ✖ Names MUST contain only alphanum, dash and underscore [a-zA-Z0-9_-]       │
+│ ✔ 'required' parameters end on "=". They have NO default value.             │
+│ ✔ 'defaulted' parameters with "=default_value".                             │
+│ ✔ 'optional' names do not contain "=". Default to empty string if set.      │
+│ ✖ Default values MUST NOT contain whitespace.                               │
+│ ✖ Dividing "=" MUST NOT be surrounded by whitespce.                         │
+│                                                                             │
+│ ✖ --autocomplete: Reserved. MUST NOT be used.                               │
+│ ✔ --help: Special name. MUST be 'optional'. Value is set to sed expression  │
+│           that colours --parameters with ANSI colour codes.                 │
+│ ✔ "--": Special parameter without name: Enables 'argv' parameter.           │
+│                                                                             │
+│╭──────────────────────────┬────────────────────────────────────────────────╮│
+││  parameter string        │     meaning                                    ││
+│├──────────────────────────┼────────────────────────────────────────────────┤│
+││  --required=             │ ✔   Argument MUST occur with value             ││
+││  --defaulted=def_value   │ ✔   Argument MAY occur; else has default value ││
+││  --optional              │ ✔   Argument is optional; MUST NOT have value  ││
+││  "-r= -d=foo -o"         │ ✔   Specify one parameter of each kind         ││
+││  --                      │ ✔   Enables 'argv' parameter                   ││
+││                          │                                                ││
+││  name=wrong              │ ✖   Name MUST start with "-"                   ││
+││  "-too" "-many" "-words" │ ✖   Parameters MUST be a single word           ││
+││  --help=default          │ ✖   Special name. MUST be 'optional'           ││
+││  --autocomplete          │ ✖   Reserved. MUST NOT be used                 ││
+││  -                       │ ✖   Argv is activated by "--"                  ││
+││  ---                     │ ✖   Argv is activated by "--"                  ││
+│╰──────────────────────────┴────────────────────────────────────────────────╯│
+└─────────────────────────────────────────────────────────────────────────────┘
+┌───────────┬─────────────────────────────────────────────────────────────────┐
+│ Arguments │ Typically "$@". Provide data according to the parameter string. │
+├───────────┘                                                                 │
+│                                                                             │
+│ ✔ Set value of matching parameter names                                     │
+│ ✔ MAY omit 'defaulted' and 'optional' parameters                            │
+│ ✖ MUST Provide value for 'required' parameters                              │
+│ ✖ MUST NOT introduce new names                                              │
+│                                                                             │
+│╭───────────────────────┬──────────────────────────────────────────────────╮ │
+││ argument string(s)    │     meaning                                      │ │
+│├───────────────────────┼──────────────────────────────────────────────────┤ │
+││ --name=value          │ ✔   Value "value" given for "name"               │ │
+││ --defaulted=overwrite │ ✔   Value "overwrite" replaces the default value │ │
+││ --optional=value      │ ✔   Provide value for "optional" immediately     │ │
+││ --optional            │ ✔   Provide optional without value               │ │
+││ --requires=value      │ ✔   Provide immediate value                      │ │
+││ --name split_data     │ ✔   Provide value "split_data" as split data     │ │
+││ -r=foo -- more --data │ ✔   Provide positional data "more" and "--data"  │ │
+│╰───────────────────────┴──────────────────────────────────────────────────╯ │
+└─────────────────────────────────────────────────────────────────────────────┘
+┌─────────────┬───────────────────────────────────────────────────────────────┐
+│ Values/data │ The strings which setargs will assign to bash variables.      │
+├─────────────┘                                                               │
+│                                                                             │
+│ ✔ Immediate values using --name=data                                        │
+│ ✔ Immediate data may contain hyphens "-" or spaces " " (or any other symbol)│
+│                                                                             │
+│╭────────────────────────┬───────────────────────────────────╮               │
+││  parameter string      │     argumment                     │               │
+│├────────────────────────┼───────────────────────────────────┤               │
+││  "-n"                  │ ✔   -n=4                          │               │
+││  "-n=1"                │ ✔   -n=4                          │               │
+││  "--required="         │ ✔   --required=data               │               │
+││  "--required=default"  │ ✔   "--required= data with space" │               │
+││  "--flag=--default"    │ ✔   --flag=--data-with-dashes     │               │
+│╰────────────────────────┴───────────────────────────────────╯               │
+│                                                                             │
+│ ✔ 'required'/'defaulted' parameters MAY split argument data from name       │
+│ ✖ 'optional' parameters MUST NOT use split data (interpreted as positional) │
+│ ✖ Split data also MUST NOT start with "-" (would be a new --name)           │
+│                                                                             │
+│╭────────────────────────┬───────────────╮                                   │
+││  parameter string      │     arguments │                                   │
+│├────────────────────────┼───────────────┤                                   │
+││  "-n=1"                │ ✔   -n 4      │                                   │
+││  "-n="                 │ ✔   -n 4      │                                   │
+││  "-n"                  │ ✖   -n 4      │                                   │
+││  "-n=1"                │ ✖   -n -4     │                                   │
+│╰────────────────────────┴───────────────╯                                   │
+│                                                                             │
+│ ✔ Positional data matches {remaining + non-'optional'} parameter names      │
+│   ✔   string                                                                │
+│   ✔   "quoted string"                                                       │
+│   ✖   --start_with_dash                                                     │
+│   ✖   -start_with_dash                                                      │
+│                                                                             │
+│╭──────────────────────────────────────────────────┬──────────────────────╮  │
+││   invocation                                     │ variables created    │  │
+│├──────────────────────────────────────────────────┼──────────────────────┤  │
+││ ✔ set_args "-p1=  -p2=  -p3="  d1 d2 d3          │ _p1=d1 _p2=d2 _p3=d3 │  │
+││ ✔ set_args "-p1=x -p2=y -p3=z" d1 d2 d3          │ _p1=d1 _p2=d2 _p3=d3 │  │
+││ ✔ set_args "-p1=  -p2=  -p3="  --p2=A d1 d3      │ _p1=d1 _p2=A  _p3=d3 │  │
+││ ✔ set_args "-p1=  -p2=  -p3="  --p2 B d1 d3      │ _p1=d1 _p2=B  _p3=d3 │  │
+││ ✔ set_args "-p1=x -p2=y -p3=z" d1 d2             │ _p1=d1 _p2=d2 _p3=z  │  │
+││ ✔ set_args "-p1=x -p2=y -p3=z" d1                │ _p1=d1 _p2=y  _p3=z  │  │
+││ ✖ set_args "--name=" --data_starting_with_dash   │ ✖                    │  │
+││ ✖ set_args "--name=" too much data               │ ✖                    │  │
+││ ✖ set_args "--name" data_for_optional_attempted  │ ✖                    │  │
+││ ✖ set_args "--opt --n=default" overwrite_default │ ✖                    │  │
+│╰──────────────────────────────────────────────────┴──────────────────────╯  │
+│                                                                             │
+│ ✔ Trailing data: All arguments after double dash "--" are interpreted as    │
+│                  positional data. Data after "--" MAY contain any symbol.   │
+│                                                                             │
+│╭─────────────────────────────────────────────────────────────────────────╮  │
+││   Trailing data exampels                                                │  │
+│├─────────────────────────────────────────────────────────────────────────┤  │
+││ ✔ set_args "--required=" -- -start_with_dash_in_trailing_data           │  │
+││ ✔ set_args "--required=" -- ---start_with_dash_in_trailing_data         │  │
+││ ✔ set_args "--required=" -- "- quite --wild data, but only 1 data word" │  │
+││ ✔ set_args "-f --required="    -- -f                                    │  │
+││ ✖ set_args "-f --required=" -f --                                       │  │
+││ ✖ set_args "--required=" --                                             │  │
+││ ✖ set_args "-f=f -g=" -- dat1 dat2 dat3                                 │  │
+│╰─────────────────────────────────────────────────────────────────────────╯  │
+│                                                                             │
+│ ✔ Leftover argv: IFF special parameter "--" is provided, there MAY be more  │
+│                  positional arguments than parameters to assign. Leftover   │
+│                  positional parameters are written to variable "argv",      │
+│                  which can be read and tested for length. When special      │
+│                  parameter "--" is provided, variable "argv" is always      │
+│                  declared and may have length 0.                            │
+│                                                                             │
+│╭──────────────────────────────────┬───────────────────────────────────────╮ │
+││   Leftover argv exampels         │                                       │ │
+│├──────────────────────────────────┼───────────────────────────────────────┤ │
+││ ✔ set_args "-r= --" 1 2 3        │ argv=("2" "3")                        │ │
+││ ✔ set_args "-f --"  1 2 3        │ argv=("1" "2" "3")                    │ │
+││ ✔ set_args "-r= --" 1            │ argv=()                               │ │
+││ ✖ set_args "-r="    1 2 3        │ # Too many positional arguments       │ │
+││ ✔ set_args "-r="    1            │ # argv undeclared ("--" missing)      │ │
+│╰──────────────────────────────────┴───────────────────────────────────────╯ │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────┬───────────────────────────────────────────────────────────────────┐
+│ Gotchas │ These things might be unexpected.                                 │
+├─────────┘                                                                   │
+│                                                                             │
+│ ✖ 'optional' parameters DO NOT match positional data (they are skipped)     │
+│ ✖ 'optional' parameters DO NOT allow split data                             │
+│ ✔ 'optional' parameters IMPLICITLY default to empty string ""               │
+│ ✔ 'optional' MAY be set to a different value                                │
+│ ✖ 'defaulted' parameters CANNOT have empty default                          │
+│   • --name=  describes a 'required' parameter                               │
+│   • Use 'optional' parameter instead: --name                                │
+│ ✖ Flags DO NOT combine when using single dash                               │
+│ ✖ Positional data will fill 'required' and 'defaulted' parameters before    │
+│   filling the "argv" variable (even when available).                        │
+│╭──────────────────┬────────────────────────────╮                            │
+││  parameter       │     arguments              │                            │
+│├──────────────────┼────────────────────────────┤                            │
+││  --optional      │ ✖   --optional split_data  │                            │
+││  --optional      │ ✖   positional_data        │                            │
+││  --optional      │ ✖   -- trailing data       │                            │
+││  --optional      │ ✔   --optional=value       │                            │
+││  --required=     │ ✖                          │                            │
+││  --optional      │ ✔                          │                            │
+││  --deaulted=def  │ ✔                          │                            │
+││  "-a -b -c"      │ ✖   -abc                   │                            │
+│╰──────────────────┴────────────────────────────╯                            │
+│                                                                             │
+│ • Some parameter names are reserved for special cases:                      │
+│╭──────────────────┬─────────────────────────────────────────╮               │
+││  parameter       │ functionality                           │               │
+│├──────────────────┼─────────────────────────────────────────┤               │
+││  --autocomplete  │ Used for bash parameter autocompletion  │               │
+││  --help          │ Used for usage info                     │               │
+│╰──────────────────┴─────────────────────────────────────────╯               │
+│                                                                             │
+│ • Variables are declared globally. Use unset_args to avoid collisions.      │
+│ • When evaluating get_args, local variables have no leading underscores.    │
+│ • When evaluating get_args, global variables are automatically unset.       │
+│ • When evaluating get_args, the call must follow set_args immediately.      │
+│                                                                             │
+│ • Inputs ARE NOT sanitized or verified (!)                                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌───────────┬─────────────────────────────────────────────────────────────────┐
+│ Algorithm │ Concept implemented by set_args()                               │
+├───────────┘                                                                 │
+│ 1. Parsing parameters                                                       │
+│   INPUT (parameters): "--optional --name=default --requires-value="         │
+│   -> Categorize                                                             │
+│     - required                                                              │
+│     - defaulted                                                             │
+│     - optional                                                              │
+│   -> Store                                                                  │
+│     - Order or occurence of {required, defaulted} parameters                │
+│     - any known (default) values                                            │
+│─────────────────────────────────────────────────────────────────────────────│
+│ 2. Parse argument list                                                      │
+│   INPUT (arguments): --flag --split-arg split_data --name=overwrite_default │
+│   -> Categorize                                                             │
+│     - provided (in some way)                                                │
+│     - provided by name (immediate or split data, no data for 'optionals')   │
+│   -> Store                                                                  │
+│     - leftover data args (stuff not starting with - or after --), in order  │
+│       -> as positional data for step 3.                                     │
+│     - any value provided by immediate or split data (overwrite previous)    │
+│─────────────────────────────────────────────────────────────────────────────│
+│ 3. Match positional arguments                                               │
+│   - Iterate parameters in order                                             │
+│   - Check if provided already (in some way)                                 │
+│   -> Else match parameter name to stored positional data                    │
+│─────────────────────────────────────────────────────────────────────────────│
+│ 4. Generate variables                                                       │
+│   - Iterate all parameter names                                             │
+└─────────────────────────────────────────────────────────────────────────────┘

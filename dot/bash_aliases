@@ -1,0 +1,413 @@
+#!/bin/false
+
+# Bash aliases, sourced in bashrc_personal
+
+# We reserve single-character commands for moment-to-moment workflows. If you
+# want you special short command, use a leader like "," or "+" or whatever.
+
+#_______________________________________________________________________
+# runscript aliases
+    # "Execute" command because "r" is already used by our git aliases
+    alias e='./run.sh';
+    alias E='~/dotfiles/run.sh';
+    alias t="E run scripts/tests"; # Probably remove this some time :D
+#    alias q='source ~/dotfiles/scripts/run_script_completion.sh; ./run.sh print_commands';
+    alias q='./run.sh help';  # Previously: print_commands
+    alias Q='./run.sh interactive';
+
+#_______________________________________________________________________
+# git
+
+    # git status checks
+        # state: all recent commits
+        alias s='git --no-pager f; git s; git b;'
+        alias S='git s -99999';
+        # history: commits of current branch
+        alias h='git --no-pager f; git h; git b;'
+
+        # news: git status
+        alias n='git st';
+        alias m='git st --short --branch';
+
+        # repo: current staged (uncommitted) changes
+        alias r='git di-r; git di-r2;'
+        alias rr='git di-rr; git di-rr2';
+        alias rw='git di-rw; git di-rw2';
+
+        # post/print: current unstaged changes to working directory
+        alias p='git di-p; git di-p2';
+        alias pp='git di-pp; git di-pp2';
+        alias pw='git di-pw; git di-pw2';
+
+    # git utils
+        alias H='git diff master HEAD'
+
+    # git workflow
+        alias a='git add -p'
+#
+
+# ______________________________________________________________________________
+# Vim
+
+  # Short term session
+  alias vims="vim -S Session.vim"
+  # Long term session
+  alias vimS="vim -S Session_long.vim"
+  # Switch to vim: Bring to foreground or open new.
+  alias v='(("$(jobs -p | wc -l)" == 0)) && { vims || :; } || fg vim';
+  alias V='(("$(jobs -p | wc -l)" == 0)) && { vimS || :; } || fg vim';
+
+# ______________________________________________________________________________
+# Git
+#
+# (!) If you want to use aliases from vim plugin fugitive, map them to a git
+# alias as much as possible. Specifically stuff where fugitive is helpful, i.e.,
+# "c=git commit" (can lookup and copy-paste stuff into the commit message more
+# easily). Then you can use them in fugitive with :Git [command].
+
+alias a="git ad";
+alias c="git ci";
+alias ca="git cia";
+alias cr="git cireh";
+alias co="git co";
+
+# Fishdev
+alias B="e bench --all";
+alias b="e bench --all --build";
+alias yeli="./yell import";
+alias yelp="./yell pick";
+
+# ______________________________________________________________________________
+# Gui filetypes
+
+    alias pdf='evince'
+    alias png='eog'
+    alias svg='eog';
+
+# ______________________________________________________________________________
+# system
+  alias bat="batcat";
+  alias dot='cd ~/dotfiles';
+  alias Dot='pushd ~/dotfiles';
+  # • f:  Search simple files
+  # • F:  Prune .hidden_dir/ but include .hidden_files
+  # • FF: Search everything, including directories
+  # ➜ Add -c to cd to dirname of resulting file
+  # ➜ Use 'F -d' for 'alias d' but with hidden dirs
+  alias f='find_file -p';
+#  alias ff='find_file -ph';
+#  alias F='find_file -pH';
+  alias fin='find . -iname';
+  alias iftop='sudo iftop -c $HOME/.iftoprc'; # FIXME Install .iftoprc at /home/root?
+  alias j="jupyter lab";
+  alias please='sudo !!'; # TODO Does this even work?
+  # Used for bash completion based on history
+  alias w='fc -s';
+  alias W='fc -s';
+  alias wget='wget -c';
+
+# Super-cd command for navigating directories
+# FIXME I think this function was basically retired by the find_file function
+# now. We have no completion for find_file; it is not really needed, but maybe
+# add later so it can auto-generate file-prefixes.
+supercd()
+{
+  if (($# == 0)); then
+    declare -a _o=();
+    IFS=$'\n' _o=( $(find . -path '*/.*' -prune -o -type d -print | fzf -1 --print-query --preview "ls --color=always -Fh {}") );
+#    >&2 echo "fzf result: [${_o[@]}]";
+    if ((${#_o[@]} > 1)); then
+      _p="${_o[1]}";
+      if [[ -d "${_o[1]}" ]]; then
+#        >&2 echo "Directory found: ${_o[@]}";
+#        >&2 echo "Moving to: ${_p}";
+        cd "$_p";
+      else
+        # TODO Obsolete: using "-type d" now now
+        # If fzf found something that means the user accepted the suggestion. Go
+        # there.
+        { >&2 echo "supercd: Moving to "'$'"(dirname \"$_p\")"; cd "$(dirname "$_p")"; } ||
+          { ret="$?"; >&2 echo "Fallback didnt work!"; };
+        return 0;
+      fi
+    else
+      >&2 echo "supercd: Ony the query is left :(";
+      cd "$_o" ||
+      { ret="$?";
+#        >&2 printf "%s\n" "supercd: TODO: enter \", $_o\" for the user when this happens";
+#        set -vx
+        bind '"\e[0n": ", '"${_o}"'"'; printf '\e[5n';
+#        set +vx;
+        return "$ret"; };
+      return 0;
+    fi
+  else
+    # TODO use it as input for fzf instead
+    cd "$1";
+    declare -i ret=$?;
+    (($# >= 2)) && printf "%s\n" "supercd: more than one argument" >&2;
+    return $ret;
+  fi
+}
+
+# Wrapper that automatically inserts "--" after the first argument not starting
+# with "-"
+find_file()
+{
+  # Add "--" after the first argument that doesn't start with "-"
+  declare -i i=0
+  for ((i = 1; i <= $#; i++)); do
+#    echo "DEBUG testing word [${@:i:1}]";
+    if [[ ! "${@:i:1}" =~ ^- ]]; then
+#      echo "DEBUG: First non-option word: ${@:i:1}, Adding -- before ${@:i:1}";
+      break;
+    fi
+  done
+#  echo "DEBUG: i=$i, args: _find_file [${@:1:i-1} -- ${@:i}]"
+  _find_file "${@:1:i-1}" -- "${@:i}"
+}
+# Use find_file so that we relax the need of the caller providing "--"
+_find_file()
+{
+  #echo "DEBUG: Calling _find_file with $# args:";
+  #printf "  %s\n" "$@";
+  if (( $# > 0 )) && [[ "$1" == "--help" ]]; then
+    echo "Usage: $FUNCNAME [-c|-p] [-d] [-h|-H]";
+    echo "  -c: Change directory to dirname instead of printing result";
+    echo "  -d: Search directories only and pushd the result";
+    echo "  -h: Include hidden files";
+    echo "  -H: Include hidden dirs AND hidden files";
+    echo "  -p: Page search result with batcat ";
+    return 0;
+  fi
+
+  # Sanity check
+  if [[ "$(shopt -p nocasematch)" != "shopt -u nocasematch" ]]; then
+    >&2 echo "find_file: shopt -u nocasematch not unset";
+    return 1
+  fi
+
+  # Use getopts to detect
+  declare -i change=0 dirs_only=0 pager=0 hidden_files=0 hidden_dirs=0
+  declare opt;
+  declare OPTIND; # So that we dont use the OPTIND from the interactive shell
+  while getopts "cdhHp" opt; do
+    #echo "DEBUG: $FUNCNAME: Readin option flag [-$opt]"
+    case "$opt" in
+      c) change=1;; # Change directory to dirname of result
+      d) dirs_only=1;;
+      h) hidden_files=1;; # Include hidden files
+      # FIXME Requires 'shopt nocasematch to be unset'
+      H) hidden_dirs=1;;  # Include hidden dirs AND hidden files
+      p) pager=1;; # Show file instead of cd to dirname
+      \?) 1>&2 echo "$FUNCNAME: Invalid option: -$OPTARG" 1>&2; return 1;;
+    esac
+  done
+  shift $((OPTIND-1));
+
+  # Option saniy check
+  if (( hidden_dirs && hidden_files )); then
+    1>&2 echo "$FUNCNAME: Warning: -H overwrites -h";
+  fi
+  if (( change && dirs_only )); then
+    1>&2 echo "$FUNCNAME: Warning: -d overwrites -c";
+  fi
+  if (( (change || dirs_only) && pager )); then
+    1>&2 echo "$FUNCNAME: Warning: (-c|-d) overwrites -p";
+  fi
+
+  # Arguments sanity check
+  if (( $# > 1 )); then
+    1>&2 echo "WARNING: $FUNCNAME: Too many arguments";
+  fi
+
+  # TODO Maybe it is better to use $1 as path, and move query into a -q option
+  declare fzf_query="${1:-}";
+  declare find_path="${2:-"."}";
+  if [[ ! -d "$find_path" ]]; then
+    1>&2 echo "ERROR: $FUNCNAME: No such directory '$find_path' (continuing with '.')";
+    find_path=".";
+  fi
+
+  #echo "DEBUGGING: $FUNCNAME: fzf_query=$fzf_query"
+  #echo "DEBUGGING: $FUNCNAME: change=$change"
+  #echo "DEBUGGING: $FUNCNAME: dirs_only=$dirs_only"
+  #echo "DEBUGGING: $FUNCNAME: hidden_dirs=$hidden_dirs"
+  #echo "DEBUGGING: $FUNCNAME: hidden_files=$hidden_files"
+  #echo "DEBUGGING: $FUNCNAME: pager=$pager"
+  #echo "DEBUGGING: $FUNCNAME: find_path=$find_path"
+
+  declare dirs_only_flag="" previewer="batcat";
+  if (( dirs_only == 1)); then
+    dirs_only_flag="( -not -type d -a -prune ) -o"; # Use without quotes to expand
+    previewer="ls --color=always -Fhl";
+  fi
+#  echo "DEBUGGING: dirs_only_flag=$dirs_only_flag"
+#  echo "DEBUGGING: previewer=$previewer"
+
+  #####################################
+  # Determine output (usually with fzf)
+  #####################################
+  declare out;
+  # If query is already a valid dirs_only path, skip searching
+  if (( dirs_only )) && [[ -d "$fzf_query" ]]; then
+    # Special case: no search needed
+    out="$fzf_query";
+    echo "DEBUG: skipping search: $out"
+  else
+    declare -i err=0;
+    if (( hidden_dirs )); then
+      out="$(find "${find_path}" $dirs_only_flag -print | fzf -1 --query="$fzf_query" --preview "${previewer} --color=always {}")" || err="$?";
+    elif (( hidden_files )); then
+      out="$(find "${find_path}" -type d -a -path '*/.*' -prune -o $dirs_only_flag -print | fzf -1 --query="$fzf_query" --preview "${previewer} --color=always {}")" || err="$?";
+    else
+      # Ignores hidden files
+      out="$(find "${find_path}" -path '*/.*' -prune -o $dirs_only_flag -print | fzf -1 --query="$fzf_query" --preview "${previewer} --color=always {}")" || err="$?";
+    fi
+    if (( err )); then
+      1>&2 echo "ERROR: $FUNCNAME: fzf failed with code $err";
+      return "$err";
+    fi
+  fi
+
+  # Print search result to console no matter what
+  echo "$out";
+
+  # Perform operation on result: cd, page, pushd, ls, ...
+  if (( dirs_only )); then # TODO rename to dir_push?
+    pushd "$out";
+  elif (( change )); then # TODO rename to dir_change?
+    echo "DEBUG: $FUNCNAME: Entering case change";
+    if [[ ! -d "$out" ]]; then
+      echo "WARNING: $FUNCNAME: '${out}' is not a directory, using '$(dirname "$out")' instead";
+      out="$(dirname "$out")";
+    fi
+    cd "$out";
+  elif (( pager )); then
+    if [[ -d "$out" ]]; then
+      ls --color=always -Fhl "$out" | barcat --color=always;
+    else
+      batcat --color=always "$out";
+    fi
+  fi
+}
+
+
+# ______________________________________________________________________________
+# Files operations
+
+# Output surroundings of line $1
+#
+# $1: Line number
+# ($2: File name)
+# If no file is given, read from stdin
+body()
+{
+  # If no file is given, pass along stdin
+  if (( $# < 2 )); then
+    exec 3<&0; # TODO Choose available descriptor automatically?
+  else
+    exec 3<"${2:?body: Missing file}";
+  fi
+  declare -i _start _stop;
+  _start=$(( ${1:?body: Missing line} < 5 ? 1 : ${1} - 4 ));
+  _stop=$(( ${1} + 4 ));
+  sed -ne "${_start},${_stop}p" <&3
+}
+
+# ______________________________________________________________________________
+# File browsing
+
+  # d: Add files (fzf ➜ pushd)
+  # D: Clean dir stack
+  #
+  alias d='find_file -c';  # cd to result. Add -H to search hidden stuff.
+  alias dd='find_file -d'; # pushd to result. Add -H to search hidden stuff.
+  alias D='popd'; # Pop stack. Delete dir stack with 'dirs -c'.
+  alias y='pushd -0;';
+  alias yy='pushd -1;';
+  alias x='pushd +1;';
+  alias xx='pushd +2;';
+  alias ..='cd ..';
+  alias tree='tree -CF';
+
+# Delete files named in $@ by moving below /tmp/del.
+# /tmp/** is cleared on startup.
+del() {
+  declare ret=0;
+  mkdir /tmp/del;
+  while (( $# > 0 )); do
+    if [[ -d "$1" || -f "$1" ]]; then
+      mv -f "$1" "/tmp/del/$1_$RANDOM";
+    else
+      1>&2 echo "$FUNCNAME: Error: $1: No such file or directory";
+      ret=1;
+    fi
+    shift;
+  done
+  return $(($? && ret));
+}
+
+  # ls
+    # ----- Base versions
+    alias la='command ls --color=auto -Fh'; # No hidden files
+    alias ls='command ls --color=auto -Fh -A'; # Show everything
+    # ----- Advanced versions
+    alias l='command ls --color=auto -Fh -A -ltr'; # List by last-modified
+    alias ll='command ls --color=auto -Fh -A -l'; # List by name
+    alias lS='command ls --color=auto -Fh -A -lSr'; # List by size
+    # ----- Specialized version
+    # List N last modified files with 'L -N'
+    alias L='command ls --color=auto -FhA -t | head';
+
+# ______________________________________________________________________________
+# Quick aliases: A bunch of short aliases that you can delete if you dont use
+# them. We use "," as leader for these.
+
+# Git
+  # "go git"
+  alias ,gg='cd "$(git rev-parse --show-cdup)"';  # Move relative to base repo
+  alias ,gp='git push';
+  # "git push -u"
+  alias ,gpu='git push --set-upstream';
+  # "git commit -m Tmp"
+  alias ,gct='git cit';
+  # "git commit --amend"
+  alias ,gca='git cia';
+  alias ,gms='git ms';
+
+# Terminaly
+  # Name matches the entry in .bash_completion
+  # FIXME This alias is basically replaced by 'alias d' and 'alias f', using the
+  # find_file function. Only the completion is better here (since there is
+  # completion at all).
+  alias ,='supercd';
+
+# Tools
+
+  # Fuzzy find within files
+  ,,()
+  {
+    # TODO
+    >&2 echo [!] "Not iplemented yet https://github.com/junegunn/fzf/blob/master/ADVANCED.md#ripgrep-integration";
+
+    rg --color=always --line-number --no-heading --smart-case "${*:-}" |
+    fzf --ansi \
+        --color "hl:-1:underline,hl+:-1:underline:reverse" \
+        --delimiter : \
+        --preview 'bat --color=always {1} --highlight-line {2}' \
+        --preview-window 'up,60%,border-bottom,+{2}+3/3,~3' \
+        --bind 'enter:become(vim {1} +{2})'
+    # TODO Old fzf does not support become action
+  }
+
+#_______________________________________________________________________
+# History hider
+# TODO Can potentially be generated for all 1-letter commands
+# TODO Does not work because is interpreted literally as a command starting
+#      with whitespace
+#alias fg=' fg';
+#alias s=' s';
+#alias e=' e';
+#alias a=' a';
+#alias p=' p';

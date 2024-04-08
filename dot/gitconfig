@@ -1,0 +1,294 @@
+[advice]
+	# Set the following values to true/false:
+	#pushUpdateRejected
+	#pushNonFFCurrent
+	#pushNonFFMatching
+	#pushAlreadyExists
+	#pushFetchFirst
+	#pushNeedsForce
+	#statusHints
+	#statusUoption
+	#commitBeforeMerge
+	#resolveConflict
+	#implicitIdentity
+	#detachedHead
+	#amWorkDir
+	#rmHints
+
+[alias]
+	# Diff variants
+	di = diff --no-ext-diff
+	dh = di --histogram
+	dm = di AUTO_MERGE
+	# Use --no-ext-diff because difft doesnt do word diff
+	dw = di --color-words --no-ext-diff
+	sh = show --abbrev-commit --stat --pretty=short
+
+	# Add variants
+	ad = add -p
+
+	br = branch
+	ci = commit
+	co = checkout
+	st = status
+	mt = mergetool
+
+	# Commit variants
+	cia = commit --amend
+	cit = commit -m "Tmp"
+	ciane = commit --amend --no-edit
+	cire = commit --reedit-message
+	cirh = commit --reuse-message=HEAD
+	cireh = commit --reedit-message=HEAD
+
+	# Push varints
+	pushu = push --set-upstream
+
+	# Merge variants
+	ms = merge --squash
+
+	# Shorthands used by bash aliases s,h,r,rr,p,pp
+	f = di --stat --staged
+	b = di --stat
+	di-r = di --ext-diff --staged
+	di-r2 = di --staged --stat
+	di-rr = di --staged
+	di-rr2 = di --staged --stat
+	di-rw = dw --staged
+	di-rw2 = di --staged --stat
+	di-p = di --ext-diff
+	di-p2 = di --stat
+	di-pp = di
+	di-pp2 = di --stat
+	di-rw = dw
+	di-rw2 = di --stat
+
+	# TODO: Currently Using numbers instead of names to work on more platforms:
+	#   8: "brightblack"
+	#   12: "brightblue"
+
+	# Use %ar/%cr when %ah/%ch does not yet work on a platform
+	s = log --graph --abbrev-commit \
+		--pretty=format:'%C(dim yellow)%h %C(dim cyan)(%ch) %C(auto)%s %C(8)• %an %C(reset)%C(dim)%ah%C(auto)%d' --all -20
+	h = log --graph --abbrev-commit \
+		--pretty=format:'%C(dim yellow)%h %C(dim 12)(%ch) %C(auto)%s %C(8)• %an %C(reset)%C(dim)%ah%C(auto)%d' -20
+	lg = log --graph --abbrev-commit --decorate \
+		--format=format:'%C(yellow)%h%C(reset) %C(cyan)%ci %C(12)(%ah) %C(8)• %an%C(reset)%C(auto)%d%C(reset)%n%w(,8)%s'
+	lg2 = log --graph --abbrev-commit --decorate \
+		--format=format:'%C(yellow)%h%C(reset) %C(cyan)%ci %C(12)(%ch) %C(8)• %cn%C(reset)%C(auto)%d%C(reset)%n%C(dim)%w(,8,8)%ai (%ah) %C(reset)%C(8)• %an%C(reset)%n%C(bold)%s%n%b'
+
+[branch]
+	# We don't use this because we use "git s" alias to check branches, but can
+	# be handy later if log is clobbered and we dont know the branches well.
+	#sort = committerdate
+
+[color]
+	# Add color codes even when not to terminal
+	#branch = always
+	#diff = always
+	#interactive = always
+	#status = always
+
+	# Only put colour on terminal
+	ui = auto
+
+[color "branch"]
+	current = "bold 13"
+	local = "13"
+	remote = "magenta"
+
+[color "decorate"]
+	# The branch colours are the same as used in 'git status'
+	branch = "bold 13" # 13 == bright magenta
+	remoteBranch = "bold magenta"
+	remoteTag = "bold green"
+	stash = "bold yellow"
+	tag = "bold 10" # 10 == bright green
+	#head =
+
+[color "diff"]
+	# The default colours look ok no need to change for now. But here some
+	# alternative colours:
+	meta = bold 11
+	#frag = magenta bold
+	old = 1
+	new = 2
+	oldMoved = "strike red"
+	newMoved = "ul green"
+	whitespace = "reverse 9"
+
+# This configures thes "diff-highlight" script that is we used before git-delta.
+# The colouring is not as good but mostly fine. Currently we do not use it. Use
+#     git config core.pager "diff-highlight | less -RFX"
+# to use it when delta is unavailable (or tweak it here in config).
+[color "diff-highlight"]
+	# ❗ Diff-highlight script can might hide whitespace errors (compared to
+	#    both default colours and the "delta" pager).
+
+	# Subtle colours: dim vs. bright-bold
+	oldNormal = "dim 1" # Dim for visbility
+	#oldNormal = "dim normal" # Interesting alternative
+	oldHighlight = "bold 9"
+	newNormal = "dim 2"
+	newHighlight = "bold 10"
+
+	# Pronounced colours: using normal vs. reverse
+	#oldNormal = "1"
+	#oldHighlight = "bold reverse 1"
+	#newNormal = "2"
+	#newHighlight = "bold reverse 2"
+
+	# Some defaults from internet (for a light scheme)
+	#oldNormal = "black #f8cbcb"
+	#oldHighlight = "black #ffaaaa"
+	#newNormal = "black #cbeecb"
+	#newHighlight = "black #aaffaa"
+
+[color "log"]
+	# ❔
+
+[color "status"]
+	added = "bold green"
+	branch = "bold 13" # magenta means bright purple
+	changed = "bold 208" # same config option as 'updated'
+	header = "dim"
+	noBranch = "9 bold" # bright red "Head detached at ..."
+	unmerged = "bold red"
+	untracked = "bold yellow"
+	localBranch = "bold 13"
+	remoteBranch = "bold magenta" # bright magenta (means bright purple)
+
+[column]
+	#ui = auto
+
+[core]
+	# TODO Do we like -F -X at all?
+	#pager = less -RFX
+	# Using delta pager for slightly better word-diffing and whitespace errors.
+	# In some situations, we replace this pager explicitly in [pager] section.
+	pager = delta
+	editor = vim
+	whitespace=trailing-space
+	autocrlf = input
+	excludesfile = ~/.gitignore_global
+
+[commit]
+	# Show diff while committing
+	verbose = true
+
+[credential]
+	helper = cache --timeout 7200
+
+[diff]
+	algorithm = histogram
+	# Also good: difft --display side-by-side-show-both
+	# Also good: difft --dispaly inline
+	# We use external diff only explicitly by aliasing accordingly
+	external = difft
+	colorMoved = plain
+	# Use this if plain turns out too bad
+	#colorMoved = dimmed-zebra
+	# Possibly gets hidden by "diff-highlight" afterwards
+	mnemonicPrefix = true
+	# Treatment of moved whitespace. If problem: set "no".
+	colorMovedWS = "allow-indentation-change"
+	#colorMovedWS = "allow-indentation-change"
+	wsErrorHighlight = "all"
+	# Warn for whitespace error (diff-highlight might hide ws errors)
+	check = "true"
+	# Show more context lines around changes
+	#context = 10
+
+	# ❔
+	submodule = log
+
+[difftool]
+	prompt = false
+
+[help]
+	autocorrect = prompt
+
+# TODO: Do we like this?
+[includeIf "gitdir:~/example/path/"]
+	path = ~/example/path/.gitconfig
+
+[init]
+	defaultBranch = master
+
+[interactive]
+	singlekey = true # Accept by single key stroke, without enter
+	diffFilter = delta --color-only
+	#diffFilter = diff-highlight
+
+[log]
+	date = iso-local
+
+[merge]
+	# diff3 adds original, zdiff3 factors out matching changes
+	# TODO: Do we like zdiff3? Else go back to diff3.
+	conflictstyle = zdiff3
+	tool = vimdiff
+	keepbackup = false
+	# Delete .orig files after merge
+
+[pager]
+	# Overwrite the global pager setting from [core] if needed. The
+	# [interactive] section has its own diffFilter setting.
+	#diff = diff-highlight | less -RFX
+	#show = diff-highlight | less -RFX
+	# In log --graph -p, git-delta pager doesnt work, so we fallback
+	# TODO: Do we like the less options -FX?
+	log = diff-highlight | less -RFX
+
+[pull]
+	ff = only
+
+[push]
+	autoSetupRemote = true
+	default = simple
+	# Push tags automatically, when pushing the commit. We use tags locally
+	# a lot so we dont use it now, but maybe later.
+	#followtags = true
+
+[rebase]
+	# If commit message starts with "fixup! " as set by commit --fixup <id>,
+	# the commit will be ammended instead of rebased.
+	#autosquash = true
+	# Force-update refs on the rebased path (sounds dangerous). For now, use
+	# --update-refs manually.
+	#updateRefs = true
+
+[rerere]
+	# Resolve merge conflicts the same way as in previous conflict
+	enabled = true
+
+[status]
+	submoduleSummary = true
+
+[submodule]
+	# Behaves like --recursive for fetch, checkout, ...
+	recursive = true
+
+[url "git@github.com"]
+	# Replaces https clones with ssh automatically
+	#insteadOf = "https://github.com/"
+	# Replaces only when pushing
+	#pushInsteadOf = "https://github.com/"
+	# Allows specifying paths simpler as github:name/repo
+	#insteadOf = "github:"
+
+[user]
+	# TOKEN_DOTFILES_USER_CREDENTIALS
+	email=commit.author@git.repo
+	name=Commit Author
+
+[tag]
+	#sort =  taggerdate
+	sort = version:refname
+
+# TODO do we want this ❔
+#transfer.fsckobjects = true
+#fetch.fsckobjects = true
+#receive.fsckobjects = true
+
+# vim: filetype=gitconfig noexpandtab tabstop=4 shiftwidth=4 softtabstop=4

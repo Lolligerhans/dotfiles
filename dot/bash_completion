@@ -1,0 +1,130 @@
+#!/bin/false
+
+_supercd_completion()
+{
+  if ((${#COMP_WORDS[@]} != 2)); then return; fi
+
+#  >&2 printf "\n[command] find . -maxdepth 2 -type d -iregex %s\n" ".*${COMP_WORDS[1]}.*";
+
+  # If the -not -path does not stop 'find' from loading large ".git" and similar
+  # directories, we could also try using only "*" — without quotes — as path
+  # instead of ".". That way at least it doesnt search "./.git".
+  declare -a list;
+  IFS=$'\n' list=(\
+    $(find . -maxdepth 3 -type d -not -path '*/.*' -iregex ".*${COMP_WORDS[1]}.*")\
+    );
+#    grep ---color=auto -e "git")\
+
+#  >&2 printf "\n[list] {%s}\n" "${list[*]}";
+
+  COMPREPLY=("${list[@]#+(./)}");
+
+#  >&2 printf "\n[reply] {%s}\n" "${COMPREPLY[*]}";
+}
+# These match the names in .bash_aliases
+complete -F _supercd_completion "supercd";
+complete -F _supercd_completion ",";
+
+# Bash completion for default runscripts (and its aliased uses)
+#   ~/dotfiles/scripts/run_script.sh
+_runscript_completion()
+{
+  declare -r path="${1:-"./run.sh"}";
+  declare -r params_cmd="${2:-""}";
+  if (( "${#COMP_WORDS[@]}" == 2 )); then
+    IFS=$'\n' COMPREPLY=($(compgen -W "$(2>/dev/null "$path" "print_commands")" -- "${COMP_WORDS[1]}"));
+
+    # Add --parameter completion if requested (used for the help alias)
+    if [[ -n "$params_cmd" ]]; then
+      IFS=$'\n' COMPREPLY+=($(compgen -W "$(2>/dev/null "$path" "$params_cmd" "--autocomplete")" -- "${COMP_WORDS[-1]}"));
+    fi
+  else
+  # Replace 'else' with contition if completion can be called with 1 or fewer words:
+  #elif(( "$#COMP_WORDS[@]}" > 2 )); then
+
+    if [[ -n "$params_cmd" ]]; then
+      # Spacial case for help command: Complete second arg with --params ONLY, no
+      # fallbacks.
+      IFS=$'\n' COMPREPLY=($(compgen -W "$(2>/dev/null "$path" "$params_cmd" "--autocomplete")" -- "${COMP_WORDS[-1]}"));
+    else
+      # Normal case:
+      # Complete as parameter when startign with dash "-" and possible. Else
+      # complete with readline default.
+      if [[ -z "${COMP_WORDS[-1]}" ]]; then
+        COMPREPLY=($(compgen -o default));
+      else
+        # FIXME This is dangerous when the command doesnt expect this and is just
+        # executed. Instead, test if the command has a help_string and only THEN
+        # generate autocompletion.
+        if [[ "$(2>/dev/null "$path" has_completion "${COMP_WORDS[1]}")" == "true" ]]; then
+#          1>&2 "DOING completion for ${COMP_WORDS[1]}";
+          IFS=$'\n' COMPREPLY=($(compgen -o default -W "$(2>/dev/null "$path" "${COMP_WORDS[1]}" "--autocomplete")" -- "${COMP_WORDS[-1]}"));
+        else
+          # TODO Use default completion in this case
+
+          # Avoid calling commands that dont expect to e queried for completion
+          # information. By convention, help strings are only present with
+          # available completion.
+          1>&2 printf "\n%s\n" "dot/bash_completion: Suppressing completion for command ${COMP_WORDS[1]} without help-string";
+        fi
+        # TODO Complete non-option parameters with paths and files after equals ign "=".
+      fi
+    fi
+  fi
+}
+_e_completion() { _runscript_completion; }
+_q_completion() { _runscript_completion ./run.sh help; }
+_E_completion() { _runscript_completion ~/dotfiles/run.sh; }
+complete -o nosort -F _e_completion e;
+complete -o nosort -F _q_completion q;
+complete -o nosort -F _e_completion ./run.sh;
+complete -o nosort -F _E_completion E;
+
+# Bash completion for some of the aliases specified by dotfiles
+_wW_completion()
+{
+  if [ "${#COMP_WORDS[@]}" != "2" ]; then
+    return
+  fi
+
+  declare flag="${1:-""}";
+  declare IFS=$'\n';
+
+  # keep the suggestions in a local variable
+  declare word_list="$(fc "-${flag}l" -50 | sed -e 's/^[[:blank:]]*//' -e 's/\t/ /g')";
+
+  # Block obsolete because better early processing
+#  >&2 echo "WORDLIST [with whitespace] (${#word_list[@]}): [${word_list/+( )/_}]";
+  # Replace the leading spaces that fc introduces for no reason
+#  word_list="$(sed -ze 's/\n/✖/g' -e 's/✖[[:space:]]*/✖/g' -e 's/✖/\n/g' <<< "$word_list")";
+#  >&2 echo "WORDLIST [wi/o whitespace] (${#word_list[@]}): [${word_list}]";
+#  >&2 echo "INPUT comp_words: [${COMP_WORDS[1]}]";
+
+  declare -a suggestions=($(compgen -W "$word_list" -- "${COMP_WORDS[1]}"))
+
+#  >&2 IFS="•" eval 'echo "Raw compgen suggestions [${#suggestions[@]}]:" "${suggestions[*]}"';
+
+#  >&2 echo "(${#suggestions[@]} suggestions)";
+  if [ "${#suggestions[@]}" -eq "1" ]; then
+    (( $# == 0 )) &&
+      declare number="${suggestions[0]/%% */}" ||
+      declare number="${suggestions[0]}";
+#    >&2 echo "Using single match: [$number]";
+    COMPREPLY=("$number")
+#    >&2 IFS="•" eval 'echo "RETURNING: [${COMPREPLY[*]}]"';
+  else
+    #(( $# == 0 )) && for i in "${!suggestions[@]}"; do
+    #  suggestions[$i]="$(printf '%*s' "-$COLUMNS"  "${suggestions[$i]}")"
+    #done
+#    IFS="•" echo "Suggestions: ${suggestions[*]}";
+
+    COMPREPLY=("${suggestions[@]}")
+#    IFS="•";
+#    >&2 IFS="•" eval 'echo "RETURNING: [${COMPREPLY[*]}]"';
+
+  fi
+}
+_w_completion() { _wW_completion; };
+_W_completion() { _wW_completion n; };
+complete -F _w_completion w
+complete -F _W_completion W

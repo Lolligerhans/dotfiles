@@ -1,0 +1,19 @@
+// FIXME Add file name.
+// FILE_NAME
+//
+// TODO Brief explanation.
+
+
+// FIXME Add include guard
+#ifndef INCLUDE_GUARD
+#define INCLUDE_GUARD 1
+
+
+// FIXME Provide namespace
+namespace NAMESPACE_
+{
+
+} // namespace NAMESPACE_
+
+
+#endif // INCLUDE_GUARD

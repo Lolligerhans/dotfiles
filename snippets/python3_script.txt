@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+
+import pdb
+from varname import nameof
+import numpy as np
+import math
+import matplotlib.pyplot as plt
+
+if __name__ == "__main__":
+    print("Start main()")
+
+################################################################################
+# Virtual environments (shell/bash)
+################################################################################
+
+# Create new venv. Either in home or in project diretory
+python -m venv /home/user/.venv/myvenv
+# Activate venv by sourcing the 'activate' script
+source myvenv/bin/activate
+# Deactivate venv
+deactivate # Just call 'deactivate' in shell
+# Delete venv: Deactivate, then delete the directory.
+
+################################################################################
+# Core language
+################################################################################
+
+command = 'Hello, World!'
+match command:
+    case 'Hello, World!':
+        print('Hello to you too!')
+    case 'Goodbye, World!':
+        print('See you later')
+    case _:
+        print('No match found')
+
+# Collect all attributes of a class or object
+attributeList = [attr for attr in dir(object) if not callable(getattr(object, attr))
+                 and not attr.startswith("__")]
+for attr in attributeList:
+    print("[INFO] object.{} = {}".format(attr, getattr(object, attr)))
+
+# Convert python object to string representation recursively
+def obj_to_string(obj, extra='    '):
+    return str(obj.__class__) + '\n' + '\n'.join(
+        (extra + (str(item) + ' = ' +
+                  (obj_to_string(obj.__dict__[item], extra + '    ') if hasattr(obj.__dict__[item], '__dict__') else str(
+                      obj.__dict__[item])))
+         for item in sorted(obj.__dict__)))
+
+################################################################################
+# System and Utils
+################################################################################
+
+sys.stdout.flush()
+time.sleep() # In seconds
+
+
+################################################################################
+# Numpy
+################################################################################
+
+# Random
+rng = np.random.default_rng() # Use new "Generator" class for randomness
+number = rng.uniform(0,1) # uniform floats in range [0,1]
+
+# Array generation
+np.linspace()
+np.zeroslike()
+
+# Shapes and Slicing
+shape(N, 2) # N value pairs: [(0,0), (1,1), (2,2), ...]
+
+# matplotlib
+plt.plot(..., label="line label") # Label the lines
+fig, ax = plt.subplots(numrows=x, numcols=y)
+# Add more labels
+    plt.xlabel(...)
+    plt.ylabel(...)
+    plt.ttle(...)
+    ax[0].title.set_string("label") # Or similar (?)
+plt.legend()
+plt.show()

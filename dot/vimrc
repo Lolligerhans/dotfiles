@@ -628,6 +628,7 @@ se complete-=t
   digraph xx 10006 " ✕  Multipliction x
   digraph Xx 10006 " ✖  Heavy multipliction x
   digraph ok 10004 " Heavy check mark ✔
+  "digraph Ok ✔️  Heavy
   digraph ** 10033 " Heavy Asterisk ✱
   digraph xX 10062 " ❎
   digraph oK 9989 " ✅
@@ -831,3 +832,22 @@ set wildmenu
 nnoremap <c-q> :q<cr>
 nnoremap <c-w><c-t> :tab split<cr>
 set undofile "check external files for testing for availability
+
+" Use double leader to enter special symbols
+  " Catan symbols
+  inoremap <leader><leader>wood 🪵
+  inoremap <leader><leader>brick 🧱
+  inoremap <leader><leader>sheep 🐑
+  inoremap <leader><leader>wheat 🌾
+  inoremap <leader><leader>ore 🪨
+  inoremap <leader><leader>map 🗺
+  inoremap <leader><leader>globe 🌎
+  inoremap <leader><leader>card 🂠
+  inoremap <leader><leader>compass 🧭
+  inoremap <leader><leader>loupe 🔍
+  inoremap <leader><leader>eye 👁
+  inoremap <leader><leader>die 🎲
+  inoremap <leader><leader>stopwatch ⏱
+  inoremap <leader><leader>plaster 🩹
+  inoremap <leader><leader>hospital 🏥
+  inoremap <leader><leader>syringe 💉

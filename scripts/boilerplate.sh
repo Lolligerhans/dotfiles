@@ -402,9 +402,9 @@ if ! shopt -qp extglob inherit_errexit; then
   # Many of the scripts use extglob
   abort "Expected 'extglob' and 'inherit_errexit' to be on";
 fi
-# We dont care about flags -hH either way, so we allow them.
-if [[ "${-//[hH]/}" != "euBET" ]]; then
-  errchoe "Flags: is=${-//[hH]/} shold=euBET raw=${-}";
+# We allow flags -hHxv to be either set or unset
+if [[ "${-//[hHvx]/}" != "euBET" ]]; then
+  errchoe "Flags: is=${-//[hHvx]/} should=euBET raw=${-}";
   abort "Expected safe bash flags: -euBET";
   # TODO Make this just a warning if it os ok to fail
 fi

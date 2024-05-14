@@ -81,6 +81,31 @@ command_test()
   subcommand rundir scripts/tests shell_check;
 }
 
+command_timer()
+{
+  set_args "--minutes= --message=timer --console --help" "$@";
+  eval "$get_args";
+
+  # Sanity check
+  if ! 2>&1 >/dev/null notify-send --version; then
+    abort "$FUNCNAME: notify-send not installed";
+  fi
+
+  # Start tiemr in background
+  {
+    sleep "$((minutes * 60))";
+    # This is the predefined 'alert' alias in Ubuntu 20
+    notify-send --urgency=low "$message: $minutes minutes";
+    if [[ "$console" == "true" ]]; then
+      echou "$FUNCNAME: $message: $minutes minutes";
+    fi
+
+  } &
+
+
+  echok "Started timer for $minutes minutes";
+}
+
 command_update_alternatives()
 {
   set_args "--path= --name --link --priority --dry-run --yes --help" "$@";
@@ -294,17 +319,22 @@ command_upgrade()
   declare update_needed;
   update_needed="$(cache_daily "upgrade" "get")";
   if [[ "$force_upgrade" == "true" ]] || [[ "$update_needed" == "true" ]]; then
-    echol "Upgrading apt/snap packages";
     # TODO More readable daily_cache
-    { sudo apt-get update && sudo apt-get upgrade -y &&
+    {
+      echol "Upgrading apt packages" &&
+      sudo apt-get update && sudo apt-get upgrade -y &&
+      echok "apt upgrade";
+      echol "Upgrading snap packages" &&
       sudo snap refresh &&
+      echok "snap refresh";
       cache_daily "upgrade" "set" >/dev/null;
-      echok "apt update+upgrade"; } ||
-    { cache_daily "upgrade" "reset";
-      errchoe "Failed to update+upgrade. Will try again next time"; }
-    sudo snap refresh;
+    } ||
+    {
+      cache_daily "upgrade" "reset";
+      errchoe "Failed to upgrade apt/snap packages. Will try again next time";
+    }
   else
-    echos "[daily] apt update+upgrade";
+    echos "[daily] apt/snap upgrades";
   fi
 }
 
@@ -853,6 +883,21 @@ DESCRIPTION
   Run collection of tests. Tests do not cover everything yet, just some specific
   things. The tests include shellcheck, which is probably most useful
   day-to-day.";
+
+declare -r timer_help_string='Set a timer
+SYNOPSIS
+  timer MINUTES
+  timer MINUTES --message=MESSAGE
+  timer MINUTES --console
+DESCRIPTION
+  Sets a timer that will trigger after MINUTES many minutes. Uses "notify-send"
+  to show a notification when the timer is done.
+OPTIONS
+  --minutes=MINUTES: Set time to MINUTES many minutes
+  --message=MESSAGE: Message to show after timer is done
+  --console: Additionally print message to console. This preserves the message
+             and can help distinguish between multiple messages in quick
+             succession.';
 
 declare -r update_alternatives_help_string="Wrap linux util 'update-alternatives'
 SYNOPSIS

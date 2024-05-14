@@ -516,13 +516,46 @@ nnoremap <F1> :call GoGarb()\|make<cr>
 nnoremap <F2> :!./run.sh<cr>
 nnoremap <F3> :cN<cr>zz
 nnoremap <F4> :cn<cr>zz
-" TOggle Rainbow braces
-nnoremap <f5> :RainbowToggle<cr>
-" tuning number handling
-nnoremap <F6> :%s/^\(.*\)\n\(.*\)$/S(\1,\2)/gc<cr>
-" Reload all files opened in a window. Alternatives include ":bufdo e" or
-" appending "!"
-nnoremap <f8> :tabdo windo e<cr>
+
+" Git: <F5> to <F8>
+" These deals with git by using our bash aliases (dotfiles/vim_bashenv.sh). We
+" open tabs before current tab so we come back after closing. Naturally, the
+" aliases depend on our .bash_aliases. We use Fugitive when a term version is
+" too annoying.
+  " Status: <    F5> log status
+  "         <  S-F5> log status (verbose)
+  "         <C-  F5> repo status
+  "         <C-S-F5> reflog
+  nnoremap <F5> :-tab terminal<cr>s<cr>
+  nnoremap <S-F5> :-tab terminal<cr>git lg2 --all<cr>
+  nnoremap <C-F5> :-tab terminal<cr>n<cr>
+  nnoremap <C-S-F5> :-tab terminal<cr>git reflog<cr>
+  " Diff: Maps bash aliases p,pp,r,rr for diffing
+  "         <    F6> diff
+  "         <  S-F6> diff --no-ext-diff
+  "         <C-  F6> diff --cached
+  "         <C-S-F6> diff --cached --no-ext-diff
+  nnoremap <F6> :-tab terminal<cr>p<cr>
+  nnoremap <S-F6> :-tab terminal<cr>pp<cr>
+  nnoremap <C-F6> :-tab terminal<cr>r<cr>
+  nnoremap <C-S-F6> :-tab terminal<cr>rr<cr>
+  " Edit:   <    F7> add -p
+  "         <  S-F7> checkout -p
+  "         <C-  F7> Fugitive
+  nnoremap <F7> :-tab terminal<cr>a<cr>
+  nnoremap <S-F7> :-tab terminal<cr>git co -p<cr>
+  nnoremap <C-F7> <cmd>-tab split<cr><cmd>Git<cr><c-w>o
+  " Commit: <    F8> commit
+  "         <  S-F8> commit --amend
+  "         <C-  F8> commit --reuse-message=HEAD
+  "         <C-S-F8> commit --reedit-message=HEAD
+  nnoremap <F8> <cmd>-tab split<cr><cmd>Git commit<cr><c-w>o
+  nnoremap <S-F8> :Git commit --amend<cr>
+  "nnoremap <F8> :-tab terminal<cr>c<cr>
+  "nnoremap <S-F8> :-tab terminal<cr>,gca<cr>
+  "nnoremap <C-F8> :-tab terminal<cr>git cirh
+  "nnoremap <C-S-F8> :-tab terminal<cr>git cireh
+
 " Promt shell input
 nnoremap <F9> :!
 nnoremap <F10> :TagbarToggle<cr>
@@ -851,3 +884,14 @@ set undofile "check external files for testing for availability
   inoremap <leader><leader>plaster 🩹
   inoremap <leader><leader>hospital 🏥
   inoremap <leader><leader>syringe 💉
+
+" Removed: Because we wanted to remap <F5> to <F8>
+
+  "nnoremap <f5> :RainbowToggle<cr>
+
+  " Reload all files opened in a window. Alternatives include ":bufdo e" or
+  " appending "!"
+  "nnoremap <f8> :tabdo windo e<cr>
+
+  " tuning number handling
+  "nnoremap <F6> :%s/^\(.*\)\n\(.*\)$/S(\1,\2)/gc<cr>

@@ -109,7 +109,7 @@ shopt -s histappend;
 
     # Add 'dirs' count
     declare -g _dirs_count="$(dirs -0 -v)"; # == " 2 /home/example"
-    _dirs_count="${_dirs_count//[^0-9]/}";  # == "2"
+    _dirs_count="${_dirs_count/ [^0-9]*/}";  # == "2"
 
     # Command counters and bash version
     #  \[${text_dim}\]\! \# \s\V\[${text_normal}\] (\l)

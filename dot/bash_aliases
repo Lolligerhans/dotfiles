@@ -323,7 +323,8 @@ body()
   #
   alias d='find_file -c';  # cd to result. Add -H to search hidden stuff.
   alias dd='find_file -d'; # pushd to result. Add -H to search hidden stuff.
-  alias D='popd'; # Pop stack. Delete dir stack with 'dirs -c'.
+  alias D='pushd'; # Pop stack. Delete dir stack with 'dirs -c'.
+  alias DD='popd'; # Pop stack. Delete dir stack with 'dirs -c'.
   alias y='pushd -0;';
   alias yy='pushd -1;';
   alias x='pushd +1;';

@@ -10,8 +10,8 @@ use-bytes: yes
 sort: 40s
 line-display: one-line-both
 show-totals: yes
-log-scale: yes
-max-bandwidth: 30M
+log-scale: no
+max-bandwidth: 40M
 #net-filter:
 #net-filter6:
 #screen-filter:

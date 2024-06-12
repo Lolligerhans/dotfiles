@@ -75,7 +75,7 @@ print_values()
   declare -r name="${1:?print_values: Missing name}";
   declare listed="";
   printf -v listed "$text_dim%s$text_normal, " "${@:2}";
-  printf "%s${text_normal}($(($#-1)))=[%s]" "$name" "${listed}";
+  printf "%s${text_normal}[$(($#-1))]=(%s)" "$name" "${listed}";
 }
 
 # $1  Name

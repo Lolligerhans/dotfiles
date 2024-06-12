@@ -373,9 +373,13 @@ del() {
   alias ,gpu='git push --set-upstream';
   # "git commit -m Tmp"
   alias ,gct='git cit';
+  alias ,gt='git cit && git push';
   # "git commit --amend"
   alias ,gca='git cia';
   alias ,gms='git ms';
+  # Diff
+  alias ,gdp='git diff @{push}';
+  alias ,gdu='git diff @{upstream}';
 
 # Terminaly
   # Name matches the entry in .bash_completion

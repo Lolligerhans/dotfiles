@@ -146,6 +146,10 @@ command_symlink_dotfiles()
   subcommand run "$dotfiles" deploy --name=".vimrc" --yes --keep --file="$dotfiles/dot/vimrc" --dir="$home_dir" || :;
   echo
 
+  # Instll .vim/ftplugin files
+  subcommand run "$dotfiles" deploy --yes --keep --file="$dotfiles/dot/ftplugin" --dir="$home_dir/.vim" || :;
+  echo
+
   # install .ctags
   subcommand run "$dotfiles" deploy --name=".ctags" --yes --keep --file="$dotfiles/dot/ctags" --dir="$home_dir" || :;
   echo ".ctags ..."

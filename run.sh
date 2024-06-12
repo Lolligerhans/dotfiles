@@ -66,7 +66,17 @@ declare -r update_alternatives_default_link="/usr/bin";
 # shellcheck disable=2317 # unreachable
 command_default()
 {
-  git lg -10;
+  if [[ "$(boolean_prompt "run tests?")" != "y" ]]; then
+    abort "Not runnign test";
+  fi
+
+  rm -rv ~/.vim/ftplugin || echos "No leftover to remove";
+  declare -r home_dir="/home/$(whoami)";
+  subcommand run "$dotfiles" deploy --yes --keep --file="$dotfiles/dot/ftplugin" --dir="$home_dir/.vim" || :;
+  echon "Results:";
+  print_and_execute tree ~/.vim/ftplugin
+  print_and_execute command ls --color=auto -Fh -A -ltr ~/.vim/ftplugin
+  print_and_execute command ls --color=auto -Fh -A -ltr ~/.vim;
   return 0;
 }
 
@@ -624,7 +634,7 @@ command_deploy()
   declare target_file="$target_dir/$target_name";
 
   # Verify needed stuff is in place
-  if [[ ! -f "$source_file" ]]; then
+  if [[ ! -f "$source_file" && ! -d "$source_file" ]]; then
     # TODO This if quite then construct is not nice
     if [[ "$be_quiet" == "true" ]]; then
       errchow "Quiet: No regular file $source_file";

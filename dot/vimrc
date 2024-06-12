@@ -288,6 +288,9 @@ filetype on
   " recursive searches in workspace
   " TODO: If the broad inclusion becomes a problem, exclude files using
   "       :h wildignore.
+  set wildignore+=tags,Session.vim,Session_long.vim
+  set wildignorecase
+  set fileignorecase
   set path+=**
 
 " Fzf based
@@ -303,9 +306,6 @@ filetype on
   " Split buffer vertically. Alternative would be to use :vsp followd by :b. If
   " you want to switch buffer in current window use <F7> instead
   command -nargs=* -complete=buffer V vert sb <args>
-
-  " FIXME: no longer used
-  "nnoremap ß :ls<space>t<cr>:V<space>
 
   " TODO Which version do we prefer?
   " Soft delete ALL buffers with :Q by unloading them buf keep in buffer list to
@@ -326,6 +326,7 @@ command! MakeTags !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q *.h *.inc *.
 " File type config
 
   " Treat specialized file types as CPP source code
+  " TODO Move into ftplugin files
   autocmd BufRead,BufNewFile *.inc se ft=cpp " treat include files as c++ sources
   autocmd BufRead,BufNewFile *.test se ft=cpp " treat include files as c++ sources
   autocmd BufRead,BufNewFile *.sh se ft=bash " treat .sh files as bash scripts
@@ -346,17 +347,23 @@ command! MakeTags !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q *.h *.inc *.
   set cindent
   " Wrap after 80c in insert mode
   set textwidth=80
+  " Add t to auto-wrap text. c wraps comments.
   " :h fo-table
-  " TODO Do we need to autocmd this?
-  " TODO I found these
-  " Add t to auto-wrap code, too. c wraps comments.
   set formatoptions=crqn1j
+
+  " Format indent using •
+  " The end is just the default pattern
+  " :h flp
+  let &formatlistpat="^\\s*\\(•\\|◦\\|·\\|TODO\\|FIXME\\|\\d\\+[\\]:.)}\\t ]\\)\\s*"
 
 " Text/Line wrapping
   " Disable visual line wrapping
   "set nowrap
   " Break lines at word (requires 'set wrap')
   set nolinebreak
+  " Invert wrap setting with <leadder>w
+  nnoremap <leader>w <cmd>set invwrap<cr>
+
   " Scroll with screen lines
   set smoothscroll
 
@@ -770,7 +777,7 @@ let $BASH_ENV = "~/dotfiles/vim_bashenv.sh"
   "nnoremap <tab>g :call GoGarb()<cr>
 
   " Is this needed? Do they get overwritten?
-  autocmd BufNewFile,BufRead * setlocal formatoptions=crqn1j
+  autocmd BufNewFile,BufRead * setlocal formatoptions=crqn1jl
 
   " Show tab characters
   set list
@@ -817,14 +824,11 @@ let $BASH_ENV = "~/dotfiles/vim_bashenv.sh"
   "    }
 
   " Terminal:
-  nnoremap <C-w>t :tab terminal<cr>
+  nnoremap <C-w>t :-tab terminal<cr>
   tnoremap <C-h> <c-w>:-tabnext<cr>
   tnoremap <C-l> <c-w>:+tabnext<cr>
   "nnoremap <C-w>T :terminal ++curwin<cr>
   "nnoremap <C-w>o :terminal ++curwin ++close<cr>
-
-  " Invert wrap setting with <leadder>w
-  nnoremap <leader>w <cmd>set invwrap<cr>
 
   " These interfere with fzf file search at the moment.
   " Resolution: move file search to ß isntead.

@@ -242,8 +242,8 @@ _find_file()
     dirs_only_flag="( -not -type d -a -prune ) -o"; # Use without quotes to expand
     previewer="ls --color=always -Fhl";
   fi
-#  echo "DEBUGGING: dirs_only_flag=$dirs_only_flag"
-#  echo "DEBUGGING: previewer=$previewer"
+  #echo "DEBUGGING: dirs_only_flag=$dirs_only_flag"
+  #echo "DEBUGGING: previewer=$previewer"
 
   #####################################
   # Determine output (usually with fzf)
@@ -415,4 +415,6 @@ del() {
 #alias s=' s';
 #alias e=' e';
 #alias a=' a';
+
+# vim: set ft=bash:
 #alias p=' p';

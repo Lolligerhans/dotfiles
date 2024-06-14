@@ -176,7 +176,7 @@ command_update_alternatives()
   if [[ ! -a "$path" ]]; then
     echoe "Binary $text_dim$path$text_normal not found";
     if [[ "$dry_run" == "true" ]]; then
-      echon "continuing --dry-run";
+      echon "continuing despite missing binary (--dry-run)";
     else
       abort "Binary not found";
     fi

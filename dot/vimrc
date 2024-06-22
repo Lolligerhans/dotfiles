@@ -383,10 +383,10 @@ command! MakeTags !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q *.h *.inc *.
 
   " TODO If I remove the autocmd and just ise this as 'default' is does not work
   " Comments using /
-  autocmd FileType c,inc,cpp,jave,javascript nnoremap <leader>c :s/^\($\)\@!\(\s*\/\/\)\@!/\/\/<CR>
-  autocmd FileType c,inc,cpp,jave,javascript vnoremap <leader>c :s/^\($\)\@!\(\s*\/\/\)\@!/\/\/<CR>
-  autocmd FileType c,inc,cpp,jave,javascript nnoremap <leader>C :s/^\/\///<cr>
-  autocmd FileType c,inc,cpp,jave,javascript vnoremap <leader>C :s/^\/\///<cr>
+  autocmd FileType c,inc,cpp,java,javascript nnoremap <leader>c :s/^\($\)\@!\(\s*\/\/\)\@!/\/\/<CR>
+  autocmd FileType c,inc,cpp,java,javascript vnoremap <leader>c :s/^\($\)\@!\(\s*\/\/\)\@!/\/\/<CR>
+  autocmd FileType c,inc,cpp,java,javascript nnoremap <leader>C :s/^\/\///<cr>
+  autocmd FileType c,inc,cpp,java,javascript vnoremap <leader>C :s/^\/\///<cr>
 
 " Braces and other special characters
   " Use lower case öä for [], captial ÖÄ for {}
@@ -652,7 +652,8 @@ se complete-=t
   " Heavy Round-Tipped Rightwards Arrow. Use AltGr-i ( → ) for normal arrow.
   digraph -> 10140 " ➜
   digraph OO 9679 " ●  Dot-shaped (larger) bullet(-point) (normal size is 8226 oo)
-  " White dot-shaped bullet(-point)
+  " Dot-shaped bullet(-point) in black and white
+  digraph oo 8226 " •
   digraph ._ 9702 " ◦
   " Source codeable symbols
   digraph ky 128713 " ⚿  Key
@@ -899,3 +900,28 @@ set undofile "check external files for testing for availability
 
   " tuning number handling
   "nnoremap <F6> :%s/^\(.*\)\n\(.*\)$/S(\1,\2)/gc<cr>
+
+" Hexadecimal: Convert hex representations
+  " Read hexadecimal (-r: read, -p: plain) notation and format as hexdump
+  " TODO Doesnt work like this
+  command HexRead '<,'>!xxd -r -p\|xxd
+  " Visual mode mappings
+  " TODO Can I use the HexRead command?
+  " Hexadecimal:
+  "   We use 'x' instead of 'h' because <leader>h is used for switch to header
+  "   file
+  vnoremap <leader>xr :!xxd -r -p\|xxd<cr>gv>
+  " TODO HexHex (<leader>xx) binary -> hex
+  " TODO HexBinary <leader>xb hex -> binary
+  " HexRead:
+  "   Display hexadeciman characters with hexdump, using <leader>hr mapping. Do
+  "   a little bit of searching to find hex digits while avoiding empty lines.
+  nmap <leader>xr /[^[:xdigit:][:space:]]<cr>VN$/[[:xdigit:]]<cr>o^N<bslash>hr:silent nohl<cr>
+
+
+" Braces: Substitute brace at end of line with brace at start of line
+  vnoremap <leader>{ :s/\(\s*\)\S.\{-}\zs\s*{$/\r\1{/g<cr>
+
+" Terminal: Set ansi colours
+  "let g:terminal_ansi_colors = [ '#000000', '#cd0000', '#00cd00', '#cdcd00', '#0000ee', '#cd00cd', '#00cdcd', '#e5e5e5', '#7f7f7f', '#ff0000', '#00ff00', '#ffff00', '#5c5cff', '#ff00ff', '#00ffff', '#ffffff', ]
+  let g:terminal_ansi_colors = ['#2E3436','#CC0000','#4E9A06','#C4A000','#3465A4','#75507B','#06989A','#D3D7CF','#555753','#EF2929','#8AE234','#FCE94F','#729FCF','#AD7FA8','#34E2E2','#EEEEEC',]

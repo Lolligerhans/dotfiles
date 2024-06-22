@@ -76,6 +76,9 @@ shopt -s histappend;
   PROMPT_COMMAND='_prompt_command_wrapper';
   _prompt_command_wrapper()
   {
+    # Get return value first so it is the return value of the last user command
+    declare -g _prompt_ret="$?";
+
     # Working dir
     declare -g _pwd_dir="${PWD/#"${HOME}"/"~"}";  # == "~/example/dir"
     [[ "${_pwd_dir}" == "~" ]] && _pwd_dir="~/";  # We match '/' so it must be there
@@ -84,7 +87,6 @@ shopt -s histappend;
 #    1>&2 echo "DEBUG: _pwd=\"${_pwd}\" _pwd_dir=\"${_pwd_dir}\" _pwd_name=\"${_pwd_name}\"";
 
     # Add git repo
-    declare -g _prompt_ret="$?";
     declare -g _git_col="";
     declare -g _git_repo="$(git rev-parse --show-toplevel 2> /dev/null)";
     if [[ -n "$_git_repo" ]]; then

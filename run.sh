@@ -91,6 +91,14 @@ command_test()
   subcommand rundir scripts/tests shell_check;
 }
 
+command_clear_cache()
+{
+  set_args "--help" "$@";
+  eval "$get_args";
+
+  cache_clear;
+}
+
 command_timer()
 {
   set_args "--minutes= --message=timer --console --help" "$@";
@@ -893,6 +901,12 @@ DESCRIPTION
   Run collection of tests. Tests do not cover everything yet, just some specific
   things. The tests include shellcheck, which is probably most useful
   day-to-day.";
+
+declare -r clear_cache_help_string='Clear script cache
+SYNOPSIS
+  clear_cache
+DESCRIPTION
+  Remove directory "scripts/.cache/", resetting the cache. All cache uses are required to allow the sudden wipe.';
 
 declare -r timer_help_string='Set a timer
 SYNOPSIS

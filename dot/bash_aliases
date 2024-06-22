@@ -98,18 +98,17 @@ alias yelp="./yell pick";
 #  alias ff='find_file -ph';
 #  alias F='find_file -pH';
   alias fin='find . -iname';
-  alias iftop='sudo iftop -c $HOME/.iftoprc'; # FIXME Install .iftoprc at /home/root?
+  alias iftop='sudo iftop -c $HOME/.iftoprc';
   alias j="jupyter lab";
-  alias please='sudo !!'; # TODO Does this even work?
   # Used for bash completion based on history
   alias w='fc -s';
   alias W='fc -s';
   alias wget='wget -c';
 
 # Super-cd command for navigating directories
-# FIXME I think this function was basically retired by the find_file function
-# now. We have no completion for find_file; it is not really needed, but maybe
-# add later so it can auto-generate file-prefixes.
+# FIXME This function was basically retired by the find_file function We have no
+#       completion for find_file; it is not really needed, but maybe add later
+#       so it can auto-generate file-prefixes.
 supercd()
 {
   if (($# == 0)); then
@@ -296,7 +295,7 @@ _find_file()
 # ______________________________________________________________________________
 # Files operations
 
-# Output surroundings of line $1
+# Output context of line $1
 #
 # $1: Line number
 # ($2: File name)
@@ -349,17 +348,16 @@ del() {
   return $(($? && ret));
 }
 
-  # ls
-    # ----- Base versions
-    alias la='command ls --color=auto -Fh'; # No hidden files
-    alias ls='command ls --color=auto -Fh -A'; # Show everything
-    # ----- Advanced versions
-    alias l='command ls --color=auto -Fh -A -ltr'; # List by last-modified
-    alias ll='command ls --color=auto -Fh -A -l'; # List by name
-    alias lS='command ls --color=auto -Fh -A -lSr'; # List by size
-    # ----- Specialized version
-    # List N last modified files with 'L -N'
-    alias L='command ls --color=auto -FhA -t | head';
+# ls variants
+  # Sorted
+  alias l='command ls --color=auto -Fh -A -ltr'; # List by last-modified
+  alias ll='command ls --color=auto -Fh -A -l'; # List by name
+  alias lS='command ls --color=auto -Fh -A -lSr'; # List by size
+  # Contents
+  alias la='command ls --color=auto -Fh -l'; # Hide hidden files
+  alias ls='command ls --color=auto -Fh -A'; # Not as list
+  # List N last modified files with 'L -N'
+  alias L='command ls --color=auto -FhA -t | head';
 
 # ______________________________________________________________________________
 # Quick aliases: A bunch of short aliases that you can delete if you dont use
@@ -405,16 +403,6 @@ del() {
         --bind 'enter:become(vim {1} +{2})'
     # TODO Old fzf does not support become action
   }
-
-#_______________________________________________________________________
-# History hider
-# TODO Can potentially be generated for all 1-letter commands
-# TODO Does not work because is interpreted literally as a command starting
-#      with whitespace
-#alias fg=' fg';
-#alias s=' s';
-#alias e=' e';
-#alias a=' a';
 
 # vim: set ft=bash:
 #alias p=' p';

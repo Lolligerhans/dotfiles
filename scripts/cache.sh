@@ -70,3 +70,9 @@ cache_daily()
       ;;
   esac
 }
+
+cache_clear()
+{
+  rm -vrf "${dotfiles}/scripts/.cache/";
+  echok "Cleared cache";
+}

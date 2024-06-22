@@ -11,7 +11,7 @@ sort: 40s
 line-display: one-line-both
 show-totals: yes
 log-scale: no
-max-bandwidth: 40M
+max-bandwidth: 60M
 #net-filter:
 #net-filter6:
 #screen-filter:

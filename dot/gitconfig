@@ -50,18 +50,18 @@
 	# Shorthands used by bash aliases s,h,r,rr,p,pp
 	f = di --stat --staged
 	b = di --stat
+	di-p = di --ext-diff
+	di-p2 = di --stat
+	di-pp = di
+	di-pp2 = di --stat
+	di-pw = dw
+	di-pw2 = di --stat
 	di-r = di --ext-diff --staged
 	di-r2 = di --staged --stat
 	di-rr = di --staged
 	di-rr2 = di --staged --stat
 	di-rw = dw --staged
 	di-rw2 = di --staged --stat
-	di-p = di --ext-diff
-	di-p2 = di --stat
-	di-pp = di
-	di-pp2 = di --stat
-	di-rw = dw
-	di-rw2 = di --stat
 
 	# TODO: Currently Using numbers instead of names to work on more platforms:
 	#   8: "brightblack"
@@ -105,24 +105,31 @@
 	stash = "bold yellow"
 	tag = "bold 10" # 10 == bright green
 	#head =
+	#grafted =
 
 [color "diff"]
-	# The default colours look ok no need to change for now. But here some
-	# alternative colours:
-	meta = bold 11
-	#frag = magenta bold
+	#context =
+	#commit =
+	#frag =
+	meta = bold 11 # 11 == bright yellow
+	whitespace = "reverse 9"
 	old = 1
 	new = 2
 	oldMoved = "strike red"
+	oldMovedDimmed = "dim strike red"
 	newMoved = "ul green"
-	whitespace = "reverse 9"
+	newMovedDimmed = "dim ul green"
+	oldMovedAlternative = "strike 208" # 208 == orange
+	oldMovedAlternativeDimmed = "dim strike 208"
+	newMovedAlternative = "ul 33"
+	newMovedAlternativeDimmed = "dim ul 33"
+	#contextDimmed, oldDimmed, newDimmed, contextBold, oldBold, and newBold
 
-# This configures thes "diff-highlight" script that is we used before git-delta.
-# The colouring is not as good but mostly fine. Currently we do not use it. Use
-#     git config core.pager "diff-highlight | less -RFX"
-# to use it when delta is unavailable (or tweak it here in config).
+# We use diff-highlight to colourize changed parts between removed and added
+# lines. When available, use pager 'delta' instead because it preserved
+# highlighted whitespace error.
 [color "diff-highlight"]
-	# ❗ Diff-highlight script can might hide whitespace errors (compared to
+	# ❕ Diff-highlight script can might hide whitespace errors (compared to
 	#    both default colours and the "delta" pager).
 
 	# Subtle colours: dim vs. bright-bold
@@ -163,7 +170,7 @@
 
 [core]
 	# TODO Do we like -F -X at all?
-	#pager = less -RFX
+	#pager = less -rFX
 	# Using delta pager for slightly better word-diffing and whitespace errors.
 	# In some situations, we replace this pager explicitly in [pager] section.
 	pager = delta
@@ -185,14 +192,11 @@
 	# Also good: difft --dispaly inline
 	# We use external diff only explicitly by aliasing accordingly
 	external = difft
-	colorMoved = plain
-	# Use this if plain turns out too bad
-	#colorMoved = dimmed-zebra
+	colorMoved = dimmed-zebra # plain, zebra, dimmed-zebra
 	# Possibly gets hidden by "diff-highlight" afterwards
 	mnemonicPrefix = true
 	# Treatment of moved whitespace. If problem: set "no".
 	colorMovedWS = "allow-indentation-change"
-	#colorMovedWS = "allow-indentation-change"
 	wsErrorHighlight = "all"
 	# Warn for whitespace error (diff-highlight might hide ws errors)
 	check = "true"
@@ -234,11 +238,11 @@
 [pager]
 	# Overwrite the global pager setting from [core] if needed. The
 	# [interactive] section has its own diffFilter setting.
-	#diff = diff-highlight | less -RFX
-	#show = diff-highlight | less -RFX
+	#diff = diff-highlight | less -rFX
+	#show = diff-highlight | less -rFX
 	# In log --graph -p, git-delta pager doesnt work, so we fallback
 	# TODO: Do we like the less options -FX?
-	log = diff-highlight | less -RFX
+	log = diff-highlight | less -rFX
 
 [pull]
 	ff = only

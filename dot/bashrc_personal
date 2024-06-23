@@ -1,9 +1,4 @@
-#echo "=== LOADING OH MY BASH NOW ===";
-#. ~/.oh-my-bash/templates/bashrc.osh-template;
-
-# Add aliases in case the (default) bashrc didnt
-#echo "=== LOADING ALIASES ===";
-. ~/.bash_aliases # File is a symlink to dotfiles aliases
+#!/bin/false
 
 # Add some environment paths
   # CUDA
@@ -135,3 +130,7 @@ shopt -s histappend;
 
 # Was nice but pytorch is clobbering the "." directory
 #  cd ~/dotfiles;
+
+. ~/.bash_aliases; # Symlink
+
+# vim: filetype=bash

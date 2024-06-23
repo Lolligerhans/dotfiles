@@ -149,6 +149,22 @@ supercd()
   fi
 }
 
+# For find_file: show path preview in colour
+declare -x _text_user="${text_user}";
+declare -x _text_normal="${text_normal}";
+_preview_path()
+{
+  if [[ -d "$1" ]]; then
+    echo -n -- "$_text_user";
+    command ls -d -- "$1";
+    echo -n "$_text_normal";
+    command ls --color=always -F -- "$1";
+  else
+    command batcat --color=always --style=header -- "$1";
+  fi
+}
+export -f _preview_path; # Make available for fzf
+
 # Wrapper that automatically inserts "--" after the first argument not starting
 # with "-"
 find_file()
@@ -165,14 +181,17 @@ find_file()
 #  echo "DEBUG: i=$i, args: _find_file [${@:1:i-1} -- ${@:i}]"
   _find_file "${@:1:i-1}" -- "${@:i}"
 }
+
 # Use find_file so that we relax the need of the caller providing "--"
 _find_file()
 {
   #echo "DEBUG: Calling _find_file with $# args:";
   #printf "  %s\n" "$@";
   if (( $# > 0 )) && [[ "$1" == "--help" ]]; then
-    echo "Usage: $FUNCNAME [-c|-p] [-d] [-h|-H]";
-    echo "  -c: Change directory to dirname instead of printing result";
+    echo "find_file: Search here with fzf";
+    echo " Result is a path.";
+    echo " Usage: $FUNCNAME [-c|-p] [-d] [-h|-H]";
+    echo '  -c: "cd" to $(dirname result)';
     echo "  -d: Search directories only and pushd the result";
     echo "  -h: Include hidden files";
     echo "  -H: Include hidden dirs AND hidden files";
@@ -182,7 +201,7 @@ _find_file()
 
   # Sanity check
   if [[ "$(shopt -p nocasematch)" != "shopt -u nocasematch" ]]; then
-    >&2 echo "find_file: shopt -u nocasematch not unset";
+    >&2 echo "ERROR: $FUNCNAME: shopt -u nocasematch not unset";
     return 1
   fi
 
@@ -199,7 +218,7 @@ _find_file()
       # FIXME Requires 'shopt nocasematch to be unset'
       H) hidden_dirs=1;;  # Include hidden dirs AND hidden files
       p) pager=1;; # Show file instead of cd to dirname
-      \?) 1>&2 echo "$FUNCNAME: Invalid option: -$OPTARG" 1>&2; return 1;;
+      \?) 1>&2 echo "ERROR: $FUNCNAME: Invalid option: -$OPTARG" 1>&2; return 1;;
     esac
   done
   shift $((OPTIND-1));
@@ -236,13 +255,11 @@ _find_file()
   #echo "DEBUGGING: $FUNCNAME: pager=$pager"
   #echo "DEBUGGING: $FUNCNAME: find_path=$find_path"
 
-  declare dirs_only_flag="" previewer="batcat";
+  declare dirs_only_flag="";
   if (( dirs_only == 1)); then
     dirs_only_flag="( -not -type d -a -prune ) -o"; # Use without quotes to expand
-    previewer="ls --color=always -Fhl";
   fi
   #echo "DEBUGGING: dirs_only_flag=$dirs_only_flag"
-  #echo "DEBUGGING: previewer=$previewer"
 
   #####################################
   # Determine output (usually with fzf)
@@ -252,21 +269,22 @@ _find_file()
   if (( dirs_only )) && [[ -d "$fzf_query" ]]; then
     # Special case: no search needed
     out="$fzf_query";
-    echo "DEBUG: skipping search: $out"
+    echo "DEBUG: $FUNCNAME: skipping search: $out"
   else
     declare -i err=0;
     if (( hidden_dirs )); then
-      out="$(find "${find_path}" $dirs_only_flag -print | fzf -1 --query="$fzf_query" --preview "${previewer} --color=always {}")" || err="$?";
+      out="$(find "${find_path}" $dirs_only_flag -print | fzf -1 --query="$fzf_query" --preview "_preview_path {}")" || err="$?";
     elif (( hidden_files )); then
-      out="$(find "${find_path}" -type d -a -path '*/.*' -prune -o $dirs_only_flag -print | fzf -1 --query="$fzf_query" --preview "${previewer} --color=always {}")" || err="$?";
+      out="$(find "${find_path}" -type d -a -path '*/.*' -prune -o $dirs_only_flag -print | fzf -1 --query="$fzf_query" --preview "_preview_path {}")" || err="$?";
     else
       # Ignores hidden files
-      out="$(find "${find_path}" -path '*/.*' -prune -o $dirs_only_flag -print | fzf -1 --query="$fzf_query" --preview "${previewer} --color=always {}")" || err="$?";
+      out="$(find "${find_path}" -path '*/.*' -prune -o $dirs_only_flag -print | fzf -1 --query="$fzf_query" --preview "_preview_path {}")" || err="$?";
     fi
-    if (( err )); then
-      1>&2 echo "ERROR: $FUNCNAME: fzf failed with code $err";
-      return "$err";
-    fi
+    case "$err" in
+      "0") :;;
+      "130") echo "$FUNCNAME: fzf interrupted with ctrl-c or esc"; return 0;;
+      *) 1>&2 echo "ERROR: $FUNCNAME: fzf failed with code $err"; return "$err";;
+    esac
   fi
 
   # Print search result to console no matter what
@@ -274,17 +292,17 @@ _find_file()
 
   # Perform operation on result: cd, page, pushd, ls, ...
   if (( dirs_only )); then # TODO rename to dir_push?
-    pushd "$out";
+    pushd -- "$out";
   elif (( change )); then # TODO rename to dir_change?
     echo "DEBUG: $FUNCNAME: Entering case change";
     if [[ ! -d "$out" ]]; then
       echo "WARNING: $FUNCNAME: '${out}' is not a directory, using '$(dirname "$out")' instead";
       out="$(dirname "$out")";
     fi
-    cd "$out";
+    cd -- "$out";
   elif (( pager )); then
     if [[ -d "$out" ]]; then
-      ls --color=always -Fhl "$out" | barcat --color=always;
+      ls --color=always -Fhl "$out" | batcat --color=always;
     else
       batcat --color=always "$out";
     fi

@@ -265,6 +265,7 @@
 [rerere]
 	# Resolve merge conflicts the same way as in previous conflict
 	enabled = true
+	#autoUpdate =
 
 [status]
 	submoduleSummary = true

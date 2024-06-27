@@ -36,6 +36,12 @@ bash_source_foreign_idx()
   fi
 }
 
+common_prefix()
+{
+  # https://stackoverflow.com/a/17475354
+  printf "%s\n" "$@" | sed -e '$!{N;s/^\(.*\).*\n\1.*$/\1\n\1/;D;}';
+}
+
 # $1:      should
 # $2:      is
 # Return:  0 if 'should' <= 'is' using sort -V, else 1

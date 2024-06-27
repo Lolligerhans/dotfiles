@@ -87,17 +87,6 @@ alias yelp="./yell pick";
 # ______________________________________________________________________________
 # system
   alias bat="batcat";
-  alias dot='cd ~/dotfiles';
-  alias Dot='pushd ~/dotfiles';
-  # • f:  Search simple files
-  # • F:  Prune .hidden_dir/ but include .hidden_files
-  # • FF: Search everything, including directories
-  # ➜ Add -c to cd to dirname of resulting file
-  # ➜ Use 'F -d' for 'alias d' but with hidden dirs
-  alias f='find_file -p';
-#  alias ff='find_file -ph';
-#  alias F='find_file -pH';
-  alias fin='find . -iname';
   alias iftop='sudo iftop -c $HOME/.iftoprc';
   alias j="jupyter lab";
   # Used for bash completion based on history
@@ -106,9 +95,10 @@ alias yelp="./yell pick";
   alias wget='wget -c';
 
 # Super-cd command for navigating directories
-# FIXME This function was basically retired by the find_file function We have no
-#       completion for find_file; it is not really needed, but maybe add later
-#       so it can auto-generate file-prefixes.
+# TODO This function was basically retired by the find_file function We have no
+#      completion for find_file; it is not really needed, but maybe add later so
+#      it can auto-generate file-prefixes.
+#      We keep it for now in case we do not have fzf available.
 supercd()
 {
   if (($# == 0)); then
@@ -155,7 +145,7 @@ declare -x _text_normal="${text_normal}";
 _preview_path()
 {
   if [[ -d "$1" ]]; then
-    echo -n -- "$_text_user";
+    echo -n "$_text_user";
     command ls -d -- "$1";
     echo -n "$_text_normal";
     command ls --color=always -F -- "$1";
@@ -165,20 +155,19 @@ _preview_path()
 }
 export -f _preview_path; # Make available for fzf
 
-# Wrapper that automatically inserts "--" after the first argument not starting
-# with "-"
+# Wrapper for _find_file that automatically inserts "--" after the first argument
+# not starting with "-".
 find_file()
 {
-  # Add "--" after the first argument that doesn't start with "-"
   declare -i i=0
   for ((i = 1; i <= $#; i++)); do
-#    echo "DEBUG testing word [${@:i:1}]";
+    #echo "DEBUG testing word [${@:i:1}]";
     if [[ ! "${@:i:1}" =~ ^- ]]; then
-#      echo "DEBUG: First non-option word: ${@:i:1}, Adding -- before ${@:i:1}";
+      #echo "DEBUG: First non-option word: ${@:i:1}, Adding -- before ${@:i:1}";
       break;
     fi
   done
-#  echo "DEBUG: i=$i, args: _find_file [${@:1:i-1} -- ${@:i}]"
+  #echo "DEBUG: i=$i, args: _find_file [${@:1:i-1} -- ${@:i}]"
   _find_file "${@:1:i-1}" -- "${@:i}"
 }
 
@@ -188,35 +177,42 @@ _find_file()
   #echo "DEBUG: Calling _find_file with $# args:";
   #printf "  %s\n" "$@";
   if (( $# > 0 )) && [[ "$1" == "--help" ]]; then
-    echo "find_file: Search here with fzf";
-    echo " Result is a path.";
-    echo " Usage: $FUNCNAME [-c|-p] [-d] [-h|-H]";
-    echo '  -c: "cd" to $(dirname result)';
-    echo "  -d: Search directories only and pushd the result";
-    echo "  -h: Include hidden files";
-    echo "  -H: Include hidden dirs AND hidden files";
-    echo "  -p: Page search result with batcat ";
+    echo 'find_file: find ➜ fzf';
+    echo ' Result is a path.';
+    echo " Usage: $FUNCNAME [-c|-d|-|-F|-p] [-h|-H]";
+    echo "        $FUNCNAME [-options] path [query]";
+    echo '  -c: cd to result (dirname if a file)';
+    echo '  -d: Pushd to result (dirname if a file)';
+    echo '  -f: Include files (default)';
+    echo '  -F: Exclude files';
+    echo '  -h: Include hidden files';
+    echo '  -H: Include hidden dirs';
+    echo '  -l: List result only (no fzf)';
+    echo '  -p: Show result with batcat ';
     return 0;
   fi
 
   # Sanity check
   if [[ "$(shopt -p nocasematch)" != "shopt -u nocasematch" ]]; then
     >&2 echo "ERROR: $FUNCNAME: shopt -u nocasematch not unset";
+    echon "Needed for case-sensitive matching of options.";
     return 1
   fi
 
   # Use getopts to detect
-  declare -i change=0 dirs_only=0 pager=0 hidden_files=0 hidden_dirs=0
+  declare -i change=0 dirs_only=0 pager=0 hidden_files=0 hidden_dirs=0 dopushd=0 list_only=0;
   declare opt;
   declare OPTIND; # So that we dont use the OPTIND from the interactive shell
-  while getopts "cdhHp" opt; do
+  while getopts "cdfFhHlp" opt; do
     #echo "DEBUG: $FUNCNAME: Readin option flag [-$opt]"
     case "$opt" in
       c) change=1;; # Change directory to dirname of result
-      d) dirs_only=1;;
+      d) dopushd=1;;
+      f) dirs_only=0;;
+      F) dirs_only=1;;
       h) hidden_files=1;; # Include hidden files
-      # FIXME Requires 'shopt nocasematch to be unset'
-      H) hidden_dirs=1;;  # Include hidden dirs AND hidden files
+      H) hidden_dirs=1;;  # Include hidden dirs
+      l) list_only=1;;
       p) pager=1;; # Show file instead of cd to dirname
       \?) 1>&2 echo "ERROR: $FUNCNAME: Invalid option: -$OPTARG" 1>&2; return 1;;
     esac
@@ -224,42 +220,68 @@ _find_file()
   shift $((OPTIND-1));
 
   # Option saniy check
-  if (( hidden_dirs && hidden_files )); then
-    1>&2 echo "$FUNCNAME: Warning: -H overwrites -h";
+  if (( dopushd && change )); then
+    1>&2 echo "$FUNCNAME: Warning: -d has precendence over -c";
   fi
-  if (( change && dirs_only )); then
-    1>&2 echo "$FUNCNAME: Warning: -d overwrites -c";
+  if (( (change || dopushd) && pager )); then
+    1>&2 echo "$FUNCNAME: Warning: -{d,c} have precendence over -p";
   fi
-  if (( (change || dirs_only) && pager )); then
-    1>&2 echo "$FUNCNAME: Warning: (-c|-d) overwrites -p";
+  if (( dirs_only && hidden_files )); then
+    1>&2 echo "$FUNCNAME: Warning: -F has precendence over -h";
+  fi
+  if (( list_only && (change || dopushd || pager) )); then
+    1>&2 echo "$FUNCNAME: Warning: -l has precendence over -{c,d,p}";
   fi
 
-  # Arguments sanity check
-  if (( $# > 1 )); then
+  if (( $# > 2 )); then
     1>&2 echo "WARNING: $FUNCNAME: Too many arguments";
   fi
 
+  #####################################
+  # Determine find/fzf inputs
+  #####################################
   # TODO Maybe it is better to use $1 as path, and move query into a -q option
-  declare fzf_query="${1:-}";
-  declare find_path="${2:-"."}";
+  declare find_path="${1:-"."}";
+  declare fzf_query="${2:-}";
   if [[ ! -d "$find_path" ]]; then
-    1>&2 echo "ERROR: $FUNCNAME: No such directory '$find_path' (continuing with '.')";
+    1>&2 echo "WARNING: $FUNCNAME: No such directory '$find_path' (continuing with '.')";
     find_path=".";
   fi
-
-  #echo "DEBUGGING: $FUNCNAME: fzf_query=$fzf_query"
-  #echo "DEBUGGING: $FUNCNAME: change=$change"
-  #echo "DEBUGGING: $FUNCNAME: dirs_only=$dirs_only"
-  #echo "DEBUGGING: $FUNCNAME: hidden_dirs=$hidden_dirs"
-  #echo "DEBUGGING: $FUNCNAME: hidden_files=$hidden_files"
-  #echo "DEBUGGING: $FUNCNAME: pager=$pager"
-  #echo "DEBUGGING: $FUNCNAME: find_path=$find_path"
-
-  declare dirs_only_flag="";
-  if (( dirs_only == 1)); then
-    dirs_only_flag="( -not -type d -a -prune ) -o"; # Use without quotes to expand
+  declare fzf_command="cat";
+  if (( !list_only )); then
+    fzf_command=(fzf -1 --query="$fzf_query" --preview "_preview_path {}");
   fi
-  #echo "DEBUGGING: dirs_only_flag=$dirs_only_flag"
+
+  #>&2 echo "DEBUGGING: $FUNCNAME: fzf_query=$fzf_query"
+  #>&2 echo "DEBUGGING: $FUNCNAME: change=$change"
+  #>&2 echo "DEBUGGING: $FUNCNAME: dirs_only=$dirs_only"
+  #>&2 echo "DEBUGGING: $FUNCNAME: dopushd=$dopushd"
+  #>&2 echo "DEBUGGING: $FUNCNAME: hidden_dirs=$hidden_dirs"
+  #>&2 echo "DEBUGGING: $FUNCNAME: hidden_files=$hidden_files"
+  #>&2 echo "DEBUGGING: $FUNCNAME: pager=$pager"
+  #>&2 echo "DEBUGGING: $FUNCNAME: find_path=$find_path"
+  #>&2 echo "DEBUGGING: $FUNCNAME: ${fzf_command[@]@A}"
+
+  declare -a dirs_only_flag=();
+  declare -a hidden_flag=();
+  if (( dirs_only == 1)); then
+    dirs_only_flag=('(' -not -type d -prune ')' -o);
+  fi
+
+  if (( !hidden_files && hidden_dirs )); then
+    hidden_flag=('(' -type f -a -name '.?*' -prune ')' -o);
+    echo "hide files";
+  elif (( !hidden_dirs && hidden_files )); then
+    hidden_flag=('(' -type d -a -name '.?*' -prune ')' -o);
+      echo "hide directories";
+  elif (( !hidden_dirs && !hidden_files )); then
+    hidden_flag=( '('            -name '.?*' -prune ')' -o );
+    >&2 echo "$FUNCNAME: DEBUG: All hidden";
+  else
+    >&2 echo "$FUNCNAME: DEBUG: All shown";
+  fi
+  #echo "DEBUGGING: ${dirs_only_flag[@]@A}";
+  #echo "DEBUGGING: ${hidden_flag[@]@A}";
 
   #####################################
   # Determine output (usually with fzf)
@@ -269,42 +291,40 @@ _find_file()
   if (( dirs_only )) && [[ -d "$fzf_query" ]]; then
     # Special case: no search needed
     out="$fzf_query";
-    echo "DEBUG: $FUNCNAME: skipping search: $out"
+    >&2 echo "$FUNCNAME: DEBUG: skipping search: $out"
   else
     declare -i err=0;
-    if (( hidden_dirs )); then
-      out="$(find "${find_path}" $dirs_only_flag -print | fzf -1 --query="$fzf_query" --preview "_preview_path {}")" || err="$?";
-    elif (( hidden_files )); then
-      out="$(find "${find_path}" -type d -a -path '*/.*' -prune -o $dirs_only_flag -print | fzf -1 --query="$fzf_query" --preview "_preview_path {}")" || err="$?";
-    else
-      # Ignores hidden files
-      out="$(find "${find_path}" -path '*/.*' -prune -o $dirs_only_flag -print | fzf -1 --query="$fzf_query" --preview "_preview_path {}")" || err="$?";
-    fi
+    out="$(command find "${find_path}" -mindepth 1 "${hidden_flag[@]}" "${dirs_only_flag[@]}" -print | "${fzf_command[@]}")" || err="$?";
     case "$err" in
       "0") :;;
-      "130") echo "$FUNCNAME: fzf interrupted with ctrl-c or esc"; return 0;;
+      "130") >&2 echo "$FUNCNAME: fzf interrupted with ctrl-c or esc"; return 0;;
       *) 1>&2 echo "ERROR: $FUNCNAME: fzf failed with code $err"; return "$err";;
     esac
   fi
 
   # Print search result to console no matter what
   echo "$out";
+  if (( list_only )); then
+    return 0;
+  fi
+
+  # For cd or pushd, if out is a file, replace out by its dirname to allow
+  # changing into it.
+  if (( change || dopushd )) && [[ ! -d "$out" ]]; then
+    >&2 echo "$FUNCNAME: DEBUG: '${out}' is not a directory, using dirname";
+    out="$(dirname "$out")";
+  fi
 
   # Perform operation on result: cd, page, pushd, ls, ...
-  if (( dirs_only )); then # TODO rename to dir_push?
+  if (( dopushd )); then # TODO rename to dir_push?
     pushd -- "$out";
   elif (( change )); then # TODO rename to dir_change?
-    echo "DEBUG: $FUNCNAME: Entering case change";
-    if [[ ! -d "$out" ]]; then
-      echo "WARNING: $FUNCNAME: '${out}' is not a directory, using '$(dirname "$out")' instead";
-      out="$(dirname "$out")";
-    fi
     cd -- "$out";
   elif (( pager )); then
     if [[ -d "$out" ]]; then
-      ls --color=always -Fhl "$out" | batcat --color=always;
+      command ls --color=always -Fhl "$out" | batcat --color=always;
     else
-      batcat --color=always "$out";
+      command batcat --color=always "$out";
     fi
   fi
 }
@@ -335,23 +355,53 @@ body()
 # ______________________________________________________________________________
 # File browsing
 
-  # d: Add files (fzf ➜ pushd)
-  # D: Clean dir stack
-  #
-  alias d='find_file -c';  # cd to result. Add -H to search hidden stuff.
-  alias dd='find_file -d'; # pushd to result. Add -H to search hidden stuff.
-  alias D='pushd'; # Pop stack. Delete dir stack with 'dirs -c'.
-  alias DD='popd'; # Pop stack. Delete dir stack with 'dirs -c'.
-  alias y='pushd -0;';
-  alias yy='pushd -1;';
-  alias x='pushd +1;';
-  alias xx='pushd +2;';
+  alias dot='cd ~/dotfiles';
+  alias Dot='pushd ~/dotfiles';
+  alias the='cd ~/thesis';
+  alias fin='find . -iname';
+
+  # ℹ -h ➜  hidden files
+  # ℹ -H ➜  hidden dirs
+  # ℹ -F ➜  exclude files
+  alias f='find_file -p'; # page file
+  alias d='find_file -Fc';  # cd dir
+  alias dd='find_file -Fd'; # pushd dir
+
+  _dirs()
+  {
+    #echoi() { command echo "$text_bly$@"; command echo; };
+    declare out="" prefix="";
+    out="$(dirs -l -p)";
+    #echoi ${out@A}
+
+    prefix="$(sed -e '$!{N;s/^\(.*\).*\n\1.*$/\1\n\1/;D;}' <<< "${out}")";
+    #echoi ${prefix@A}
+    #prefix="${prefix%"/"*}";
+    #echoi ${prefix@A}
+
+    declare -a outa;
+    mapfile -t outa <<< "${out#*$'\n'}";
+    #echoi ${outa[@]@A};
+
+    echo "$text_user_soft$prefix…$text_normal ${outa[@]//"${prefix}"/…}";
+  }
+
+  _pushd() { pushd "$@" >/dev/null; _dirs; };
+  _popd() { popd >/dev/null; _dirs; };
+
+  alias D='_pushd'; # Clean with dirs -c
+  alias DD='_popd';
+  alias y='_pushd -0';
+  alias yy='_pushd -1';
+  alias x='_pushd +1'; # Back 1 in time = shift stack left = move right
+  alias xx='_pushd +2';
   alias ..='cd ..';
-  alias tree='tree -CF';
+  alias ...='cd ../..';
 
 # Delete files named in $@ by moving below /tmp/del.
 # /tmp/** is cleared on startup.
-del() {
+del()
+{
   declare ret=0;
   mkdir /tmp/del;
   while (( $# > 0 )); do
@@ -372,10 +422,11 @@ del() {
   alias ll='command ls --color=auto -Fh -A -l'; # List by name
   alias lS='command ls --color=auto -Fh -A -lSr'; # List by size
   # Contents
-  alias la='command ls --color=auto -Fh -l'; # Hide hidden files
-  alias ls='command ls --color=auto -Fh -A'; # Not as list
+  alias la='command ls --color=auto -Fh -ltr'; # Hide hidden files
+  alias ls='command ls --color=auto -Fh -A'; # Names only (table)
   # List N last modified files with 'L -N'
   alias L='command ls --color=auto -FhA -t | head';
+  alias tree='tree -CF';
 
 # ______________________________________________________________________________
 # Quick aliases: A bunch of short aliases that you can delete if you dont use
@@ -423,4 +474,3 @@ del() {
   }
 
 # vim: set ft=bash:
-#alias p=' p';

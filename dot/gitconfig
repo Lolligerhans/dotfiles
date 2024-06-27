@@ -205,9 +205,14 @@
 
 	# ❔
 	submodule = log
+	# TODO Remove ignore=untracked later if we dont like it
+	ignoreSubmodules = untracked
 
 [difftool]
 	prompt = false
+
+[fetch]
+	recurseSubmodules = "on-demand"
 
 [help]
 	autocorrect = prompt

@@ -47,6 +47,8 @@ load_version "$dotfiles/scripts/termcap.sh" 0.0.0;
 load_version "$dotfiles/scripts/userinteracts.sh" "0.0.0";
 load_version "$dotfiles/scripts/utils.sh" 0.0.0;
 
+source install.sh; # Individual install subroutines
+
 # ┌────────────────────────┐
 # │ Constants              │
 # └────────────────────────┘
@@ -76,6 +78,17 @@ command_default()
   subcommand full_install;
 }
 
+# TODO Move commands install_xyz to install.sh and call them from here
+command_install()
+{
+  set_args "--help --mcfly" "$@";
+  eval "$get_args";
+
+  if [[ "$mcfly" == "true" ]]; then
+    install_mcfly || :;
+  fi
+}
+
 command_full_install()
 {
   declare choice="n";
@@ -89,6 +102,7 @@ command_full_install()
   subcommand install_diff_highlight; echo;
   subcommand generate_ssh_keypairs --silent; echo;
   subcommand install_missing_term_readkey --yes; echo;
+  subcommand install --mcfly; echo;
   subcommand show_manual; echo;
   echok "Full installation done!";
 }
@@ -569,6 +583,9 @@ DESCRIPTION
       ◦ manual actions
 OPTIONS
   --force: Skip credentials check. Dotfile smight not work correctly.";
+declare -r install_help_string="Install components (incomplete)
+OPTIONS
+  --mcfly: Install mcfly shell history search";
 declare -r symlink_dotfiles_help_string="Crete symlinks to files in dot/
 OPTIONS
   --user=USER: Link to /home/USER instead of /home/$(whoami)";

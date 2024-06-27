@@ -31,6 +31,8 @@
 stty -ixon
 
 shopt -s autocd;
+unset -v HISTFILESIZE; # unlimited
+HISTCONTROL=ignoreboth;
 shopt -s histappend;
 
 # Bash prompt with git branch
@@ -112,7 +114,7 @@ shopt -s histappend;
     #  \[${text_dim}\]\! \# \s\V\[${text_normal}\] (\l)
 
     # TODO Move this out of funciton. Is static anyway
-    declare -r _new_before_git_ps1='\[${text_bdy}\]\D{%F} \[${text_bly}\]\A\[${text_normal}\]$([[ -n "$VIRTUAL_ENV" ]] && printf " \[${text_purple}\]${_venv_dir}/\[${text_normal}${text_blp}\]${_venv_base}\[${text_normal}\]") \[${text_brightblack}\]\u@\H\[${text_normal}\]\n\[${text_italic}${text_blue}\]${_pwd_dir}/\[${text_blb}\]${_pwd_name}\[${text_normal}\]$(((_dirs_count!=0))&&printf " %s" "\[${text_bb}\]<\[${text_blb}\]$((_dirs_count+1))\[${text_bb}\]>\[${text_normal}\]")';
+    declare -r _new_before_git_ps1='\[${text_bdy}\]\D{%F} \[${text_bly}\]\A\[${text_normal}\]$([[ -n "$VIRTUAL_ENV" ]] && printf " \[${text_purple}\]${_venv_dir}/\[${text_normal}${text_blp}\]${_venv_base}\[${text_normal}\]")\[${text_dim}\] \u ⌂ \H\[${text_normal}\]\n\[${text_italic}${text_blue}\]${_pwd_dir}/\[${text_blb}\]${_pwd_name}\[${text_normal}\]$(((_dirs_count!=0))&&printf " %s" "\[${text_bb}\]<\[${text_blb}\]$((_dirs_count+1))\[${text_bb}\]>\[${text_normal}\]")';
     declare -r _new_after_git_ps1=' $(((\j!=0))&&printf "\[${text_bc}\][\[${text_blc}\]\j\[${text_bc}\]]\[${text_normal}\] ")\[${text_normal}\]\[${text_normal}\]$( (($_prompt_ret!=0)) && printf "\[${text_br}\]" || printf "\[${text_bg}\]")\$›\[$text_normal\] ';
     declare -r _new_git_ps1_format=' (\[${text_dim}$text_white\]$(git config --get user.name)\[${text_normal}\]\[${_git_col}\]$_git_repo\[$text_green\]⎇\[${text_normal}\]  %s)';
 #    declare _ret="$?";
@@ -128,9 +130,10 @@ shopt -s histappend;
   # Select prompt
   declare -x PS3="${text_user_hard}№›${text_normal} ";
 
-# Was nice but pytorch is clobbering the "." directory
-#  cd ~/dotfiles;
-
 . ~/.bash_aliases; # Symlink
+
+if command -v mcfly &> /dev/null; then
+  eval "$(mcfly init bash)";
+fi
 
 # vim: filetype=bash

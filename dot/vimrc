@@ -1,5 +1,3 @@
-" .vimrc
-
 filetype plugin indent on
 
 " ______________________________________________________________________________
@@ -67,9 +65,10 @@ Plugin 'frazrepo/vim-rainbow'
 Plugin 'majutsushi/tagbar'
 
 " fzf-vim plugin to open files by name easier
-  Plugin 'junegunn/fzf'
+  "Plugin 'junegunn/fzf'
   " Use this line to automatically update the plugin
-  "Plugin 'junegunn/fzf', { 'do': { -> fzf#install() } }
+  Plugin 'junegunn/fzf', { 'do': { -> fzf#install() } }
+
   Plugin 'junegunn/fzf.vim'
 
 " Fugitive git plugin for vim that is needed for the fzf pluging :Commits
@@ -81,8 +80,12 @@ Plugin 'tpope/vim-unimpaired'
 " Plugin to add, remoe, change surrounding quotes and brackets
 Plugin 'tpope/vim-surround'
 
-" Plugin for AI completion
+" Plugin for language model completion
 Plugin 'Exafunction/codeium.vim'
+" Version for nvim is not wroking
+"if has('nvim')
+"  Plugin 'Exafunction/codeium.nvim'
+"endif
 
 " Plugin to show diff/vimdiff on word level. ]b ]e to jump.
 Plugin 'rickhowe/diffchar.vim'
@@ -119,7 +122,7 @@ filetype on
 " colorschemes
 
     " ayu
-    if 0
+    if 1
     if exists('+termguicolors')
         set termguicolors     " enable true colors support
     else
@@ -132,7 +135,7 @@ filetype on
     endif
 
     " gruvbox
-    if 1
+    if 0
     if exists('+termguicolors')
         "echo "could also use ayucolor"
         set termguicolors
@@ -570,8 +573,9 @@ nnoremap <F4> :cn<cr>zz
   cnoremap <s-f10> windo diffthis<cr>
 nnoremap <c-F10> :TagbarToggle<cr>
 nnoremap <c-F11> :IndentGuidesToggle<cr>
-" Re-process .vimrc
+" Re-process .vimrc (sometimes <c-f12> seems to be detected as <F36>)
 nnoremap <c-f12> :so $MYVIMRC<cr>
+nnoremap <F36> :so $MYVIMRC<cr>
 
 " ______________________________________________________________________________
 " fishdev
@@ -649,6 +653,7 @@ se complete-=t
   "inoremap <M-Down> <Down>
 
 " Our own common digraphs (with mnemonic)
+  "set digraph " Allow entering digraphs as {char1} <BS> {char2}
   " Space symbol for vertical space (not the space character). Use <sp><sp> for
   " non-breaking space character.
   digraph sp 9251 " ␣
@@ -788,10 +793,11 @@ let $BASH_ENV = "~/dotfiles/vim_bashenv.sh"
   set listchars=tab:│· "Use digraph .M for smallest centre dot
   set listchars+=trail:▓ " Show trailing spaces cause else its invisible
   set listchars+=nbsp:␣
-
-  "set listchars+=extends:…
-  "set listchars+=precedes:…
+  set listchars+=extends:…
+  set listchars+=precedes:…
   set listchars+=conceal:┊
+  "set listchars+=eol:↲
+
 
 
   " Overwrite <F3> <F4> mappings in diff mode (for git difftool)
@@ -814,13 +820,16 @@ let $BASH_ENV = "~/dotfiles/vim_bashenv.sh"
   "let g:codeium_manual = v:true
 
   " Completion keybindings
-  let g:codeium_disable_bindings = 0
-  "inoremap <script><silent><nowait><expr> <tab> codeium#Accept()
-  "inoremap <c-ä>   <Cmd>call codeium#CycleCompletions(1)<CR>
-  "inoremap <c-ö>   <Cmd>call codeium#CycleCompletions(-1)<CR>
-  "inoremap <c-?>   <Cmd>call codeium#Clear()<CR>
-  " activate (?)
-  "inoremap <left> <Cmd>call codeium#Complete()<cr>
+  let g:codeium_disable_bindings = 1
+  inoremap <script><silent><nowait><expr> <tab> codeium#Accept()
+  " Not sure what option is missing but not working in vim
+  if has('nvim')
+    inoremap <M-l>   <Cmd>call codeium#CycleCompletions(1)<CR>
+    inoremap <M-h>   <Cmd>call codeium#CycleCompletions(-1)<CR>
+    " Not working:
+    "inoremap <M-o>   <Cmd>call codeium#Complete()<cr>
+    "inoremap <M-O>   <Cmd>call codeium#Clear()<CR>
+  endif
 
   "let g:codeium_filetypes = {
   "    "bash": v:false,
@@ -892,6 +901,23 @@ set undofile "check external files for testing for availability
   inoremap <leader><leader>plaster 🩹
   inoremap <leader><leader>hospital 🏥
   inoremap <leader><leader>syringe 💉
+  " Chess symbols ('c' for chess)
+  inoremap <leader><leader>cc 🙾
+  inoremap <leader><leader>cC 🙿
+  inoremap <leader><leader>cS ■
+  inoremap <leader><leader>cs □
+  inoremap <leader><leader>ck ♔
+  inoremap <leader><leader>cq ♕
+  inoremap <leader><leader>cr ♖
+  inoremap <leader><leader>cb ♗
+  inoremap <leader><leader>cn ♘
+  inoremap <leader><leader>cp ♙
+  inoremap <leader><leader>cK ♚
+  inoremap <leader><leader>cQ ♛
+  inoremap <leader><leader>cR ♜
+  inoremap <leader><leader>cB ♝
+  inoremap <leader><leader>cN ♞
+  inoremap <leader><leader>cP ♟
 
 " Removed: Because we wanted to remap <F5> to <F8>
 
@@ -930,9 +956,36 @@ set undofile "check external files for testing for availability
   let g:terminal_ansi_colors = ['#2E3436','#CC0000','#4E9A06','#C4A000','#3465A4','#75507B','#06989A','#D3D7CF','#555753','#EF2929','#8AE234','#FCE94F','#729FCF','#AD7FA8','#34E2E2','#EEEEEC',]
 
 " Allow cursor past the end of line
-set virtualedit=all
+set virtualedit=block,insert
 
 onoremap ö [
 onoremap Ö {
 onoremap ä ]
 onoremap Ä }
+
+" Neovim: Proof config against neovim defaults
+  " Required but not mentioned:
+    set guicursor=n-v-c:block,i-ci-ve:block,r-cr:block,o:block
+      \,a:blinkwait700-blinkoff400-blinkon250-Cursor/lCursor
+      \,sm:block-blinkwait175-blinkoff150-blinkon175 " Prevent line cursor
+  " The ones we probably want
+    set nohidden " prevent :term corpses
+    set belloff=""
+    set nolangremap
+    set sidescroll=0 " Can set to 1, but ideally we use wrapping anyway
+  " The ones we may remove later
+    set commentstring="/*%s*/"
+    set sessionoptions=blank,buffers,curdir,folds,help,options,tabpages,winsize,terminal
+    set shortmess=filnxtToO
+    set smarttab
+    set nostartofline
+    "set wildoptions=pum (to prevent tagfile matches?)
+    "vunmap # (remove annoying default nvim mapping?)
+    "vunmap * (remove annoying default nvim mapping?)
+  " No idea what thes do
+    "se complete=.,w,b,u,i
+    "se define="^\\s*#\\s*define"
+    "set display
+    "include=^\s*#\s*include
+    "ttimeout
+    "ttimeoutlen

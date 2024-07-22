@@ -701,9 +701,9 @@ command_deploy()
     "$( if [[ "$make_copy" != "false" ]]; then { echo "as copy"; }; else { echo "as link"; }; fi)";
   eval "$preparation";
   if [[ "$make_copy" != "false" ]]; then
-    cp -vT "$source_file" "$target_file"
+    cp -vT "$source_file" "$target_file" || return;
   else
-    ln --verbose --symbolic -T "$source_file" "$target_file"
+    ln --verbose --symbolic -T "$source_file" "$target_file" || return;
   fi
   echok "Deployed $text_italic$source_file$text_normal ➜ ${text_italic}$target_dir/${text_bold}$target_name$text_normal";
 }

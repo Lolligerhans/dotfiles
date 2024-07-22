@@ -285,7 +285,7 @@
 	# Replaces only when pushing
 	#pushInsteadOf = "https://github.com/"
 	# Allows specifying paths simpler as github:name/repo
-	#insteadOf = "github:"
+	insteadOf = "github"
 
 [user]
 	# TOKEN_DOTFILES_USER_CREDENTIALS

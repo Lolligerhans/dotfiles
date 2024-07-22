@@ -18,44 +18,38 @@
 #_______________________________________________________________________
 # git
 
-    # git status checks
-        # state: all recent commits
-        alias s='git --no-pager f; git s; git b;'
-        alias S='git s -99999';
-        # history: commits of current branch
-        alias h='git --no-pager f; git h; git b;'
+alias s='git --no-pager f; git s; git b;';
+alias S='git s -99999';
+alias h='git --no-pager f; git h; git b;';
 
-        # news: git status
-        alias n='git st';
-        alias m='git st --short --branch';
+alias n='git st';
+alias m='git st --short --branch';
 
-        # repo: current staged (uncommitted) changes
-        alias r='git di-r; git di-r2;'
-        alias rr='git di-rr; git di-rr2';
-        alias rw='git di-rw; git di-rw2';
+alias p='git di-p; git di-p2';
+alias pp='git di-pp; git di-pp2';
+alias pw='git di-pw; git di-pw2';
+alias r='git di-r; git di-r2;';
+alias rr='git di-rr; git di-rr2';
+alias rw='git di-rw; git di-rw2';
+alias H='git diff master HEAD';
 
-        # post/print: current unstaged changes to working directory
-        alias p='git di-p; git di-p2';
-        alias pp='git di-pp; git di-pp2';
-        alias pw='git di-pw; git di-pw2';
-
-    # git utils
-        alias H='git diff master HEAD'
-
-    # git workflow
-        alias a='git add -p'
-#
+alias a='git add -p';
+alias a='git add -p';
+alias u='git add -u';
 
 # ______________________________________________________________________________
 # Vim
+#
+  declare -x _vim='nvim'; # Set to "vim" or "nvim"
+  alias Nvim='nvim -i NONE'; # New-vim: ignore shada
 
   # Short term session
   alias vims="vim -S Session.vim"
   # Long term session
   alias vimS="vim -S Session_long.vim"
   # Switch to vim: Bring to foreground or open new.
-  alias v='(("$(jobs -p | wc -l)" == 0)) && { vims || :; } || fg vim';
-  alias V='(("$(jobs -p | wc -l)" == 0)) && { vimS || :; } || fg vim';
+  alias v='(("$(jobs -p | wc -l)" == 0)) && { vims || :; } || fg '"'"'${_vim}'"'"' || fg nvim || fg vim;'
+  alias V='(("$(jobs -p | wc -l)" == 0)) && { vimS || :; } || fg '"'"'${_vim}'"'"' || fg nvim || fg vim';
 
 # ______________________________________________________________________________
 # Git
@@ -270,13 +264,13 @@ _find_file()
 
   if (( !hidden_files && hidden_dirs )); then
     hidden_flag=('(' -type f -a -name '.?*' -prune ')' -o);
-    echo "hide files";
+    >&2 echo "$FUNCNAME: DEBUG: hide files";
   elif (( !hidden_dirs && hidden_files )); then
     hidden_flag=('(' -type d -a -name '.?*' -prune ')' -o);
-      echo "hide directories";
+    >&2 echo "$FUNCNAME: DEBUG: hide directories";
   elif (( !hidden_dirs && !hidden_files )); then
     hidden_flag=( '('            -name '.?*' -prune ')' -o );
-    >&2 echo "$FUNCNAME: DEBUG: All hidden";
+    #>&2 echo "$FUNCNAME: DEBUG: All hidden";
   else
     >&2 echo "$FUNCNAME: DEBUG: All shown";
   fi
@@ -293,8 +287,16 @@ _find_file()
     out="$fzf_query";
     >&2 echo "$FUNCNAME: DEBUG: skipping search: $out"
   else
+    declare pipe_name;
+    pipe_name="$(mktemp -u)";
+    mkfifo "$pipe_name";
     declare -i err=0;
-    out="$(command find "${find_path}" -mindepth 1 "${hidden_flag[@]}" "${dirs_only_flag[@]}" -print | "${fzf_command[@]}")" || err="$?";
+    command find "${find_path}" -mindepth 1 "${hidden_flag[@]}" "${dirs_only_flag[@]}" -print > "$pipe_name" &
+    # Ignore fzf failure but capture nonzero exit codes
+    out="$("${fzf_command[@]}" <"$pipe_name")" || err="$?";
+    kill "$!" # Stop 'find' process (last background process)
+    wait "$!" 2>/dev/null;
+    rm "$pipe_name";
     case "$err" in
       "0") :;;
       "130") >&2 echo "$FUNCNAME: fzf interrupted with ctrl-c or esc"; return 0;;
@@ -359,6 +361,8 @@ body()
   alias Dot='pushd ~/dotfiles';
   alias the='cd ~/thesis';
   alias fin='find . -iname';
+  alias fuzz='cd ~/Workspace/SSH-Fuzzer/ || cd ~/github/ssh-fuzzer';
+  alias muse='cd ~/Documents/MuseScore4/Scores';
 
   # ℹ -h ➜  hidden files
   # ℹ -H ➜  hidden dirs

@@ -31,7 +31,7 @@
 stty -ixon
 
 shopt -s autocd;
-unset -v HISTFILESIZE; # unlimited
+declare -x HISTFILESIZE=''; # unlimited
 HISTCONTROL=ignoreboth;
 shopt -s histappend;
 
@@ -130,7 +130,7 @@ shopt -s histappend;
   # Select prompt
   declare -x PS3="${text_user_hard}№›${text_normal} ";
 
-. ~/.bash_aliases; # Symlink
+source ~/.bash_aliases; # Symlink
 
 if command -v mcfly &> /dev/null; then
   eval "$(mcfly init bash)";

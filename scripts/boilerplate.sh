@@ -406,5 +406,4 @@ fi
 if [[ "${-//[hHvx]/}" != "euBET" ]]; then
   errchoe "Flags: is=${-//[hHvx]/} should=euBET raw=${-}";
   abort "Expected safe bash flags: -euBET";
-  # TODO Make this just a warning if it os ok to fail
 fi

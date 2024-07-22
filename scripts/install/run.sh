@@ -20,7 +20,7 @@ satisfy_version "$dotfiles/scripts/boilerplate.sh" "0.0.0";
 # ┌────────────────────────┐
 # │ Config                 │
 # └────────────────────────┘
-_run_config["versioning"]=1;
+_run_config["versioning"]=0;
 _run_config["log_loads"]=0;
 #["error_frames"]=2 # [1,inf)
 
@@ -81,12 +81,28 @@ command_default()
 # TODO Move commands install_xyz to install.sh and call them from here
 command_install()
 {
-  set_args "--help --mcfly" "$@";
+  set_args "--help --fzf --mcfly --nvim" "$@";
   eval "$get_args";
 
-  if [[ "$mcfly" == "true" ]]; then
-    install_mcfly || :;
-  fi
+  # Maps the --parameter name to internal function. We filter parameters not
+  # describing an install target (like --help) by setting a NOP as their
+  # function. Then their value does not matter.
+  declare -Ar install_functions=(
+      ["help"]=":"
+      ["fzf"]="install_fzf"
+      ["mcfly"]="install_mcfly"
+      ["nvim"]="install_nvim"
+      );
+
+  declare arg="" func="";
+  for arg in "${!install_functions[@]}"; do
+    declare -n _arg="$arg"; # Reference the variable created by set_args.
+    if [[ "$_arg" == "true" ]]; then
+      func="${install_functions[$arg]}";
+      "$func" || errchow "Failed to install $arg";
+      # Continue after errors. User must check output.
+    fi
+  done
 }
 
 command_full_install()
@@ -102,7 +118,9 @@ command_full_install()
   subcommand install_diff_highlight; echo;
   subcommand generate_ssh_keypairs --silent; echo;
   subcommand install_missing_term_readkey --yes; echo;
+  subcommand install --fzf; echo;
   subcommand install --mcfly; echo;
+  subcommand install --nvim; echo;
   subcommand show_manual; echo;
   echok "Full installation done!";
 }
@@ -158,6 +176,10 @@ command_symlink_dotfiles()
 
   # install vimrc
   subcommand run "$dotfiles" deploy --name=".vimrc" --yes --keep --file="$dotfiles/dot/vimrc" --dir="$home_dir" || :;
+  echo
+
+  # install init.vim for neovim
+  subcommand run "$dotfiles" deploy --yes --keep --file="$dotfiles/dot/init.vim" --dir="$home_dir/.config/nvim" || :;
   echo
 
   # Instll .vim/ftplugin files
@@ -217,7 +239,7 @@ command_symlink_dotfiles()
   # use .bashrc_personal
   # FIXME This is scuffed
   declare -r brcp="$home_dir/.bashrc"
-  declare -r brcl=". ~/dotfiles/dot/bashrc_personal"
+  declare -r brcl="source ~/dotfiles/dot/bashrc_personal; # Must be last line"
   echo "bashrc_personal..."
   if [ ! -f "$brcp" ]; then
       echo "creating file..."
@@ -232,8 +254,6 @@ command_symlink_dotfiles()
       echo "installing..."
       echo "$brcl" >> "$brcp" &&
       echo "done"
-      # old version
-      #ln -s "$dotfiles_dir/.bashrc" ".bashrc" &&
   fi
   echo
 
@@ -411,7 +431,6 @@ command_install_collected_apt()
     } &&
     sudo apt install \
       git \
-      fzf \
       bat \
       ripgrep \
       universal-ctags \
@@ -584,8 +603,13 @@ DESCRIPTION
 OPTIONS
   --force: Skip credentials check. Dotfile smight not work correctly.";
 declare -r install_help_string="Install components (incomplete)
+DESCRIPTION
+  Install individual components by specifying them as --argument(s). Targets are
+  executed in unspecified order.
 OPTIONS
-  --mcfly: Install mcfly shell history search";
+  --fzf: Install fzf command line fuzzy finder
+  --mcfly: Install mcfly shell history search
+  --nvim: Install nvim text editor";
 declare -r symlink_dotfiles_help_string="Crete symlinks to files in dot/
 OPTIONS
   --user=USER: Link to /home/USER instead of /home/$(whoami)";

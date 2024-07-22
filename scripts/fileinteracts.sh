@@ -112,9 +112,9 @@ checksum_verify_sha256()
 
   declare -n _vcs_934712384_="${1}";
   if sha256sum -c <<< "$2"; then
-    printf -v "$_vcs_934712384_" -- "true";
+    printf -v _vcs_934712384_ -- "true";
   else
-    printf -v "$_vcs_934712384_" -- "false";
+    printf -v _vcs_934712384_ -- "false";
     errchow "Failed checksum verification for $text_dim$1$text_normal";
   fi
 }
@@ -126,7 +126,7 @@ checksum_verify_sha256()
 # $2  sha256 output
 test_checksum()
 {
-  echou "Deprecated use of test_checksum. Use checksum_veerify_sha256 instead. Use verify_checksum insteadd";
+  echou "Deprecated use of test_checksum. Use checksum_verify_sha256 instead. Use verify_checksum insteadd";
 
   if (("$#" != 2)); then
     abort "$FUNCNAME: usage: 'checksum $file $checksum'";

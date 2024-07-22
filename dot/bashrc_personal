@@ -31,8 +31,11 @@
 stty -ixon
 
 shopt -s autocd;
-declare -x HISTFILESIZE=''; # unlimited
-HISTCONTROL=ignoreboth;
+
+declare -x HISTSIZE=; # Unlimited
+declare -x HISTFILE=; # Use default
+declare -x HISTFILESIZE=; # Unlimited
+declare -x HISTCONTROL='ignoreboth';
 shopt -s histappend;
 
 # Bash prompt with git branch
@@ -133,6 +136,7 @@ shopt -s histappend;
 source ~/.bash_aliases; # Symlink
 
 if command -v mcfly &> /dev/null; then
+  # Doing this twice leads to errors!
   eval "$(mcfly init bash)";
 fi
 

@@ -11,38 +11,20 @@ TODO: Make sure that optionals always being declared is correct here.
 ┃ variables appropriately.                                                    ┃
 ┃                                                                             ┃
 ┃ ╭─────────┬────────────────────────────────────────────────╮                ┃
-┃ │ Example │ [Global mode: Requires unset_args]             │                ┃
-┃ ├─────────╯                                                │                ┃
-┃ │                                                          │                ┃
-┃ │        Parameter string                        Arguments │                ┃
-┃ │               ↓                                    ↓     │                ┃
-┃ │  example1()                                              │                ┃
-┃ │  {                                                       │                ┃
-┃ │      set_args "--file-required= --mode=default -x" "$@"  │ ← Set globally ┃
-┃ │                                                          │                ┃
-┃ │      echo "Parsed --file-required = $__file_required"    │ ← Use          ┃
-┃ │      echo "Parsed --mode = $__mode"                      │                ┃
-┃ │      if [[ -v _x ]]; then echo "-x was set to $_x"; fi   │                ┃
-┃ │                                                          │                ┃
-┃ │      unset_args;                                         │ ← Unset        ┃
-┃ │  }                                                       │                ┃
-┃ │      ↑                                                   │                ┃
-┃ │     Deletes variables                                    │                ┃
-┃ ╰──────────────────────────────────────────────────────────╯                ┃
-┃ ╭─────────┬────────────────────────────────────────────────╮                ┃
 ┃ │ Example │ [Eval mode: Does not require unset_args]       │                ┃
 ┃ ├─────────╯                                                │                ┃
 ┃ │                                                          │                ┃
-┃ │                Parameter string  Arguments               │                ┃
-┃ │                       ↓              ↓                   │                ┃
-┃ │  example2()                                              │                ┃
+┃ │  #     Parameter string                        Arguments │                ┃
+┃ │  #            ↓                                    ↓     │                ┃
+┃ │  example()                                               │                ┃
 ┃ │  {                                                       │                ┃
-┃ │      set_args "--r= -f=d -y" "$@"                        │                ┃
-┃ │      eval "$get_args"                                    │ ← Get locally  ┃
+┃ │      set_args "--file-required= --mode=default -x" "$@"  │                ┃
+┃ │      eval "$get_args"                                    │ ← Set params   ┃
 ┃ │                                                          │                ┃
-┃ │      echo "Parsed --r = $r"                              │ ← Use          ┃
-┃ │      echo "Parsed -f = $f"                               │                ┃
-┃ │      if [[ -v y ]]; then echo "parsed y = $y"; fi        │                ┃
+┃ │      echo "Parsed --file-required = $__file_required"    │ ← Use          ┃
+┃ │      echo "Parsed --mode = $__mode"                      │                ┃
+┃ │      if [[ "$x" == "true" ]]; then echo "Has: -x"; fi    │                ┃
+┃ │      if [[ "$x" == "false" ]]; then echo "Not: -x"; fi   │                ┃
 ┃ │  }                                                       │                ┃
 ┃ ╰──────────────────────────────────────────────────────────╯                ┃
 ┃ ╭─────────┬────────────────────────────────────────────────╮                ┃
@@ -50,27 +32,22 @@ TODO: Make sure that optionals always being declared is correct here.
 ┃ ├─────────╯                                                │                ┃
 ┃ │                                                          │                ┃
 ┃ │  # Do not give 'optional' parameter -x                   │                ┃
-┃ │  example1 --file=foo.txt --mode=bar                      │                ┃
+┃ │  example --file-required=foo.txt --mode=bar              │                ┃
 ┃ │                                                          │                ┃
-┃ │  # Leave 'defaulted' parameter -f at default value       │                ┃
-┃ │  example2 --r=baz.txt -y                                 │                ┃
+┃ │  # Leave 'defaulted' parameter --mode at default value   │                ┃
+┃ │  example --file-required=baz.txt -x                      │                ┃
 ┃ ╰──────────────────────────────────────────────────────────╯                ┃
 ┃                                                                             ┃
 ┃ Setargs is provided a (typically hardcoded) 'parameter' string. This string ┃
 ┃ determines the names which can be provided. Depending on the syntax used,   ┃
 ┃ they become 'required', 'defaulted' or 'optional'.                          ┃
 ┃                                                                             ┃
-┃ Setargs is further provided "$@" as 'arguments'. Setargs declares global    ┃
-┃ variables with names derived from the parameter/argument names by replacing ┃
-┃ dashes "-" with underscores "_".                                            ┃
+┃ "$@" is used as 'arguments' and must match the specified parameters.        ┃
 ┃                                                                             ┃
-┃ When 'eval "$get_args"' is used, variable names are declared locally,       ┃
-┃ losing leading underscores "_". This is the preferred method!               ┃
+┃ When "$get_args"' is evaluated, variables are declared (locally).           ┃
 ┃                                                                             ┃
-┃ Calling unset_args will unset previously declared variables (example1).     ┃
-┃ Alternatively, evaluating global variable "get_args" will declare           ┃
-┃ corresponding global variables locally WITHOUT the leading underscores      ┃
-┃ (example2).                                                                 ┃
+┃ The variable name is derived from the parameter. Leading dashes "-" are     ┃
+┃ removed, the remaining dashes converted to underscores "_".                 ┃
 ┃                                                                             ┃
 ┃━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┃
 ┃                                                                             ┃
@@ -83,20 +60,19 @@ TODO: Make sure that optionals always being declared is correct here.
 ┃ │ Example │ [Help string: Autoformat using sed]            │                ┃
 ┃ ├─────────╯                                                │                ┃
 ┃ │                                                          │                ┃
-┃ │  example3()                                              │                ┃
+┃ │  example2()                                              │                ┃
 ┃ │  {                                                       │                ┃
 ┃ │      declare example3_help_string="Header linection      │ ← Help string  ┃
 ┃ │                                                          │                ┃
 ┃ │        Full description below. May contain --mode=value  │                ┃
 ┃ │        and other parameter names.";                      │                ┃
 ┃ │                                                          │                ┃
-┃ │      set_args "--example= --mode=default --help"         │                ┃
-┃ │      eval "$get_args";                                   │ ← Colour help  ┃
-┃ │      # if [[ -v help ]]; then                            │ ← (implicit)   ┃
-┃ │      #   sed -e "$help" <<< "$example3_help_string";     │                ┃
-┃ │      #   return 0;                                       │                ┃
-┃ │      # fi                                                │                ┃
+┃ │      set_args "--example= --mode=default --help" "$@"    │                ┃
+┃ │      eval "$get_args";                                   │                ┃
 ┃ │  }                                                       │                ┃
+┃ │  example2 --help;                                        │ ← Colour help  ┃
+┃ │  # sed -e "$help" <<< "$example2_help_string";           │                ┃
+┃ │                                                          │                ┃
 ┃ ╰──────────────────────────────────────────────────────────╯                ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
@@ -245,12 +221,12 @@ TODO: Make sure that optionals always being declared is correct here.
 │                                                                             │
 │ ✖ 'optional' parameters DO NOT match positional data (they are skipped)     │
 │ ✖ 'optional' parameters DO NOT allow split data                             │
-│ ✔ 'optional' parameters IMPLICITLY default to empty string ""               │
-│ ✔ 'optional' MAY be set to a different value                                │
+│ ✔ 'optional' parameters implicitly default to "false" or "true"             │
+│ ✔ 'optional' parameters MAY be set to a different value                     │
 │ ✖ 'defaulted' parameters CANNOT have empty default                          │
 │   • --name=  describes a 'required' parameter                               │
-│   • Use 'optional' parameter instead: --name                                │
-│ ✖ Flags DO NOT combine when using single dash                               │
+│   • Use 'optional' parameter or dummy value instead                         │
+│ ✖ 'optional' parameters DO NOT combine when using single dash               │
 │ ✖ Positional data will fill 'required' and 'defaulted' parameters before    │
 │   filling the "argv" variable (even when available).                        │
 │╭──────────────────┬────────────────────────────╮                            │
@@ -274,11 +250,8 @@ TODO: Make sure that optionals always being declared is correct here.
 ││  --help          │ Used for usage info                     │               │
 │╰──────────────────┴─────────────────────────────────────────╯               │
 │                                                                             │
-│ • Variables are declared globally. Use unset_args to avoid collisions.      │
-│ • When evaluating get_args, local variables have no leading underscores.    │
-│ • When evaluating get_args, global variables are automatically unset.       │
-│ • When evaluating get_args, the call must follow set_args immediately.      │
-│                                                                             │
+│ • Declared variables have no leading underscores.                           │
+│ • 'eval "$get_args"' must immediately follow 'set_args'.                    │
 │ • Inputs ARE NOT sanitized or verified (!)                                  │
 └─────────────────────────────────────────────────────────────────────────────┘
 

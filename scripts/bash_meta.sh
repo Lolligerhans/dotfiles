@@ -34,6 +34,33 @@ load_version "$dotfiles/scripts/utils.sh" "0.0.0";
 # │ 𝑓 Functional         │
 # ╰──────────────────────╯
 
+# This function executes "$@", allowing failure, but keeping set -e intact.
+# Meaning the first error of "$@" will "abort" execution, returning 0.
+# TODO Can we use '0>&1 :' somehow instead of 'cat'?
+may_fail()
+{
+  cat < <("${@}");
+  # Contrary to popular demand, Bash's set -e, set -u and pipefail can be
+  # permanently disabled by if, ||, &&, while, until, !, recursively with
+  # disregard of the actual flag:
+  #
+  #     set -euETo pipefail; # nice try!
+  #     shopt -s inherit_errexit;
+  #     cd /;
+  #     isntall_program()
+  #     {
+  #       mkdir a || true;
+  #       set -e; ❔
+  #       cd /temp; # ❕ typo, no cd happens. set -e is ignored within ||
+  #       rm -rf *; # ⚠️
+  #       wget https://setup.sh | sh; # Too late, / already removed.
+  #     }
+  #     install_program || true; # ❌ bad
+  #
+  # We trick bash by making bash consider the 'cat' command to be executed
+  # instead.
+}
+
 # Run $@ hiding file descriptot $1
 run_silent()
 {

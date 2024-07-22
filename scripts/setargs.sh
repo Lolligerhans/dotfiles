@@ -27,8 +27,6 @@ load_version "$dotfiles/scripts/termcap.sh" 0.0.0;
 load_version "$dotfiles/scripts/utils.sh" 0.0.0;
 
 # Do not modify
-declare -ga _setargs_newvars;
-declare -gA _setargs_all_vars;
 declare -g get_args;
 
 # Modify to configure set_args
@@ -51,46 +49,8 @@ _generate_new()
   if [[ -v "$var_name" ]]; then
     abort "setargs: Won't overwrite existing variable $var_name";
   fi
-  # Declare global variable including leading _
-  declare -g "$var_name"="$2";
-  # Generate eval string to declare a local variable from the global counterpart
-  # ❗ The variable name is restricted in allowed characters to make eval safe
-  # TODO Simply put data into eval string using printf -v '"%Q"'?
   declare -n eval_snippet="${3:?set_args: Missing eval string snippet for _$FUNCNAME}";
-  printf -v eval_snippet 'declare %s="$%s";' "${var_name##*(_)}" "$var_name";
-  _setargs_newvars+=("$var_name")
-  ((_setargs_debug)) && errchod "_generate_new: Newvars after appending: $_setargs_newvars" || :;
-}
-
-unset_args()
-{
-  # Unsetting variables
-  ((_setargs_debug)) && errchod "Entering $FUNCNAME" || :;
-  declare funcname="${FUNCNAME[1]}";
-  ((_setargs_debug)) && errchod "unset_args: Available contexts:" "$(print_values "!_setargs_all_vars[@] ➜ " "${!_setargs_all_vars[@]}")" || :;
-  declare -a names=("${_setargs_all_vars["$funcname"]}");
-  ((_setargs_debug)) && errchod "unset_args: Unsetting the following vars from context: <$funcname> = $(print_array names)" || :;
-  # FIXME make this right, the word splitting is bad
-  # shellcheck disable=SC2068
-  unset -v ${names[@]}; # Unquoted for word splitting
-  ((_setargs_debug)) && errchod "unset_args: Unsetting the following context: [$funcname]" || :;
-  # FIXME make this right, the word splitting is bad
-  # shellcheck disable=SC2086,2184 # What should be quoted here?
-  unset -v _setargs_all_vars["$funcname"]; # Unquoted for word splitting
-  ((_setargs_debug)) && errchod "unset_args: Remaining contexts:" "$(print_values "!_setargs_all_vars[@]" "${!_setargs_all_vars[@]}")" || :;
-}
-
-_setargs_verify_clean()
-{
-  ((_setargs_debug)) && errchod "Varifying set_args cleanliness" || :;
-#  ((_setargs_debug)) && errchod "_setargs_all_vars:${_setargs_all_vars[@]}" || :;
-  if [[ -v _setargs_all_vars[@] ]]; then
-    # FIXME: Hotfix: We added a dummy and check if only the dummy is left
-#    if ((${#_setargs_all_vars[@]} > 1)); then
-      errchow "set_args: $(print_values "Remaining contexts" "${!_setargs_all_vars[@]}")";
-      errchow "set_args: Forgot to ${text_user}unset_args${text_normal} or ${text_user}eval \"\$get_args\"${text_normal}?";
-#    fi
-  fi
+  printf -v eval_snippet 'declare %s=%s;' "${var_name##*(_)}" "${2@Q}";
 }
 
 set_args()
@@ -408,7 +368,6 @@ set_args()
   else                                 declare -r sanitize="abort";
   fi
 
-  _setargs_newvars=();
   declare eval_string="";
   for name in "${!values[@]}"; do
 
@@ -451,20 +410,10 @@ set_args()
     eval_string+="declare argv=(${argv_values});";
   fi
 
-  eval_string+="unset_args;";
   eval_string+="$eval_string_end";
 
   # Store names to unset manually later
   declare funcname="${FUNCNAME[1]}";
-
-  if [[ -v _setargs_all_vars["$funcname"] ]]; then
-    abort "set_args: Context ${text_user}$funcname${text_normal} already in use (call unset_args or evaluate get_args to free a context afteruse) (If two functions have the same name they might collide).";
-  fi
-  ((_setargs_debug)) && errchod "set_args: $(print_values "All context before" "${!_setargs_all_vars[@]}")" || :;
-  ((_setargs_debug)) && errchod "set_args: Registering context $funcname" || :;
-  _setargs_all_vars["${funcname}"]="${_setargs_newvars[*]}";
-  ((_setargs_debug)) && errchod "set_args: $(print_values "All context after:" "${!_setargs_all_vars[@]}")" || :;
-  ((_setargs_debug)) && errchod "set_args: New $funcname context: ${_setargs_all_vars["$funcname"]}" || :;
 
   # Write global eval string that can import variables to local scope. Use as:
   #

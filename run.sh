@@ -30,6 +30,7 @@ satisfy_version "$dotfiles/scripts/boilerplate.sh" 0.0.0;
 # ╰──────────────────────╯
 
 load_version "$dotfiles/scripts/version.sh" 0.0.0;
+load_version "$dotfiles/scripts/bash_meta.sh" 0.0.0;
 load_version "$dotfiles/scripts/cache.sh" 0.0.0;
 load_version "$dotfiles/scripts/fileinteracts.sh" 0.0.0;
 load_version "$dotfiles/scripts/git_utils.sh" 0.0.0;
@@ -66,18 +67,10 @@ declare -r update_alternatives_default_link="/usr/bin";
 # shellcheck disable=2317 # unreachable
 command_default()
 {
-  if [[ "$(boolean_prompt "run tests?")" != "y" ]]; then
-    abort "Not runnign test";
-  fi
+  set_args "--help" "$@";
+  eval "$get_args";
 
-  rm -rv ~/.vim/ftplugin || echos "No leftover to remove";
-  declare -r home_dir="/home/$(whoami)";
-  subcommand run "$dotfiles" deploy --yes --keep --file="$dotfiles/dot/ftplugin" --dir="$home_dir/.vim" || :;
-  echon "Results:";
-  print_and_execute tree ~/.vim/ftplugin
-  print_and_execute command ls --color=auto -Fh -A -ltr ~/.vim/ftplugin
-  print_and_execute command ls --color=auto -Fh -A -ltr ~/.vim;
-  return 0;
+  subcommand "help";
 }
 
 command_test()

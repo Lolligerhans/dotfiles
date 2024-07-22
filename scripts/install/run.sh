@@ -211,7 +211,7 @@ command_symlink_dotfiles()
       # TODO lol watch out this is dotfiles dir
 #  fi
 
-  # use .bashrc_aliases
+  # use .bash_aliases
   path="$home_dir/.bash_aliases"
   echo "bash_aliases..."
   if [ -f "$path" ]; then
@@ -239,7 +239,7 @@ command_symlink_dotfiles()
   # use .bashrc_personal
   # FIXME This is scuffed
   declare -r brcp="$home_dir/.bashrc"
-  declare -r brcl="source ~/dotfiles/dot/bashrc_personal; # Must be last line"
+  declare -r brcl="source ~/dotfiles/dot/bashrc_personal; # The install command greps for this line. Do not change it.";
   echo "bashrc_personal..."
   if [ ! -f "$brcp" ]; then
       echo "creating file..."
@@ -247,11 +247,13 @@ command_symlink_dotfiles()
   else
       echo "(file exists)"
   fi
-  last="$(tail -n1 "$brcp")"
-  if [[ $last == "$brcl" ]]; then
+  if grep -q -F "$brcl" "$brcp"; then
       echo "skip"
   else
       echo "installing..."
+      # Prevent setting of HISTSIZE and HISTFILESIZE
+      sed -i -e 's/^\(.*HISTSIZE.*\)/#\1/' "$brcp";
+      sed -i -e 's/^\(.*HISTFILESIZE.*\)/#\1/' "$brcp";
       echo "$brcl" >> "$brcp" &&
       echo "done"
   fi
@@ -271,7 +273,7 @@ command_symlink_dotfiles()
   echo
 
   # Install alias completion
-  subcommand rundir "$dotfiles" deploy --name=".bash_completion" --yes --keep --file="$completion_path" --dir="$home_dir" || :; # TODO print warning here?
+  subcommand rundir "$dotfiles" deploy --name=".bash_completion" --yes --keep --file="$completion_path" --dir="$home_dir" || :;
   echo;
 
   # Completion options
@@ -553,9 +555,10 @@ generate_single_ssh_keypair()
 {
   # Using the same parameter names as ssh-keygen
   set_args "-f= -t=ed25519 -C --silent" "$@";
-  declare type="$_t";
-  declare file="$_f";
   eval "$get_args";
+
+  declare type="$t";
+  declare file="$f";
 
   declare comment="";
   # FIXME I think this _C and $C stuff does not work as intended

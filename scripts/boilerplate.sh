@@ -124,7 +124,7 @@ _sym() { if (($1)); then printf "✖"; else printf "✔"; fi; }
 # Use syntax ${array[@]:0:1} which works for empty arrays, too
 # shellcheck disable=SC2145
 errchol "$text_blb$text_dim• •$text_normal $text_blb›(${runscript_relativepath_coloured} $(print_values_decorate "${text_user}${runscript_args[@]:0:1} ${text_normal}" "${text_user_soft}" "$text_dim" "${runscript_args[@]:1}")${text_blb})${text_normal} ${text_dim}⌂ $text_italic$parent_path$text_normal";
-trap '_ret="$?"; _cval="$(_col "$_ret")"; errchol "$text_bold${_cval}$(_sym "$_ret") $_ret ‹(${runscript_relativepath_coloured} $(print_values_decorate "${text_user}${runscript_args[@]:0:1} ${text_normal}" "${text_user_soft}" "$text_dim" "${runscript_args[@]:1}")${_cval}${text_bold})$text_normal $text_dim⌂ $text_italic$parent_path$text_normal"; _setargs_verify_clean || errchow "Could not verify _setargs_verify_clean"'\
+trap '_ret="$?"; _cval="$(_col "$_ret")"; errchol "$text_bold${_cval}$(_sym "$_ret") $_ret ‹(${runscript_relativepath_coloured} $(print_values_decorate "${text_user}${runscript_args[@]:0:1} ${text_normal}" "${text_user_soft}" "$text_dim" "${runscript_args[@]:1}")${_cval}${text_bold})$text_normal $text_dim⌂ $text_italic$parent_path$text_normal";'\
   EXIT;
 
 ################################################################################
@@ -393,7 +393,6 @@ if [[ -v this_location ]] && [[ -n "$this_location" ]] && [[ ! "$this_location" 
   fi
   errchow "Continuing at $text_italic$this_location$text_noitalic!";
   subcommand rundir "$this_location" "$@";
-  # TODO no setargs verify here. Better than surprise-changing $@.
   exit "$?";
 fi
 

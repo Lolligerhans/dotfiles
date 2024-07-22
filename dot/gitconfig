@@ -18,7 +18,6 @@
 [alias]
 	# Diff variants
 	di = diff --no-ext-diff
-	dh = di --histogram
 	dm = di AUTO_MERGE
 	# Use --no-ext-diff because difft doesnt do word diff
 	dw = di --color-words --no-ext-diff
@@ -27,9 +26,11 @@
 	# Add variants
 	ad = add -p
 
+	# Shorthands
 	br = branch
 	ci = commit
 	co = checkout
+	cp = cherry-pick
 	st = status
 	mt = mergetool
 
@@ -41,27 +42,37 @@
 	cirh = commit --reuse-message=HEAD
 	cireh = commit --reedit-message=HEAD
 
-	# Push varints
-	pushu = push --set-upstream
-
 	# Merge variants
 	ms = merge --squash
 
-	# Shorthands used by bash aliases s,h,r,rr,p,pp
-	f = di --stat --staged
-	b = di --stat
-	di-p = di --ext-diff
-	di-p2 = di --stat
-	di-pp = di
-	di-pp2 = di --stat
-	di-pw = dw
-	di-pw2 = di --stat
-	di-r = di --ext-diff --staged
-	di-r2 = di --staged --stat
-	di-rr = di --staged
-	di-rr2 = di --staged --stat
-	di-rw = dw --staged
-	di-rw2 = di --staged --stat
+	# Push varints
+	pushu = push --set-upstream
+
+	# Reset variants
+	re = reset
+	res = reset --soft
+	reh = reset --hard
+	rep = reset --hard @{push}
+	reu = reset --hard @{upstream}
+	resp = reset --soft @{push}
+	resu = reset --soft @{upstream}
+
+	# Shorthands used by bash aliases s,h,r,rr,p,pp. We prefix the intended name
+	# with "q-" to avoid matching prefixes of other commands.
+	q-f = di --stat --staged
+	q-b = di --stat
+	q-di-p = di --ext-diff
+	q-di-p2 = di --stat
+	q-di-pp = di
+	q-di-pp2 = di --stat
+	q-di-pw = dw
+	q-di-pw2 = di --stat
+	q-di-r = di --ext-diff --staged
+	q-di-r2 = di --staged --stat
+	q-di-rr = di --staged
+	q-di-rr2 = di --staged --stat
+	q-di-rw = dw --staged
+	q-di-rw2 = di --staged --stat
 
 	# TODO: Currently Using numbers instead of names to work on more platforms:
 	#   8: "brightblack"
@@ -174,7 +185,7 @@
 	# Using delta pager for slightly better word-diffing and whitespace errors.
 	# In some situations, we replace this pager explicitly in [pager] section.
 	pager = delta
-	editor = vim
+	editor = nvim
 	whitespace=trailing-space
 	autocrlf = input
 	excludesfile = ~/.gitignore_global
@@ -236,9 +247,23 @@
 	# diff3 adds original, zdiff3 factors out matching changes
 	# TODO: Do we like zdiff3? Else go back to diff3.
 	conflictstyle = zdiff3
-	tool = vimdiff
-	keepbackup = false
-	# Delete .orig files after merge
+	# Use neovim as difftool with nvim -d
+	tool = nvimdiff
+
+[mergetool]
+	# Delete .orig files after resolution
+	keepBackup = false
+
+# Applies to nvimdiff, too
+[mergetool "vimdiff"]
+	# Show different diffs within many tabs
+	#   1. default layout
+	#   2. LOCAL ↔ REMOTE
+	#   3. BASE → LOCAL
+	#   4. BASE → REMOTE
+	#   5. all files excluding MERGED (which has conflict markers). Could also
+	#      just turn off diff mode for MERGED.
+	layout = "(LOCAL,BASE,REMOTE) / MERGED + LOCAL,REMOTE + BASE,LOCAL + BASE,REMOTE + LOCAL,BASE,REMOTE"
 
 [pager]
 	# Overwrite the global pager setting from [core] if needed. The

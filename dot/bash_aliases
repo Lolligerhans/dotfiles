@@ -18,24 +18,34 @@
 #_______________________________________________________________________
 # git
 
-alias s='git --no-pager f; git s; git b;';
-alias S='git s -99999';
-alias h='git --no-pager f; git h; git b;';
+alias g='git';
+__git_complete g __git_main;
+
+alias s='git --no-pager q-f; git s; git q-b;';
+alias S='git s -99999'; # Also good to type 'S -3' or S -100'
+alias h='git --no-pager q-f; git h; git q-b;';
 
 alias n='git st';
 alias m='git st --short --branch';
 
-alias p='git di-p; git di-p2';
-alias pp='git di-pp; git di-pp2';
-alias pw='git di-pw; git di-pw2';
-alias r='git di-r; git di-r2;';
-alias rr='git di-rr; git di-rr2';
-alias rw='git di-rw; git di-rw2';
+alias p='git q-di-p; git q-di-p2';
+alias pp='git q-di-pp; git q-di-pp2';
+alias pw='git q-di-pw; git q-di-pw2';
+alias r='git q-di-r; git q-di-r2;';
+alias rr='git q-di-rr; git q-di-rr2';
+alias rw='git q-di-rw; git q-di-rw2';
 alias H='git diff master HEAD';
 
 alias a='git add -p';
 alias a='git add -p';
 alias u='git add -u';
+
+# List all commits starting with newest. Add -1 to list only the newest commit.
+# For ad-hoc scripting. Note that the order is not the same as in git log- Git
+# log also starts with newest commit, but then follows with immediate parent
+# commits first. Only when a common ancestor is reached are the other branche
+# snuck in.
+alias ga='git rev-list --all'; # "git all"
 
 # ______________________________________________________________________________
 # Vim
@@ -44,9 +54,9 @@ alias u='git add -u';
   alias Nvim='nvim -i NONE'; # New-vim: ignore shada
 
   # Short term session
-  alias vims="vim -S Session.vim"
+  alias vims="${_vim} -S Session.vim"
   # Long term session
-  alias vimS="vim -S Session_long.vim"
+  alias vimS="${_vim} -S Session_long.vim"
   # Switch to vim: Bring to foreground or open new.
   alias v='(("$(jobs -p | wc -l)" == 0)) && { vims || :; } || fg '"'"'${_vim}'"'"' || fg nvim || fg vim;'
   alias V='(("$(jobs -p | wc -l)" == 0)) && { vimS || :; } || fg '"'"'${_vim}'"'"' || fg nvim || fg vim';
@@ -294,7 +304,7 @@ _find_file()
     command find "${find_path}" -mindepth 1 "${hidden_flag[@]}" "${dirs_only_flag[@]}" -print > "$pipe_name" &
     # Ignore fzf failure but capture nonzero exit codes
     out="$("${fzf_command[@]}" <"$pipe_name")" || err="$?";
-    kill "$!" # Stop 'find' process (last background process)
+    kill "$!" 2>/dev/null; # Stop 'find' process (last background process)
     wait "$!" 2>/dev/null;
     rm "$pipe_name";
     case "$err" in
@@ -319,7 +329,7 @@ _find_file()
 
   # Perform operation on result: cd, page, pushd, ls, ...
   if (( dopushd )); then # TODO rename to dir_push?
-    pushd -- "$out";
+    _pushd -- "$out";
   elif (( change )); then # TODO rename to dir_change?
     cd -- "$out";
   elif (( pager )); then
@@ -433,8 +443,8 @@ del()
   alias tree='tree -CF';
 
 # ______________________________________________________________________________
-# Quick aliases: A bunch of short aliases that you can delete if you dont use
-# them. We use "," as leader for these.
+# Workflow aliases (starting with ","): A bunch of short aliases that implement
+# common workflow actions. These are meant to be standalone.
 
 # Git
   # "go git"

@@ -75,7 +75,7 @@ Plugin 'majutsushi/tagbar'
 " command (to check out older versions of a file).
 Plugin 'tpope/vim-fugitive'
 
-Plugin 'tpope/vim-unimpaired'
+"Plugin 'tpope/vim-unimpaired'
 
 " Plugin to add, remoe, change surrounding quotes and brackets
 Plugin 'tpope/vim-surround'
@@ -238,6 +238,29 @@ filetype on
   " Initialize configuration dictionary (required)
   let g:fzf_vim = {}
 
+" Maps for codeium
+  "set statusline+=\{…\}%3{codeium#GetStatusString()}
+  " Disable:
+  "let g:codeium_enabled = v:false
+  " Manual:
+  "let g:codeium_manual = v:true
+
+  let g:codeium_disable_bindings = 1
+  inoremap <script><silent><nowait><expr> <tab> codeium#Accept()
+  " Not sure why but not working in regular vim
+  if has('nvim')
+    inoremap <M-l>   <Cmd>call codeium#CycleCompletions(1)<CR>
+    inoremap <M-h>   <Cmd>call codeium#CycleCompletions(-1)<CR>
+    " Not working:
+    "inoremap <M-o>   <Cmd>call codeium#Complete()<cr>
+    "inoremap <M-O>   <Cmd>call codeium#Clear()<CR>
+  endif
+
+  "let g:codeium_filetypes = {
+  "    "bash": v:false,
+  "    "typescript": v:true,
+  "    }
+
 " ______________________________________________________________________________
 " colorschemes (non-Plugin)
 
@@ -297,13 +320,9 @@ filetype on
   set path+=**
 
 " Fzf based
-  " TODO We want these shorters to clobber namespaces?
-  "command! -nargs=0 F Files
-  " Find file (<c-x>, <c-v>, <c-t> to split, vert, tab open them)
-  nnoremap , :Files<cr>
-  " Find buffer in buffer list
-  nnoremap <F7> :Buffers<cr>
-  " TODO <F7> is a bit far away for a kinda crucial mapping swap with ß?
+  " Find file/buffer (<c-x>, <c-v>, <c-t> to split, vert, tab open them)
+  nnoremap ö :Files<cr>
+  nnoremap Ö :Buffers<cr>
 
 " Fallback non-fzf file operations. Use when fzf not available, and hidden
   " Split buffer vertically. Alternative would be to use :vsp followd by :b. If
@@ -342,7 +361,7 @@ command! MakeTags !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q *.h *.inc *.
   set tabstop=2 " show tabs as 2 characters
   set softtabstop=2
   " Allow enetering tab characters but keep sing <c-i> for spaces
-  inoremap <S-Tab> <C-V><Tab>
+  "inoremap <S-Tab> <C-V><Tab>
 
   " (default)
   "set smarttab
@@ -352,12 +371,12 @@ command! MakeTags !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q *.h *.inc *.
   set textwidth=80
   " Add t to auto-wrap text. c wraps comments.
   " :h fo-table
-  set formatoptions=crqn1j
+  set formatoptions=cro/qn1jl
 
   " Format indent using •
   " The end is just the default pattern
   " :h flp
-  let &formatlistpat="^\\s*\\(•\\|◦\\|·\\|TODO\\|FIXME\\|\\d\\+[\\]:.)}\\t ]\\)\\s*"
+  let &formatlistpat="^\\s*\\(•\\|◦\\|·\\|TODO\\|NOTE\\|FIXME\\|\\d\\+[\\]:.)}\\t ]\\)\\s*"
 
 " Text/Line wrapping
   " Disable visual line wrapping
@@ -438,6 +457,9 @@ command! MakeTags !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q *.h *.inc *.
     nnoremap ß :BLines<cr>
     " There is no capital ß available so use leader instead.
     nnoremap <leader>ß :Lines<cr>
+    " For searching a static ripgrep output, use :Rg (or :grep followed by
+    " line-fzf in the quickfix window)
+    nnoremap <leader>? :RG<cr>
   " Fzf search for tags
     nnoremap ü :BTags<cr>
     nnoremap Ü :Tags<cr>
@@ -463,14 +485,20 @@ nnoremap <Space> :silent nohl<cr>
 " ______________________________________________________________________________
 " windows,tabs,splits
 
-" split windows to the right (deactivated to :20vsp .)
+" split windows to the right
 set splitright
 set splitbelow
-
+" Show working directory
+nnoremap <A-.> :30vsp .<cr>
+" Navigate tabs and windows
 nnoremap <C-l> gt
 nnoremap <C-Right> gt
 nnoremap <C-h> gT
 nnoremap <C-Left> gT
+nnoremap <A-h> <C-w>h
+nnoremap <A-j> <C-w>j
+nnoremap <A-k> <C-w>k
+nnoremap <A-l> <C-w>l
 
 " ______________________________________________________________________________
 " convenience
@@ -492,8 +520,8 @@ set smartcase
 set mouse=a
 
 " save current vim session as 'Session.vim'
-inoremap <c-s> <c-o>:w<cr>
-nnoremap <c-s> :mksession<cr>
+"inoremap <c-s> <c-o>:w<cr>
+"nnoremap <c-s> :mksession<cr>
 " Save and suspend use <C-z> or :sus to suspend without saving
 nnoremap Q :silent! :wa\|:suspend<cr>
 " Quit and write short term session (easier to do by accident)
@@ -571,7 +599,11 @@ nnoremap <F4> :cn<cr>zz
   " :{range}<s-f9> or :{range}<s-f10>
   cnoremap <s-f9> windo diffoff<cr>
   cnoremap <s-f10> windo diffthis<cr>
-nnoremap <c-F10> :TagbarToggle<cr>
+if has('nvim')
+  nnoremap <F34> :TagbarToggle<cr>
+else
+  nnoremap <c-F10> :TagbarToggle<cr>
+endif
 nnoremap <c-F11> :IndentGuidesToggle<cr>
 " Re-process .vimrc (sometimes <c-f12> seems to be detected as <F36>)
 nnoremap <c-f12> :so $MYVIMRC<cr>
@@ -586,12 +618,12 @@ nnoremap <F36> :so $MYVIMRC<cr>
     " Run averaging script on normal fens
     " Run averaging script on closed fens
     " Run averaging script on fewer mixed fens
-    nnoremap <leader>an :!./avg n<CR>
-    nnoremap <leader>ac :!./avg c<CR>
-    nnoremap <leader>as :!./avg s<CR>
+    "nnoremap <leader>an :!./avg n<CR>
+    "nnoremap <leader>ac :!./avg c<CR>
+    "nnoremap <leader>as :!./avg s<CR>
 
-" ______________________________________________________________________________
-" TODO: Anything below this is not sorted or integrated well.
+" ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+" Section: Experimental
 
 "vnoremap > >gv " try doing this with numbers instead?
 "vnoremap < <gv
@@ -659,10 +691,10 @@ se complete-=t
   digraph sp 9251 " ␣
   " Heavy Round-Tipped Rightwards Arrow. Use AltGr-i ( → ) for normal arrow.
   digraph -> 10140 " ➜
-  digraph OO 9679 " ●  Dot-shaped (larger) bullet(-point) (normal size is 8226 oo)
-  " Dot-shaped bullet(-point) in black and white
-  digraph oo 8226 " •
-  digraph ._ 9702 " ◦
+  " Dot-shaped bullet(-point) in large, black, white
+  digraph OO 9679 " ●  Large
+  digraph oo 8226 " •  Black
+  digraph oO 9702 " ◦  White
   " Source codeable symbols
   digraph ky 128713 " ⚿  Key
   digraph KY 128447 " 🗝 Old key
@@ -681,6 +713,10 @@ se complete-=t
   digraph ** 10033 " Heavy Asterisk ✱
   digraph xX 10062 " ❎
   digraph oK 9989 " ✅
+  " Checkmark-box and empty checkmark-box
+  digraph bb 9744 " ☐ (box empty)
+  digraph bv 9745 " ☑ (box with v)
+
   digraph XX 10060 " ❌
   digraph -- 128711 " 🛇
   digraph _- 128683 " 🚫
@@ -690,6 +726,8 @@ se complete-=t
   digraph !! 10069 "❕
   digraph ?. 10067 "❓
   digraph !. 10071 "❗
+  digraph wa 9888 " ⚠ (triangle attention sign)
+  inoremap <leader><leader>warning ⚠️
   " git branch
   digraph gb 9095 " ⎇
   " Round <num-pad-position> box-drawing corner
@@ -727,9 +765,6 @@ se complete-=t
   inoremap <leader>ux <c-v>u02e3
   inoremap <leader>uy <c-v>u02b8
   inoremap <leader>uz <c-v>u1dbb
-
-  " Use fzf to search current buffer lines within pwd
-  nnoremap <leader>/ :BLines<cr>
 
 "let $BASH_ENV = "~/.bash_aliases"
 let $BASH_ENV = "~/dotfiles/vim_bashenv.sh"
@@ -782,19 +817,19 @@ let $BASH_ENV = "~/dotfiles/vim_bashenv.sh"
   "autocmd TabLeave * let g:lasttab = tabpagenr()
 
   " A map using garb tab
-  nnoremap <tab>g :call GoGarb()<cr>:Git<space>
+  nnoremap <leader>G :call GoGarb()<cr>:Git<space>
   "nnoremap <tab>g :call GoGarb()<cr>
 
   " Is this needed? Do they get overwritten?
-  autocmd BufNewFile,BufRead * setlocal formatoptions=crqn1jl
+  "autocmd BufNewFile,BufRead * setlocal formatoptions=cro/qn1jl
 
   " Show tab characters
   set list
   set listchars=tab:│· "Use digraph .M for smallest centre dot
   set listchars+=trail:▓ " Show trailing spaces cause else its invisible
   set listchars+=nbsp:␣
-  set listchars+=extends:…
-  set listchars+=precedes:…
+  "set listchars+=extends:…
+  "set listchars+=precedes:…
   set listchars+=conceal:┊
   "set listchars+=eol:↲
 
@@ -810,46 +845,22 @@ let $BASH_ENV = "~/dotfiles/vim_bashenv.sh"
   " Do not clear clipboard (!?)
   autocmd VimLeave * call system("xsel -ib", getreg('+'))
 
-" Maps for codemium
-  "set statusline+=\{…\}%3{codeium#GetStatusString()}
-
-  " Disable:
-  "let g:codeium_enabled = v:false
-  " Manual:
-  "
-  "let g:codeium_manual = v:true
-
-  " Completion keybindings
-  let g:codeium_disable_bindings = 1
-  inoremap <script><silent><nowait><expr> <tab> codeium#Accept()
-  " Not sure what option is missing but not working in vim
+  " Terminal: Nvim has stricter :term trap
   if has('nvim')
-    inoremap <M-l>   <Cmd>call codeium#CycleCompletions(1)<CR>
-    inoremap <M-h>   <Cmd>call codeium#CycleCompletions(-1)<CR>
-    " Not working:
-    "inoremap <M-o>   <Cmd>call codeium#Complete()<cr>
-    "inoremap <M-O>   <Cmd>call codeium#Clear()<CR>
+    " Keep <C-c> to abort terminal command. Use only <Esc> to leave.
+    :tnoremap <Esc> <C-\><C-n>
+    :tnoremap <expr> <C-R> '<C-\><C-N>"'.nr2char(getchar()).'pi'
+    :tnoremap <c-h> <C-\><C-o>:-tabnext<cr>
+    :tnoremap <c-l> <C-\><C-o>:+tabnext<cr>
+  else
+    nnoremap <C-w>t :-tab terminal<cr>
+    tnoremap <C-h> <c-w>:-tabnext<cr>
+    tnoremap <C-l> <c-w>:+tabnext<cr>
   endif
-
-  "let g:codeium_filetypes = {
-  "    "bash": v:false,
-  "    "typescript": v:true,
-  "    }
-
-  " Terminal:
-  nnoremap <C-w>t :-tab terminal<cr>
-  tnoremap <C-h> <c-w>:-tabnext<cr>
-  tnoremap <C-l> <c-w>:+tabnext<cr>
   "nnoremap <C-w>T :terminal ++curwin<cr>
   "nnoremap <C-w>o :terminal ++curwin ++close<cr>
 
-  " These interfere with fzf file search at the moment.
-  " Resolution: move file search to ß isntead.
-  "nnoremap ,a <cmd>term git add -p<cr>
-  "nnoremap ,p <cmd>term git di-p<cr>
-  "nnoremap ,r <cmd>term git di-r<cr>
-
-  set fillchars+=vert:\│
+  set fillchars+=vert:│,foldopen:▼,foldclose:▶,fold:#
 
   " Read modelines if found
   set modeline
@@ -952,8 +963,26 @@ set undofile "check external files for testing for availability
   vnoremap <leader>{ :s/\(\s*\)\S.\{-}\zs\s*{$/\r\1{/g<cr>
 
 " Terminal: Set ansi colours
-  "let g:terminal_ansi_colors = [ '#000000', '#cd0000', '#00cd00', '#cdcd00', '#0000ee', '#cd00cd', '#00cdcd', '#e5e5e5', '#7f7f7f', '#ff0000', '#00ff00', '#ffff00', '#5c5cff', '#ff00ff', '#00ffff', '#ffffff', ]
-  let g:terminal_ansi_colors = ['#2E3436','#CC0000','#4E9A06','#C4A000','#3465A4','#75507B','#06989A','#D3D7CF','#555753','#EF2929','#8AE234','#FCE94F','#729FCF','#AD7FA8','#34E2E2','#EEEEEC',]
+  if has('nvim')
+    let g:terminal_color_0 = '#2E3436'
+    let g:terminal_color_1 = '#CC0000'
+    let g:terminal_color_2 = '#4E9A06'
+    let g:terminal_color_3 = '#C4A000'
+    let g:terminal_color_4 = '#3465A4'
+    let g:terminal_color_5 = '#75507B'
+    let g:terminal_color_6 = '#06989A'
+    let g:terminal_color_7 = '#D3D7CF'
+    let g:terminal_color_8 = '#555753'
+    let g:terminal_color_9 = '#EF2929'
+    let g:terminal_color_10 = '#8AE234'
+    let g:terminal_color_11 = '#FCE94F'
+    let g:terminal_color_12 = '#729FCF'
+    let g:terminal_color_13 = '#AD7FA8'
+    let g:terminal_color_14 = '#34E2E2'
+    let g:terminal_color_15 = '#EEEEEC'
+  else
+    let g:terminal_ansi_colors = ['#2E3436','#CC0000','#4E9A06','#C4A000','#3465A4','#75507B','#06989A','#D3D7CF','#555753','#EF2929','#8AE234','#FCE94F','#729FCF','#AD7FA8','#34E2E2','#EEEEEC',]
+  endif
 
 " Allow cursor past the end of line
 set virtualedit=block,insert
@@ -989,3 +1018,5 @@ onoremap Ä }
     "include=^\s*#\s*include
     "ttimeout
     "ttimeoutlen
+    "
+set foldcolumn=auto

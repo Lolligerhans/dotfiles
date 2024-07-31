@@ -187,6 +187,7 @@ test_setargs_17()
 test_setargs_18()
 {
   set_args "--f -r=" "--" "--f";
+  # FIXME: This entire file assumes global declaration mechanic. Move to get_args.
   >/dev/null assert_unset "__f" "${FUNCNAME}: Flag is not set"
   >/dev/null assert_eq "$_r" "--f" "${FUNCNAME}: Required parameter is set positionally after \"--\""
   unset_args;

@@ -70,6 +70,20 @@ create_truncate_tmp()
   return 0;
 }
 
+# Return the parent directory of a file.
+# $1 (in)  The file
+# Output: The parent directory
+parent_dir_of()
+{
+  if (($# != 1)); then
+    abort "$FUNCNAME: Expected 1 argument, got $#";
+  fi
+  declare parent_dir;
+  parent_dir="$(dirname -- "$(realpath -- "$1")")";
+  show_variable
+  dirname -- "$1";izz
+}
+
 # Create randomly named directory somewhere below /tmp. No guarantee that it is
 # unique, but likely is.
 # Output: absolute path to new directory.

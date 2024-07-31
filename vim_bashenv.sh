@@ -11,4 +11,5 @@
 shopt -s expand_aliases;
 
 # shellcheck source=/dev/null
+source ~/.bash_completion;
 source ~/.bash_aliases;

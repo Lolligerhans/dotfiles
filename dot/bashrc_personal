@@ -2,8 +2,8 @@
 
 # Add some environment paths
   # CUDA
-  export PATH="${PATH}:/usr/local/cuda/bin";
-  export LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}";
+  #export PATH="${PATH}:/usr/local/cuda/bin";
+  #export LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}";
 
   # NOTE Tilde notation works here despite not being expanded in the string
   export PATH="$PATH:~/.local/bin";
@@ -19,6 +19,8 @@
   # Path to start IDEA from
   export PATH="${PATH}:${HOME}/Downloads/idea-IDE/bin"; # Written in command_install_idea
 
+  export PATH="${PATH}:${HOME}/.cargo/bin";
+
   # homebrew
   #eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)";
 
@@ -33,7 +35,7 @@ stty -ixon
 shopt -s autocd;
 
 declare -x HISTSIZE=; # Unlimited
-declare -x HISTFILE=; # Use default
+declare -x HISTFILE=~/.local/share/bash_history;
 declare -x HISTFILESIZE=; # Unlimited
 declare -x HISTCONTROL='ignoreboth';
 shopt -s histappend;
@@ -139,5 +141,8 @@ if command -v mcfly &> /dev/null; then
   # Doing this twice leads to errors!
   eval "$(mcfly init bash)";
 fi
+
+# Env
+declare -gx RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep.conf";
 
 # vim: filetype=bash

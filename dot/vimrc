@@ -41,7 +41,12 @@ Plugin 'octol/vim-cpp-enhanced-highlight'
 Plugin 'leafgarland/typescript-vim'
 
 " Colorscheme "gruvbox"
-Plugin 'morhetz/gruvbox'
+if has('nvim')
+"  Plugin 'gruvbox-community/gruvbox'
+  Plugin 'morhetz/gruvbox'
+else
+  Plugin 'morhetz/gruvbox'
+endif
 
 " Colorscheme "ayu/ayucolor"
 "Plugin 'ayu-theme/ayu-vim' Old, no longer maintained. Still works though.
@@ -69,7 +74,7 @@ Plugin 'majutsushi/tagbar'
   " Use this line to automatically update the plugin
   Plugin 'junegunn/fzf', { 'do': { -> fzf#install() } }
 
-  Plugin 'junegunn/fzf.vim'
+  "Plugin 'junegunn/fzf.vim'
 
 " Fugitive git plugin for vim that is needed for the fzf pluging :Commits
 " command (to check out older versions of a file).
@@ -114,7 +119,9 @@ filetype on
 
     " highlight cursorline (before setting colorscheme)
     set cursorline
-    highlight CursorLine term=bold cterm=NONE ctermfg=white ctermbg=NONE gui=NONE guifg=white guibg=NONE
+    " I removed the additional cursorline highlight. I think it never had any
+    " effect.
+    "highlight CursorLine term=bold cterm=NONE ctermfg=white ctermbg=red gui=bold guifg=white guibg=NONE
 
 " ______________________________________________________________________________
 " Plugin configuration
@@ -122,7 +129,7 @@ filetype on
 " colorschemes
 
     " ayu
-    if 1
+    if 0
     if exists('+termguicolors')
         set termguicolors     " enable true colors support
     else
@@ -132,10 +139,9 @@ filetype on
     "let ayucolor="light" | set background=light  " for light version of theme
     "let ayucolor="mirage" | set background=dark " for mirage version of theme
     colorscheme ayu
-    endif
 
     " gruvbox
-    if 0
+    else
     if exists('+termguicolors')
         "echo "could also use ayucolor"
         set termguicolors
@@ -155,15 +161,31 @@ filetype on
     endif
 
 " lightline
-    " show line
+    " Always show
     set laststatus=2
-    " remove lightline
+    " We could use this to hide the extra -- INSERT --, but it is actually quite
+    " useful when it differs from lightline, e.g., -- (insert) --.
     "set noshowmode
-    " set colorscheme for status line to match colorscheme
+    " Configure plugin by writing into this variable. :h statusline.
     let g:lightline = {
-        \ 'colorscheme': 'wombat'
-        \ }
-    "    \ 'colorscheme': 'solarized'
+        \ 'colorscheme': 'wombat',
+        \ 'component': {
+        \   'lineinfo': '%-9(%3l:%c%-V%)'
+        \ },
+        \ } " We always reserve 3 for line, 2 for col, 2 for virtual col
+        " Lineinfo: '%3l:%-2c'
+    function! MoreStatus()
+      " Beefy statusline. Too annoying in regular use, but activate on demand.
+      " TODO: Add any interesting stuff more stuff
+      if !has_key(g:lightline, 'component')
+        let g:lightline.component = {}
+      endif
+      let g:lightline.component.lineinfo = '%-14(%3l:%c%-V 0x%-2B%)'
+      call lightline#init()
+      call lightline#update()
+      " TODO Effect is not preserved by :makesession
+    endfunction
+    command! MoreStatus call MoreStatus()
 
 " Indentation guidelines (colored spaces)
 
@@ -261,6 +283,11 @@ filetype on
   "    "typescript": v:true,
   "    }
 
+" Configure diffchar plugin
+
+  "let g:DiffCharConceal = 0
+  let g:DiffUnit = 'Char'
+
 " ______________________________________________________________________________
 " colorschemes (non-Plugin)
 
@@ -282,7 +309,7 @@ filetype on
 " highlight cursorline number
     hi CursorLineNR cterm=bold
     augroup CLNRSet
-        autocmd! ColorScheme * hi CursorLineNR cterm=bold
+        autocmd! ColorScheme * hi CursorLineNR cterm=bold gui=bold
     augroup END
 
 " show line number
@@ -292,7 +319,7 @@ filetype on
 " ______________________________________________________________________________
 " FILES, BUFFERS, WINDOWS, DIRECTORIES
 "
-" FIXME: This is basically all out of date
+" TODO: This is basically all out of date
 " Set up so that new files can be found with fzf using :F.
 " After having the filename present on the bufflist, close them with normal mode
 " command Q. This way the name resides in the bufflist even after unloading:
@@ -312,17 +339,12 @@ filetype on
 "   Find normally starting in pwd                               :fin
 
   " recursive searches in workspace
-  " TODO: If the broad inclusion becomes a problem, exclude files using
-  "       :h wildignore.
-  set wildignore+=tags,Session.vim,Session_long.vim
+  " If the broad inclusion becomes a problem, exclude files using :h
+  " wildignore.
+  set wildignore+=tags,Session.vim,Session_active.vim,.git
   set wildignorecase
   set fileignorecase
   set path+=**
-
-" Fzf based
-  " Find file/buffer (<c-x>, <c-v>, <c-t> to split, vert, tab open them)
-  nnoremap ö :Files<cr>
-  nnoremap Ö :Buffers<cr>
 
 " Fallback non-fzf file operations. Use when fzf not available, and hidden
   " Split buffer vertically. Alternative would be to use :vsp followd by :b. If
@@ -342,7 +364,9 @@ filetype on
 
 " Create tags using ctags
 "command! MakeTags !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q . *.h *.inc *.cpp
-command! MakeTags !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q *.h *.inc *.cpp *.test
+":noh
+"command! MakeTags !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q *.h *.inc *.cpp *.test
+command MakeTags !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q
 
 " ______________________________________________________________________________
 " File type config
@@ -359,8 +383,8 @@ command! MakeTags !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q *.h *.inc *.
   filetype plugin indent on
   set expandtab " when pressing tab, give N spaces
   set tabstop=2 " show tabs as 2 characters
-  set softtabstop=2
-  " Allow enetering tab characters but keep sing <c-i> for spaces
+  set softtabstop=2 " Used as pseudo-tab size"
+  " Allow enetering tab characters but keep using <c-i> for spaces
   "inoremap <S-Tab> <C-V><Tab>
 
   " (default)
@@ -371,7 +395,7 @@ command! MakeTags !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q *.h *.inc *.
   set textwidth=80
   " Add t to auto-wrap text. c wraps comments.
   " :h fo-table
-  set formatoptions=cro/qn1jl
+  set formatoptions=cr/qn1jl
 
   " Format indent using •
   " The end is just the default pattern
@@ -448,7 +472,7 @@ command! MakeTags !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q *.h *.inc *.
   " fold by indentation (syntax can be slow)
   se foldmethod=indent
   " Use se fo[ldenable] to enable folding
-  se nofoldenable
+  "se nofoldenable
 
 " Fzf mappings to search within text (<c-[txv]> to split-open the result)
   " Fzf search lines using \ü, tags using ü
@@ -463,12 +487,15 @@ command! MakeTags !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q *.h *.inc *.
   " Fzf search for tags
     nnoremap ü :BTags<cr>
     nnoremap Ü :Tags<cr>
+    " Find file/buffer (<c-x>, <c-v>, <c-t> to split, vert, tab open them)
+    nnoremap ö :Files<cr>
+    nnoremap Ö :Buffers<cr>
 
 " ______________________________________________________________________________
 " DISPLAY
 
 "nnoremap <esc> <esc>:silent nohl<cr>
-nnoremap <Space> :silent nohl<cr>
+"nnoremap <Space> :silent nohl<cr>
 ":setlocal foldmethod=syntax
 
 " ______________________________________________________________________________
@@ -519,19 +546,15 @@ set smartcase
 
 set mouse=a
 
-" save current vim session as 'Session.vim'
-"inoremap <c-s> <c-o>:w<cr>
-"nnoremap <c-s> :mksession<cr>
-" Save and suspend use <C-z> or :sus to suspend without saving
-nnoremap Q :silent! :wa\|:suspend<cr>
-" Quit and write short term session (easier to do by accident)
-nnoremap <leader>q :silent! :mks Session_long.vim\|mksession!\|xa<cr>
-" Quit and write long term session (more difficult to do accidentally)
-nnoremap <leader>Q :mksession! Session_long.vim\|xa
-
-" Retired
-"nnoremap <leader>w :silent! mksession Session2.vim\|unsilent xa
-"nnoremap <leader>Q :mksession!\|xa
+" Suspend (like <C-z>)
+nnoremap Q :silent! :suspend<cr>
+" Save quit (quit and write files and session). The active session is written
+" every time to imitate suspension.
+" Start long term Session if not started yet. Otherwise the long term session
+" must be written by hand with ':mks!'.
+nnoremap <leader>q :silent! :mks\|mksession! Session_active.vim\|xa<cr>
+" Hard quit (abandon) session. Mostly for when we want to abort mergetool.
+nnoremap <leader>Q <cmd>qa!<cr>
 
 " ______________________________________________________________________________
 " HIGHLIGHTING
@@ -549,10 +572,24 @@ nnoremap <leader>Q :mksession! Session_long.vim\|xa
 
 " build and run
 nnoremap <F1> :call GoGarb()\|make<cr>
-" TODO We dont really need this since we got <tab>e now, running the same
 nnoremap <F2> :!./run.sh<cr>
-nnoremap <F3> :cN<cr>zz
-nnoremap <F4> :cn<cr>zz
+nnoremap <F3> :cN<cr>zOzz
+nnoremap <F4> :cn<cr>zOzz
+if has('nvim')
+  nnoremap <F15> :N<cr>
+  nnoremap <F16> :n<cr>
+  nnoremap <F27> :cNf<cr>
+  nnoremap <F28> :cnf<cr>
+else
+  nnoremap <S-F3> :N<cr>
+  nnoremap <S-F4> :n<cr>
+  nnoremap <C-F3> :cNf<cr>
+  nnoremap <C-F4> :cnf<cr>
+endif
+
+
+nnoremap <F5> g;
+nnoremap <F6> g,
 
 " Git: <F5> to <F8>
 " These deals with git by using our bash aliases (dotfiles/vim_bashenv.sh). We
@@ -563,42 +600,67 @@ nnoremap <F4> :cn<cr>zz
   "         <  S-F5> log status (verbose)
   "         <C-  F5> repo status
   "         <C-S-F5> reflog
-  nnoremap <F5> :-tab terminal<cr>s<cr>
-  nnoremap <S-F5> :-tab terminal<cr>git lg2 --all<cr>
-  nnoremap <C-F5> :-tab terminal<cr>n<cr>
-  nnoremap <C-S-F5> :-tab terminal<cr>git reflog<cr>
-  " Diff: Maps bash aliases p,pp,r,rr for diffing
-  "         <    F6> diff
-  "         <  S-F6> diff --no-ext-diff
-  "         <C-  F6> diff --cached
-  "         <C-S-F6> diff --cached --no-ext-diff
-  nnoremap <F6> :-tab terminal<cr>p<cr>
-  nnoremap <S-F6> :-tab terminal<cr>pp<cr>
-  nnoremap <C-F6> :-tab terminal<cr>r<cr>
-  nnoremap <C-S-F6> :-tab terminal<cr>rr<cr>
+  "nnoremap <F5> :-tab terminal<cr>s<cr>
+  "nnoremap <S-F5> :-tab terminal<cr>git lg2 --all<cr>
+  "nnoremap <C-F5> :-tab terminal<cr>n<cr>
+  "nnoremap <C-S-F5> :-tab terminal<cr>git reflog<cr>
+  "" Diff: Maps bash aliases p,pp,r,rr for diffing
+  ""         <    F6> diff
+  ""         <  S-F6> diff --no-ext-diff
+  ""         <C-  F6> diff --cached
+  ""         <C-S-F6> diff --cached --no-ext-diff
+  "nnoremap <F6> :-tab terminal<cr>p<cr>
+  "nnoremap <S-F6> :-tab terminal<cr>pp<cr>
+  "nnoremap <C-F6> :-tab terminal<cr>r<cr>
+  "nnoremap <C-S-F6> :-tab terminal<cr>rr<cr>
   " Edit:   <    F7> add -p
   "         <  S-F7> checkout -p
   "         <C-  F7> Fugitive
-  nnoremap <F7> :-tab terminal<cr>a<cr>
-  nnoremap <S-F7> :-tab terminal<cr>git co -p<cr>
-  nnoremap <C-F7> <cmd>-tab split<cr><cmd>Git<cr><c-w>o
-  " Commit: <    F8> commit
-  "         <  S-F8> commit --amend
-  "         <C-  F8> commit --reuse-message=HEAD
-  "         <C-S-F8> commit --reedit-message=HEAD
-  nnoremap <F8> <cmd>-tab split<cr><cmd>Git commit<cr><c-w>o
-  nnoremap <S-F8> :Git commit --amend<cr>
+  "nnoremap <F7> :-tab terminal<cr>a<cr>
+  "nnoremap <S-F7> :-tab terminal<cr>git co -p<cr>
+  "nnoremap <C-F7> <cmd>-tab split<cr><cmd>Git<cr><c-w>o
+  "" Commit: <    F8> commit
+  ""         <  S-F8> commit --amend
+  ""         <C-  F8> commit --reuse-message=HEAD
+  ""         <C-S-F8> commit --reedit-message=HEAD
+  "nnoremap <F8> <cmd>-tab split<cr><cmd>Git commit<cr><c-w>o
+  "nnoremap <S-F8> :Git commit --amend<cr>
   "nnoremap <F8> :-tab terminal<cr>c<cr>
   "nnoremap <S-F8> :-tab terminal<cr>,gca<cr>
   "nnoremap <C-F8> :-tab terminal<cr>git cirh
   "nnoremap <C-S-F8> :-tab terminal<cr>git cireh
 
 " Diff mode
-  nnoremap <F9> [c
-  nnoremap <F10> ]c
+  " Jump to diffs
+  nnoremap <F9> [czz
+  nnoremap <F10> ]czz
+  " TODO Move helper functions into separate script
+  function! JumpToString(...)
+    " Search for a:1 using jump command a:2 (n or N or empty)
+    let l:jumpPattern = get(a:, 1)
+    let l:jumpcmd = get(a:, 2, 'n')
+    let l:oldPattern = getreg('/')
+    let l:oldPatternType = getregtype('/')
+    call setreg('/', l:jumpPattern, 'v')
+     exec 'normal! '.l:jumpcmd
+     normal! zz
+    call setreg('/', l:oldPattern, l:oldPatternType)
+  endfunction
+  if has('nvim')
+    nnoremap <F21> <cmd>call JumpToString('<<<<<<<', 'N')<cr>
+    nnoremap <F22> <cmd>call JumpToString('<<<<<<<', 'n')<cr>
+  else
+    nnoremap <s-f9> <cmd>call JumpToString('<<<<<<<', 'N')<cr>
+    nnoremap <s-f10> <cmd>call JumpToString('<<<<<<<', 'n')<cr>
+  endif
   " :{range}<s-f9> or :{range}<s-f10>
-  cnoremap <s-f9> windo diffoff<cr>
-  cnoremap <s-f10> windo diffthis<cr>
+  if has('nvim')
+    cnoremap <F21> windo diffoff<cr>
+    cnoremap <F22> windo diffthis<cr>
+  else
+    cnoremap <s-f9> windo diffoff<cr>
+    cnoremap <s-f10> windo diffthis<cr>
+  endif
 if has('nvim')
   nnoremap <F34> :TagbarToggle<cr>
 else
@@ -651,8 +713,9 @@ se colorcolumn=81 " se cc=81
 se ttimeoutlen=50 " set key code delay to 50ms
 
 " Use Ctrl-C to exit insert mode and visual mode, but like using Esc
-inoremap <C-c> <esc>
-vnoremap <C-c> <esc>
+nnoremap <silent> <esc> <esc>:noh<cr>
+inoremap <silent> <C-c> <esc>
+vnoremap <silent> <C-c> <esc>
 
 " Do not search /usr/include for insert mode completion
 se complete-=t
@@ -666,7 +729,7 @@ se complete-=t
 " Read project vimrc
   " Prevents specific commands
   set secure
-  " Load .vimrc from current directory
+  " Load .vimrc/.nvimrc config from current directory
   set exrc
 
 " Move visually in wrapped lines
@@ -695,6 +758,9 @@ se complete-=t
   digraph OO 9679 " ●  Large
   digraph oo 8226 " •  Black
   digraph oO 9702 " ◦  White
+  ".M
+  digraph .H 8259 " ⁃ Hyphenation bullet
+  digraph .h 8231 " ‧ Hyphenation point
   " Source codeable symbols
   digraph ky 128713 " ⚿  Key
   digraph KY 128447 " 🗝 Old key
@@ -709,16 +775,23 @@ se complete-=t
   digraph xx 10006 " ✕  Multipliction x
   digraph Xx 10006 " ✖  Heavy multipliction x
   digraph ok 10004 " Heavy check mark ✔
-  "digraph Ok ✔️  Heavy
+  " Emoji variants
+  inoremap <leader><leader>ok ✔️
+  inoremap <leader><leader>xx ✖️
+  digraph ++ 10133 " ➕ Heavy plus sign
+  digraph -- 10134 " ➖ Heavy minus sign
   digraph ** 10033 " Heavy Asterisk ✱
   digraph xX 10062 " ❎
   digraph oK 9989 " ✅
+  " emoji box empty
+  " ☑️ emoji box with checkmark
   " Checkmark-box and empty checkmark-box
   digraph bb 9744 " ☐ (box empty)
-  digraph bv 9745 " ☑ (box with v)
-
+  digraph bv 9745 " ☑ (box with check mark)
+  digraph bx 9746 " ☒ (box with x)
   digraph XX 10060 " ❌
-  digraph -- 128711 " 🛇
+  " Underscores _ should not be useed (reserved) but we do anyway
+  digraph __ 128711 " 🛇
   digraph _- 128683 " 🚫
   digraph -_ 9940 " ⛔  No entry sign
   " Ornament exclamation and question marks to mark stuff in code
@@ -848,19 +921,32 @@ let $BASH_ENV = "~/dotfiles/vim_bashenv.sh"
   " Terminal: Nvim has stricter :term trap
   if has('nvim')
     " Keep <C-c> to abort terminal command. Use only <Esc> to leave.
-    :tnoremap <Esc> <C-\><C-n>
-    :tnoremap <expr> <C-R> '<C-\><C-N>"'.nr2char(getchar()).'pi'
-    :tnoremap <c-h> <C-\><C-o>:-tabnext<cr>
-    :tnoremap <c-l> <C-\><C-o>:+tabnext<cr>
+    tnoremap <Esc> <C-\><C-n>
+    tnoremap <expr> <C-R> '<C-\><C-N>"'.nr2char(getchar()).'pi'
+    " We would like to use <C-\><C-o> here, but it stays in insert mode IN THE
+    " NEW TAB, leaving ther terminal in normal mode anyway.
+    tnoremap <c-h> <C-\><C-n>:-tabnext<cr>
+    tnoremap <c-l> <C-\><C-n>:+tabnext<cr>
+    nnoremap <A-h> <C-\><C-n><C-w>h
+    nnoremap <A-j> <C-\><C-n><C-w>j
+    nnoremap <A-k> <C-\><C-n><C-w>k
+    nnoremap <A-l> <C-\><C-n><C-w>l
   else
-    nnoremap <C-w>t :-tab terminal<cr>
     tnoremap <C-h> <c-w>:-tabnext<cr>
     tnoremap <C-l> <c-w>:+tabnext<cr>
+  endif
+  if has('nvim')
+    nnoremap <C-w>t :-tab terminal<cr>i
+  else
+    nnoremap <C-w>t :-tab terminal<cr>
   endif
   "nnoremap <C-w>T :terminal ++curwin<cr>
   "nnoremap <C-w>o :terminal ++curwin ++close<cr>
 
-  set fillchars+=vert:│,foldopen:▼,foldclose:▶,fold:#
+  set fillchars=vert:▏,foldopen:▾,foldclose:▸,fold:─,foldsep:│
+  if has('nvim')
+    set foldcolumn=auto
+  endif
 
   " Read modelines if found
   set modeline
@@ -912,6 +998,7 @@ set undofile "check external files for testing for availability
   inoremap <leader><leader>plaster 🩹
   inoremap <leader><leader>hospital 🏥
   inoremap <leader><leader>syringe 💉
+  inoremap <leader><leader>coconut 🥥
   " Chess symbols ('c' for chess)
   inoremap <leader><leader>cc 🙾
   inoremap <leader><leader>cC 🙿
@@ -930,6 +1017,29 @@ set undofile "check external files for testing for availability
   inoremap <leader><leader>cN ♞
   inoremap <leader><leader>cP ♟
 
+  " Large, square and curly brackets (with top, middle, bottom)
+  inoremap <leader><leader>(t ⎛
+  inoremap <leader><leader>(m ⎜
+  inoremap <leader><leader>(b ⎝
+  inoremap <leader><leader>)t ⎞
+  inoremap <leader><leader>)m ⎟
+  inoremap <leader><leader>)b ⎠
+  inoremap <leader><leader>[t ⎡
+  inoremap <leader><leader>[m ⎢
+  inoremap <leader><leader>[b ⎣
+  inoremap <leader><leader>]t ⎤
+  inoremap <leader><leader>]m ⎥
+  inoremap <leader><leader>]b ⎦
+  inoremap <leader><leader>{t ⎧
+  inoremap <leader><leader>{m ⎪
+  inoremap <leader><leader>{M ⎨
+  inoremap <leader><leader>{b ⎩
+  inoremap <leader><leader>}t ⎫
+  inoremap <leader><leader>}m ⎪
+  inoremap <leader><leader>}M ⎬
+  inoremap <leader><leader>}b ⎭
+
+
 " Removed: Because we wanted to remap <F5> to <F8>
 
   "nnoremap <f5> :RainbowToggle<cr>
@@ -943,20 +1053,14 @@ set undofile "check external files for testing for availability
 
 " Hexadecimal: Convert hex representations
   " Read hexadecimal (-r: read, -p: plain) notation and format as hexdump
-  " TODO Doesnt work like this
-  command HexRead '<,'>!xxd -r -p\|xxd
-  " Visual mode mappings
-  " TODO Can I use the HexRead command?
-  " Hexadecimal:
-  "   We use 'x' instead of 'h' because <leader>h is used for switch to header
-  "   file
-  vnoremap <leader>xr :!xxd -r -p\|xxd<cr>gv>
-  " TODO HexHex (<leader>xx) binary -> hex
-  " TODO HexBinary <leader>xb hex -> binary
-  " HexRead:
-  "   Display hexadeciman characters with hexdump, using <leader>hr mapping. Do
-  "   a little bit of searching to find hex digits while avoiding empty lines.
-  nmap <leader>xr /[^[:xdigit:][:space:]]<cr>VN$/[[:xdigit:]]<cr>o^N<bslash>hr:silent nohl<cr>
+  "  HexRead   │ <leader>xr │ Convert [[:xdigit:][:space:]]+ to hexdump
+  "  HexHex    │ <leader>xx │ binary -> hex TODO
+  "  HexBinary │ <leader>xb │ hex -> binary TODO
+  command HexRead '<,'>!xxd -r -p|xxd
+  " Only for linewise-visual, because ! operates on lines.
+  " We place marks manually, because ! breaks '<,'> when line count changes.
+  vnoremap <leader>xr <esc>'<kmh'>jml<cmd>HexRead<cr>'hjV'lk>
+  nmap <leader>xr /[^[:xdigit:][:space:]]<cr>VN$/[[:xdigit:]]<cr>o^N<bslash>xr:silent nohl<cr>
 
 
 " Braces: Substitute brace at end of line with brace at start of line
@@ -994,18 +1098,25 @@ onoremap Ä }
 
 " Neovim: Proof config against neovim defaults
   " Required but not mentioned:
-    set guicursor=n-v-c:block,i-ci-ve:block,r-cr:block,o:block
-      \,a:blinkwait700-blinkoff400-blinkon250-Cursor/lCursor
-      \,sm:block-blinkwait175-blinkoff150-blinkon175 " Prevent line cursor
+    " Prevent line cursor. Use inverse/reverse instead of the :h suggestion.
+    set guicursor=n-v-c:block
+      \,i-ci-ve:block
+      \,r-cr:block
+      \,o:block
+      \,a:blinkwait700-blinkoff400-blinkon250-inverse/reverse
+      \,sm:block-blinkwait175-blinkoff150-blinkon175
+    "set guicursor=
   " The ones we probably want
     set nohidden " prevent :term corpses
     set belloff=""
     set nolangremap
     set sidescroll=0 " Can set to 1, but ideally we use wrapping anyway
+    " Same as in vim. Neovim ignores 'finx' (cannot be turned off in neovim).
+    " Removed 'CF' from default.
+    set shortmess=finxltToO
   " The ones we may remove later
     set commentstring="/*%s*/"
     set sessionoptions=blank,buffers,curdir,folds,help,options,tabpages,winsize,terminal
-    set shortmess=filnxtToO
     set smarttab
     set nostartofline
     "set wildoptions=pum (to prevent tagfile matches?)
@@ -1018,5 +1129,25 @@ onoremap Ä }
     "include=^\s*#\s*include
     "ttimeout
     "ttimeoutlen
-    "
-set foldcolumn=auto
+
+function DiffToggle()
+  if &diff
+    diffoff
+  else
+    diffthis
+  endif
+endfunction
+nnoremap dO <cmd>call DiffToggle()<cr>
+
+" Don't use -uu for ripgrep.
+set grepprg=rg\ --vimgrep
+
+let g:netrw_liststyle = 3
+
+set foldlevelstart=1
+
+" TODO fzf mappings for insert mode and other completion *fzf-vim-mappings*
+
+" Open vim config. .vimrc or $MYVIMRC
+command! Conf -tab split ~/.vimrc
+command! Config -tab split $MYVIMRC

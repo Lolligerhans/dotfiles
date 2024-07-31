@@ -24,6 +24,7 @@ load_version setargs_test.sh 0.0.0;
 load_version colour_test.sh 0.0.0;
 load_version version_test.sh 0.0.0;
 load_version userinteracts_test.sh 0.0.0;
+load_version may_fail_test.sh 0.0.0;
 
 # Ensuring version even if included already
 load_version "$dotfiles/scripts/version.sh" 0.0.0;
@@ -73,6 +74,32 @@ test_bash_meta()
   fi
 }
 
+test_boilerplate()
+{
+  # We cannot test whether all files keep these settings intact. But we can
+  # verify that they come out of boilerplate.sh correctly.
+  declare opt;
+  for opt in e u E T; do # -h is not crucial
+    assert_match "$-" "*${opt}*" "We need option ${opt}";
+  done
+  for opt in inherit_errexit; do
+    assert_eq "$(shopt -p "${opt}")" "shopt -s ${opt}" "We need shopt ${opt}";
+  done
+}
+
+# Tests the availability (not function) of expected binaries etc.
+test_environment()
+{
+  [[ "$-" == *e* ]] || return 1;
+  run_silent_both "realpath" "/";
+  run_silent_both "dirname" "/";
+}
+
+test_import()
+{
+  return 1;
+}
+
 test_init_standalone()
 {
   ((loud_tests)) && echol "$FUNCNAME";
@@ -92,6 +119,16 @@ test_init_standalone()
     errchos "Not testing standalone export";
   fi
   echok "$FUNCNAME";
+}
+
+test_may_fail()
+{
+  test_may_fail_allow_success;
+  test_may_fail_allow_failure;
+  test_may_fail_exit;
+  test_may_fail_normal_exit;
+  test_may_fail_return;
+  test_may_fail_options;
 }
 
 test_version()

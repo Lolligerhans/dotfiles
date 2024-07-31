@@ -9,7 +9,7 @@
 
 # Editing artifacts
 Session.vim
-Session_make.vim
+Session_active.vim
 tags
 *.swp
 

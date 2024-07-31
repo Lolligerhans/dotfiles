@@ -34,12 +34,27 @@ load_version "$dotfiles/scripts/utils.sh" "0.0.0";
 # │ 𝑓 Functional         │
 # ╰──────────────────────╯
 
-# This function executes "$@", allowing failure, but keeping set -e intact.
-# Meaning the first error of "$@" will "abort" execution, returning 0.
-# TODO Can we use '0>&1 :' somehow instead of 'cat'?
+bash_caller()
+{
+  errchof "I think its not working yet";
+  abort "Not implemented yet";
+  echoi "${@@A}";
+  declare -i index="$1";
+  while (( index > 0 )); do
+    caller "$i";
+    (( index-- ));
+  done
+}
+
+# This function executes "$@" IN A SUBSHELL, allowing failure, but keeping set
+# -e intact. Meaning the first error of "$@" will "abort" execution, with
+# may_fail() returning 0.
+# Synopsis:
+#     may_fail -- command [arg1] [arg2]
+#     may_fail return_var -- command [arg1] [arg2]
+# Keeps stdout intact, adding logs to stderr (for now).
 may_fail()
 {
-  cat < <("${@}");
   # Contrary to popular demand, Bash's set -e, set -u and pipefail can be
   # permanently disabled by if, ||, &&, while, until, !, recursively with
   # disregard of the actual flag:
@@ -57,8 +72,63 @@ may_fail()
   #     }
   #     install_program || true; # ❌ bad
   #
-  # We trick bash by making bash consider the 'cat' command to be executed
-  # instead.
+  # We disable set -e surrounding a subshell. Unfortunately this prevents
+  # interaction with the parent process. We would have to restore set -e by hand
+  # if it may not have been set before.
+  #
+  # An alternative would be to use:
+  #     declare dummy="$( "$@" )";
+  # That way the return value is lost, but we must not worry about any flags:
+  # The declaration counts as last command (so this line returns 0 regardless
+  # failures of $@). However, we might not like storing stdout in a variable and
+  # we may need a return value.
+  # what $@).
+  if (( $# < 2 )); then
+    abort "Expected at least 2 arguments";
+  fi
+  declare ret_name;
+  if [[ "$1" == "--" ]]; then
+    ret_name="";
+    shift;
+  else
+    ret_name="$1";
+    if [[ "$2" != "--" ]]; then
+      abort "Expected '--' as second argument";
+    fi
+    shift 2;
+  fi
+  if [[ "$-" != *e* ]]; then
+    abort "Expected 'set -e'";
+  fi
+  errchol "☐ $(print_values "$FUNCNAME" "$@")";
+  declare -i _mf_result_834u92834;
+
+#  declare -r _subshell_assign="$("$@")";
+#  _mf_result_834u92834="$?";
+#  if (( _mf_result_834u92834 == 0 )); then
+#    errchol "☑ $(print_values "$FUNCNAME" "$@")";
+#  else
+#    errchol "☒ $(print_values "$FUNCNAME" "$@")";
+#  fi
+
+  declare -r flags="$-";
+  set +e;
+  ( set -e; "$@" );
+  _mf_result_834u92834="$?";
+  if [[ "$flags" == *e* ]]; then
+    set -e;
+  fi
+
+  if (( _mf_result_834u92834 == 0 )); then
+    errchol "☑ $(print_values "$FUNCNAME" "$@")";
+  else
+    errchol "☒ $(print_values "$FUNCNAME" "$@")";
+  fi
+  if [[ -n "$ret_name" ]]; then
+    declare -n -- _mf_ret_777734234="${ret_name}";
+    _mf_ret_777734234="$_mf_result_834u92834";
+  fi
+  return 0;
 }
 
 # Run $@ hiding file descriptot $1
@@ -78,17 +148,17 @@ run_silent()
 
 run_silent_stdout()
 {
-  "${@}" >/dev/null
+  "${@}" >/dev/null;
 }
 
 run_silent_stderr()
 {
-  "${@}" 2>/dev/null
+  "${@}" 2>/dev/null;
 }
 
 run_silent_both()
 {
-  "${@}" >/dev/null 2>/dev/null
+  "${@}" >/dev/null 2>/dev/null;
 }
 
 # A function that first runs its arguments silently, then, as they error, with
@@ -102,15 +172,24 @@ run_verbosity_ladder()
     return 1;
   fi
 
-  if run_silent_stdout "$@"; then
+  declare -i ret;
+  may_fail ret -- "${@}";
+  if (( ret == 0 )); then
     return 0;
   fi
-  declare ret="$?";
   declare choice="";
   errchoe "${FUNCNAME[0]}: Failed silently: $ret ← $(print_values "$@")";
-  read -r -t 10 -n1 -p "Try more verbosely? [y/n] " choice;
-  if [[ "$choice" != "y" ]]; then
+  declare choice="";
+  ask_user "Try more verbosely?" choice;
+  if [[ "$choice" != "true" ]]; then
     return "$ret";
   fi
+
   "$@";
+}
+
+show_variable()
+{
+  declare -n _ref_sv_348u928374="${1:?Missing variable name}";
+  echoi "${_ref_sv_348u928374@A}";
 }

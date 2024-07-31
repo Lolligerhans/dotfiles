@@ -23,16 +23,22 @@ source "$dotfiles/scripts/utils.sh";
 # │ 🖩 Utils              │
 # ╰──────────────────────╯
 
-# 1-tap version of boolean_prompt
+# 1-tap version of boolean_prompt. Prints "true" or "false".
 ask_user()
 {
-  if [[ "$#" != "1" ]]; then abort "Wrong usage"; fi
-  declare confirm;
-  read -rp "$1 [y/N]: " confirm;
-  if [[ "$confirm" == [yY] ]]; then
-    echo "1"; # true
+  if (( $# < 1 || 2 < $# )); then abort "Wrong usage"; fi
+  declare _au_confirm_384734;
+  declare -n _au_res_1402420156="${2-"_au_confirm_384734"}";
+  errchof "We recently changed the return of ask_user!";
+  read -n 1 -rp "$1 [y/N]: " _au_confirm_384734;
+  printf -- "\n"; # Because we read only 1 character
+  if [[ "${_au_confirm_384734}" == [yY] ]]; then
+    _au_res_1402420156="true";
   else
-    echo "0"  # false
+    _au_res_1402420156="false";
+  fi
+  if (($# == 1)); then
+    printf -- "%s" "$_au_res_1402420156";
   fi
 }
 

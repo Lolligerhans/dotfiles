@@ -1,7 +1,7 @@
 Implementation: scripts/setargs.sh version 0.0.0
 
 TODO: Add eval mode using return value ❓
-TODO: Make sure that optionals always being declared is correct here.
+TODO: Should positional arguments go into defaulted parameters?
 
 ┏━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ Setargs ┃ Bash helper to parse arguments                                    ┃
@@ -84,7 +84,7 @@ TODO: Make sure that optionals always being declared is correct here.
 │ ✖ Names MUST contain only alphanum, dash and underscore [a-zA-Z0-9_-]       │
 │ ✔ 'required' parameters end on "=". They have NO default value.             │
 │ ✔ 'defaulted' parameters with "=default_value".                             │
-│ ✔ 'optional' names do not contain "=". Default to empty string if set.      │
+│ ✔ 'optional' names do not contain "=". Default to 'false'/'true'.           │
 │ ✖ Default values MUST NOT contain whitespace.                               │
 │ ✖ Dividing "=" MUST NOT be surrounded by whitespce.                         │
 │                                                                             │
@@ -98,13 +98,13 @@ TODO: Make sure that optionals always being declared is correct here.
 │├──────────────────────────┼────────────────────────────────────────────────┤│
 ││  --required=             │ ✔   Argument MUST occur with value             ││
 ││  --defaulted=def_value   │ ✔   Argument MAY occur; else has default value ││
-││  --optional              │ ✔   Argument is optional; MUST NOT have value  ││
+││  --optional              │ ✔   Argument is optional; MAY NOT be provided  ││
 ││  "-r= -d=foo -o"         │ ✔   Specify one parameter of each kind         ││
 ││  --                      │ ✔   Enables 'argv' parameter                   ││
 ││                          │                                                ││
 ││  name=wrong              │ ✖   Name MUST start with "-"                   ││
 ││  "-too" "-many" "-words" │ ✖   Parameters MUST be a single word           ││
-││  --help=default          │ ✖   Special name. MUST be 'optional'           ││
+││  --help=default          │ ✖   Special name '--help'. MUST be 'optional'  ││
 ││  --autocomplete          │ ✖   Reserved. MUST NOT be used                 ││
 ││  -                       │ ✖   Argv is activated by "--"                  ││
 ││  ---                     │ ✖   Argv is activated by "--"                  ││
@@ -125,7 +125,7 @@ TODO: Make sure that optionals always being declared is correct here.
 ││ --name=value          │ ✔   Value "value" given for "name"               │ │
 ││ --defaulted=overwrite │ ✔   Value "overwrite" replaces the default value │ │
 ││ --optional=value      │ ✔   Provide value for "optional" immediately     │ │
-││ --optional            │ ✔   Provide optional without value               │ │
+││ --optional            │ ✔   Provide optional without value ("true")      │ │
 ││ --requires=value      │ ✔   Provide immediate value                      │ │
 ││ --name split_data     │ ✔   Provide value "split_data" as split data     │ │
 ││ -r=foo -- more --data │ ✔   Provide positional data "more" and "--data"  │ │
@@ -161,7 +161,7 @@ TODO: Make sure that optionals always being declared is correct here.
 ││  "-n=1"                │ ✖   -n -4     │                                   │
 │╰────────────────────────┴───────────────╯                                   │
 │                                                                             │
-│ ✔ Positional data matches {remaining + non-'optional'} parameter names      │
+│ ✔ Positional data matches {remaining, non-'optional'} parameter names       │
 │   ✔   string                                                                │
 │   ✔   "quoted string"                                                       │
 │   ✖   --start_with_dash                                                     │
@@ -170,15 +170,15 @@ TODO: Make sure that optionals always being declared is correct here.
 │╭──────────────────────────────────────────────────┬──────────────────────╮  │
 ││   invocation                                     │ variables created    │  │
 │├──────────────────────────────────────────────────┼──────────────────────┤  │
-││ ✔ set_args "-p1=  -p2=  -p3="  d1 d2 d3          │ _p1=d1 _p2=d2 _p3=d3 │  │
-││ ✔ set_args "-p1=x -p2=y -p3=z" d1 d2 d3          │ _p1=d1 _p2=d2 _p3=d3 │  │
-││ ✔ set_args "-p1=  -p2=  -p3="  --p2=A d1 d3      │ _p1=d1 _p2=A  _p3=d3 │  │
-││ ✔ set_args "-p1=  -p2=  -p3="  --p2 B d1 d3      │ _p1=d1 _p2=B  _p3=d3 │  │
-││ ✔ set_args "-p1=x -p2=y -p3=z" d1 d2             │ _p1=d1 _p2=d2 _p3=z  │  │
-││ ✔ set_args "-p1=x -p2=y -p3=z" d1                │ _p1=d1 _p2=y  _p3=z  │  │
+││ ✔ set_args "-p1=  -p2=  -p3="  d1 d2 d3          │  p1=d1  p2=d2  p3=d3 │  │
+││ ✔ set_args "-p1=x -p2=y -p3=z" d1 d2 d3          │  p1=d1  p2=d2  p3=d3 │  │
+││ ✔ set_args "-p1=  -p2=  -p3="  --p2=A d1 d3      │  p1=d1  p2=A   p3=d3 │  │
+││ ✔ set_args "-p1=  -p2=  -p3="  --p2 B d1 d3      │  p1=d1  p2=B   p3=d3 │  │
+││ ✔ set_args "-p1=x -p2=y -p3=z" d1 d2             │  p1=d1  p2=d2  p3=z  │  │
+││ ✔ set_args "-p1=x -p2=y -p3=z" d1                │  p1=d1  p2=y   p3=z  │  │
+││ ✔ set_args "--name" data_for_optional_attempted  │ ✖                    │  │
 ││ ✖ set_args "--name=" --data_starting_with_dash   │ ✖                    │  │
 ││ ✖ set_args "--name=" too much data               │ ✖                    │  │
-││ ✖ set_args "--name" data_for_optional_attempted  │ ✖                    │  │
 ││ ✖ set_args "--opt --n=default" overwrite_default │ ✖                    │  │
 │╰──────────────────────────────────────────────────┴──────────────────────╯  │
 │                                                                             │
@@ -228,7 +228,7 @@ TODO: Make sure that optionals always being declared is correct here.
 │   • Use 'optional' parameter or dummy value instead                         │
 │ ✖ 'optional' parameters DO NOT combine when using single dash               │
 │ ✖ Positional data will fill 'required' and 'defaulted' parameters before    │
-│   filling the "argv" variable (even when available).                        │
+│   filling the "argv" variable.                                              │
 │╭──────────────────┬────────────────────────────╮                            │
 ││  parameter       │     arguments              │                            │
 │├──────────────────┼────────────────────────────┤                            │
@@ -250,8 +250,7 @@ TODO: Make sure that optionals always being declared is correct here.
 ││  --help          │ Used for usage info                     │               │
 │╰──────────────────┴─────────────────────────────────────────╯               │
 │                                                                             │
-│ • Declared variables have no leading underscores.                           │
-│ • 'eval "$get_args"' must immediately follow 'set_args'.                    │
+│ • Declared variables have no leading underscores. --param-name → param_name │
 │ • Inputs ARE NOT sanitized or verified (!)                                  │
 └─────────────────────────────────────────────────────────────────────────────┘
 

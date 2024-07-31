@@ -23,7 +23,7 @@ satisfy_version "$dotfiles/scripts/boilerplate.sh" 0.0.0;
 # ╭──────────────────────╮
 # │ 🛠Configuration      │
 # ╰──────────────────────╯
-_run_config["versioning"]=1;
+_run_config["versioning"]=0;
 #_run_config["log_loads"]=1;
 _run_config["error_frames"]=2;
 # ╭──────────────────────╮
@@ -47,13 +47,34 @@ command_default()
   set_args "--help" "$@";
   eval "$get_args";
 
-  if [[ ! -v _run_config["declare_optionals"] ]]; then
-    abort "$FUNCNAME: expected _run_config to be set";
-  fi
-  time subcommand run_all_tests;
+  subcommand test --raw -- test_boilerplate;
+  echo
+  subcommand test -- test_boilerplate;
+}
 
-  echos "(manual) colour_test";
-  echos "(manual) shell_check";
+command_test()
+{
+  set_args "--help --raw --" "$@";
+  eval "$get_args";
+
+  show_variable argv;
+
+  if (( ${#argv[@]} == 0 )); then
+    time subcommand run_all_tests;
+    echos "(manual) colour_test";
+    echos "(manual) shell_check";
+    return;
+  fi
+
+  echol "Going to test: $(print_array argv)";
+  declare arg;
+  for arg in "${argv[@]}"; do
+    if [[ "$raw" == "true" ]]; then
+      "$arg";
+    else
+      execute_test "$arg";
+    fi
+  done
 }
 
 # TODO Rename to functional tests
@@ -81,7 +102,10 @@ command_run_all_tests()
   execute_test deploy_test;
   execute_test runscript_init_test;
   execute_test test_setargs_all;
-
+  execute_test test_may_fail;
+  execute_test test_boilerplate;
+  execute_test test_environment;
+  execute_test test_import;
   # TODO
   # #subcommand rundir ../install/ help; # Verify versions at least
 }
@@ -92,17 +116,42 @@ command_run_all_tests()
 
 execute_test()
 {
-  if run_verbosity_ladder "$@"; then
+  # TODO It might be better to just store the outputs and display them on error.
+  declare verbose_ok;
+  may_fail verbose_ok -- run_verbosity_ladder "$@";
+  if [[ "$verbose_ok" == "0" ]]; then
     echok "$(print_values "${text_bg}✔ ${text_normal}" "$@")";
   else
-    errchoe "$(print_values "$text_br)🚫 ${text_normal}" "$@")";
+    errchoe "$(print_values "$text_br🚫 ${text_normal}" "$@")";
   fi
 }
 
-declare -r default_help_string=$'Start a subset of functional tests
-Not run:
-  - colour_test
-  - shell_check
-  (- anything that doesnt have a test)';
+# ┌────────────────────────┐
+# │ Help strings           │
+# └────────────────────────┘
 
+declare -r default_help_string='Ad-hoc implementation
+DESCRIPTION
+  Set ad-hoc during dev to to whatever is needed currently.
+  For a generic test starter, use the "test" command.';
+declare -r test_help_string='Run tests
+SYNOPSIS
+  test -- [NAMES...]
+DESCRIPTION
+  Run the specified tests. When no tests are specified, a predefined subset of
+  fire-and-forget tests is executed.
+
+  The provided tests are executed by the "execute_test" helper. When a test
+  passes its output is suppresed. Else it is re-run with output.
+NAMES
+  Test names are the names of bash functions in ./commands_test.sh
+OPTIONS
+  --raw: Run the test functions specified by NAMES directly, without the
+         execute_test wrapper. This will produce errors if the test fails, but
+         has no special functionality. For dev and testing.';
+
+
+# ┌────────────────────────┐
+# │ Delegate               │
+# └────────────────────────┘
 subcommand "${@}";

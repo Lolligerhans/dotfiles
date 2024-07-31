@@ -128,3 +128,6 @@ _w_completion() { _wW_completion; };
 _W_completion() { _wW_completion n; };
 complete -F _w_completion w
 complete -F _W_completion W
+
+# This file is symlinked by the install script
+source ~/.local/share/git-completion.bash;

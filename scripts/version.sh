@@ -32,7 +32,7 @@ declare -gri _debug_version=0;
 declare -gr _version_log_loads=1;
 declare -gr _version_random_pass=0; # 0=no, 1=½, 7=⅛, 15=⅟16
 
-declare -gr version_line_regex='# version (.*)$';
+declare -gr version_line_regex='^# version (.*)$';
 
 # RegEx Taken from semver.org v2.0.0
 declare -gr semver_regex='^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$';

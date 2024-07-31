@@ -6,6 +6,24 @@
 # short. We keep 1 installation per function to allow calling them individually
 # from run.sh.
 
+install_fzf()
+{
+  declare -i ret="";
+  if ! (
+    echol "Installing fzf";
+    git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf || :;
+    # no autocompletion, no key bindings, yes update shell config
+    declare -r input=$'n\nn\ny\n';
+    ~/.fzf/install <<< "$input" || return; # When this script changes we must adjust input
+    echok "Installed fzf";
+  ); then
+    ret="$?";
+    errchoe "Failed to install fzf";
+    errchon "Try installing an older fzf from apt instead: sudo apt install fzf";
+    return "$ret"; # Propagate error
+  fi
+}
+
 install_mcfly()
 {
   declare -r link="https://raw.githubusercontent.com/cantino/mcfly/master/ci/install.sh";
@@ -36,20 +54,7 @@ install_nvim()
   popd;
 }
 
-install_fzf()
+install_tree_sitter()
 {
-  declare -i ret="";
-  if ! (
-    echol "Installing fzf";
-    git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf || :;
-    # no autocompletion, no key bindings, yes update shell config
-    declare -r input=$'n\nn\ny\n';
-    ~/.fzf/install <<< "$input" || return; # When this script changes we must adjust input
-    echok "Installed fzf";
-  ); then
-    ret="$?";
-    errchoe "Failed to install fzf";
-    errchon "Try installing an older fzf from apt instead: sudo apt install fzf";
-    return "$ret"; # Propagate error
-  fi
+  cargo install tree-sitter-cli;
 }

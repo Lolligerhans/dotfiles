@@ -330,7 +330,7 @@ command_upgrade()
   declare update_needed;
   update_needed="$(cache_daily "upgrade" "get")";
   if [[ "$force_upgrade" == "true" ]] || [[ "$update_needed" == "true" ]]; then
-    # TODO More readable daily_cache
+    # TODO More readable version
     {
       echol "Upgrading apt packages" &&
       sudo apt-get update && sudo apt-get upgrade -y &&
@@ -345,7 +345,7 @@ command_upgrade()
       errchoe "Failed to upgrade apt/snap packages. Will try again next time";
     }
   else
-    echos "[daily] apt/snap upgrades";
+    echos "(daily) apt/snap upgrades";
   fi
 }
 
@@ -615,7 +615,8 @@ command_deploy()
   declare be_quiet="false";
   declare source_file="$file"
   declare target_dir="$dir"
-  declare source_name; source_name="$(basename "$file")";
+  declare source_name;
+  source_name="$(basename "$file")";
   declare target_name="$source_name";
   declare make_copy="$copy";
   declare yes_all="false";
@@ -699,6 +700,61 @@ command_deploy()
     ln --verbose --symbolic -T "$source_file" "$target_file" || return;
   fi
   echok "Deployed $text_italic$source_file$text_normal ➜ ${text_italic}$target_dir/${text_bold}$target_name$text_normal";
+}
+
+# Import an external file into dotfiles. I.e., move the actual file here, and
+# then 'deploy' it to its original location. For now only simple 1-to-1 file
+# imports.
+command_import()
+{
+  set_args "--from= --to= --copy --dry-run --help" "$@";
+  eval "$get_args";
+
+  # Sanity checks
+  if [[ ! -d "$to" && ! -e "$to" ]]; then
+    abort "Target $to is not a directory";
+  fi
+  if [[ ! -f "$from" && ! -d "$from" ]]; then
+    abort "Expected directory or regular file as source: $from";
+  fi
+  declare source_name;
+  source_name="$(basename "$from")";
+  declare -r target_path="$to/$source_name";
+  if [[ -e "$target_path" ]]; then
+    abort "Target $target_path already exists";
+  fi
+  declare -i is_dir;
+  if [[ -d "$from" ]]; then
+    is_dir=1;
+    declare file;
+    pushd "$from";
+    for file in **/*; do
+      if [[ ! -d "$file" && ! -f "$file" ]]; then
+        abort "Import files or directories. Not: $from/$file";
+      fi
+    done
+    popd;
+  fi
+
+  declare -ra files=(**/*);
+  print_array "files";
+  echo;
+  echot "test this function";
+
+  declare do_command;
+  if [[ "$dry_run" == "true" ]]; then
+    do_command="print_values";
+  else
+    do_command="print_and_execute";
+  fi
+  if [[ "$copy" == "true" ]]; then
+    "$do_command" cp -vr "$from" "$to";
+  else
+    "$do_command" mv -v "$from" "$to";
+    echo
+    "$do_command" subcommand deploy --yes --file="$to" --dir="$from";
+    echo
+  fi
 }
 
 # Print some basic system information
@@ -1092,12 +1148,30 @@ DESCRIPTION
   ${text_bold}FILE${text_normal}: Source dotfile to be deployed.
   ${text_bold}DIR${text_normal}:  Target directory to place the link (or copy) in.
 OPTIONS
-  --name=NAME:  Create symlink (or copy) with name NAME.
+  --file=FILE: Dotfile or directory to be deployed.
+  --dir=DIR: Target directory to place the link (or copy) into.
+  --name=NAME: Create symlink (or copy) with name NAME.
     If not present, NAME equals the name of the dotfile.
   --copy=false: Set to 'true' to create copy instead of symlink (default false).
   --yes: If present, skip confirmation prompt when no problem occurs.
   --quiet: Return 0 when user rejects replacing an existing file. Normally
     returns nonzero";
+
+declare -r import_help_string='Import a file/directory as new dotfile
+SYNOPSIS
+  import --from=SOURCE --to=TARGET_DIR [--copy]
+DESCRIPTION
+  Reverse of "deploy". Move a file or directory (into dotfiles). At its original
+  location, place a symlink to the new location.
+
+  Menat for manual use. You may want to rename the moved fles afterwards. Or
+  delete some of the contained files (if it is a directory).
+OPTIONS
+  --from=SOURCE: Source file or directory to be imported.
+  --to=TARGET_DIR: Target directory to move the imported file to.
+  --copy: Re-deploy as a copy instead of a symlink (default false).
+          ❓ Does this work with both files and copy?
+  --dry-run: Only print what would happen. Do not move/copy.';
 
 declare -r info_help_string='Print system information
 Executes various typical commands to obtain information. Makes it so that the

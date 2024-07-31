@@ -37,6 +37,7 @@ load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0;
 # Ensuring version even if included already
 load_version "$dotfiles/scripts/version.sh" 0.0.0;
 #load_version "$dotfiles/scripts/assert.sh" 0.0.0;
+load_version "$dotfiles/scripts/bash_meta.sh" 0.0.0;
 #load_version "$dotfiles/scripts/boilerplate.sh" 0.0.0;
 #load_version "$dotfiles/scripts/cache.sh" 0.0.0;
 #load_version "$dotfiles/scripts/error_handling.sh" 0.0.0;
@@ -81,7 +82,7 @@ command_default()
 # TODO Move commands install_xyz to install.sh and call them from here
 command_install()
 {
-  set_args "--help --fzf --mcfly --nvim" "$@";
+  set_args "--help --fzf --mcfly --nvim --tree-sitter" "$@";
   eval "$get_args";
 
   # Maps the --parameter name to internal function. We filter parameters not
@@ -92,15 +93,17 @@ command_install()
       ["fzf"]="install_fzf"
       ["mcfly"]="install_mcfly"
       ["nvim"]="install_nvim"
+      ["tree_sitter"]="install_tree_sitter"
       );
 
   declare arg="" func="";
+  declare -i succeeded;
   for arg in "${!install_functions[@]}"; do
     declare -n _arg="$arg"; # Reference the variable created by set_args.
     if [[ "$_arg" == "true" ]]; then
       func="${install_functions[$arg]}";
-      "$func" || errchow "Failed to install $arg";
-      # Continue after errors. User must check output.
+      may_fail succeeded -- "$func"
+      if ((!succeeded)); then errchow "Failed to install $arg"; fi
     fi
   done
 }
@@ -121,6 +124,7 @@ command_full_install()
   subcommand install --fzf; echo;
   subcommand install --mcfly; echo;
   subcommand install --nvim; echo;
+  subcommand install --tree-sitter; echo;
   subcommand show_manual; echo;
   echok "Full installation done!";
 }
@@ -174,30 +178,29 @@ command_symlink_dotfiles()
       echo
   fi
 
-  # install vimrc
+  # Install vimrc
   subcommand run "$dotfiles" deploy --name=".vimrc" --yes --keep --file="$dotfiles/dot/vimrc" --dir="$home_dir" || :;
   echo
 
-  # install init.vim for neovim
-  subcommand run "$dotfiles" deploy --yes --keep --file="$dotfiles/dot/init.vim" --dir="$home_dir/.config/nvim" || :;
+  # Install neovim config (from init.lua)
+  may_fail -- subcommand run "$dotfiles" deploy --yes --keep \
+    --file="$dotfiles/dot/nvim" --dir="$home_dir/.config";
   echo
+
+  # Install init.vim for neovim
+  #subcommand run "$dotfiles" deploy --yes --keep --file="$dotfiles/dot/init.vim" --dir="$home_dir/.config/nvim" || :;
+  #echo
 
   # Instll .vim/ftplugin files
   subcommand run "$dotfiles" deploy --yes --keep --file="$dotfiles/dot/ftplugin" --dir="$home_dir/.vim" || :;
   echo
 
-  # install .ctags
+  # install .ctags (exuberant)
   subcommand run "$dotfiles" deploy --name=".ctags" --yes --keep --file="$dotfiles/dot/ctags" --dir="$home_dir" || :;
-  echo ".ctags ..."
-  path="$home_dir/"
-  file=".ctags"
-  if [ -f "$path/$file" ]; then
-    echo "skip"
-  else
-    echo "installing..."
-    ln -s "$dotfiles_dir/.ctags" "$path/$file" &&
-    echo "done"
-  fi
+  echo
+
+  # install .ctags (universal)
+  subcommand run "$dotfiles" deploy --yes --keep --file="$dotfiles/dot/ignore.ctags" --dir="$home_dir/.ctags.d" || :;
   echo
 
   # install wombat colorscheme for vim
@@ -247,13 +250,19 @@ command_symlink_dotfiles()
   else
       echo "(file exists)"
   fi
+  # Prevent setting of HISTSIZE and HISTFILESIZE. Hope to prevent truncation of
+  # the file before it is overwritten by our dot/bashrc_personal.
+  sed -i -e '/HISTSIZE/ s/^[^#]/:; # [history handled by dotfiles] &/' "$brcp";
+  sed -i -e '/HISTFILESIZE/ s/^[^#]/:; # [history handled by dotfiles] &/' "$brcp";
+  # Prevent sourcing of .bash_aliases. Hope to prevent sourcing the aliases
+  # symlink before our dopt/bashrc_personal has sourced dot/git-completion.bash.
+  sed -i -e '/\(\.\|source\) .*\.bash_aliases/ s/^[^#]/:; # [aliases handled by dotfiles] &/' "$brcp";
   if grep -q -F "$brcl" "$brcp"; then
       echo "skip"
   else
       echo "installing..."
-      # Prevent setting of HISTSIZE and HISTFILESIZE
-      sed -i -e 's/^\(.*HISTSIZE.*\)/#\1/' "$brcp";
-      sed -i -e 's/^\(.*HISTFILESIZE.*\)/#\1/' "$brcp";
+      # Source dot/bashrc_personal but keep the default bashrc in case it is
+      # interesting.
       echo "$brcl" >> "$brcp" &&
       echo "done"
   fi
@@ -272,9 +281,34 @@ command_symlink_dotfiles()
   fi
   echo
 
+  # install operator coloration
+  echo "C++ operator colors (vim)..."
+  path="$home_dir/.vim/after/syntax"
+  file="cpp.vim"
+  if [ -f "$path/$file" ]; then
+      echo "skip"
+  else
+      if [ ! -d "$path" ]; then
+          echo "creating directory..."
+          mkdir -p -v "$path"
+      else
+          echo "(directory exists)"
+      fi
+      echo "installing..."
+      ln -s "$dotfiles_dir/.vim/after/syntax/cpp.vim" "$path/$file" &&
+      echo "done"
+  fi
+  echo
+
   # Install alias completion
   subcommand rundir "$dotfiles" deploy --name=".bash_completion" --yes --keep --file="$completion_path" --dir="$home_dir" || :;
   echo;
+
+  # Git completion.
+  # Maybe also /etc/bash_completion.d/git
+  declare git_completion="/usr/share/bash-completion/completions/git";
+  may_fail subcommand rundir "$dotfiles" deploy --name="git-completion.bash" --yes --keep --file="$git_completion" --dir="$home_dir/.local/share";
+  echo
 
   # Completion options
   ~/dotfiles/run.sh deploy --name=".inputrc" --yes --keep --file="$dotfiles_dir/dot/inputrc" --dir="$home_dir" || :;
@@ -283,6 +317,9 @@ command_symlink_dotfiles()
   # Iftop config (.iftoprc)
   ~/dotfiles/run.sh deploy --yes --name=".iftoprc" --yes --keep --file="$dotfiles_dir/dot/iftoprc" --dir="$home_dir" || :;
   echo
+
+  # Ripgrep config
+  may_fail -- subcommand rundir "$dotfiles" deploy --yes --keep --file="$dotfiles_dir/dot/ripgrep.conf" --dir="$home_dir/.config";
 
   errchok "Command $FUNCNAME done!";
 }
@@ -294,31 +331,31 @@ command_add_credentials()
 
   declare -n _ret_13048749814="$ret";
   _ret_13048749814="false";
-  declare all_ok="true";
+  declare _all_ok_973418034="true";
 
   # Insert the unquote-quote so this line does not match the token
   if ! grep -RF "TOKEN_""DOTFILES_USER_CREDENTIALS" "$dotfiles"; then
     echos "DOTFILES_USER_CREDENTIALS: All done";
   else
     echou "Add your credentials at 'DOTFILES_USER_CREDENTIALS'";
-    all_ok="false";
+    _all_ok_973418034="false";
   fi
 
   if ! grep -RF "TOKEN_""DOTFILES_WORKSPACE_PREPARATIONS"; then
     echos "DOTFILES_WORKSPACE_PREPARATIONS: All done";
   else
     echou "Prepare a workspace at 'DOTFILES_WORKSPACE_PREPARATIONS'";
-    all_ok="false";
+    _all_ok_973418034="false";
   fi
 
   if ! grep -RF "TOKEN_""DOTFILES_BRANCH_PREPARATIONS"; then
     echos "DOTFILES_BRANCH_PREPARATIONS: All done";
   else
     echou "Prepare a new branch at 'DOTFILES_BRANCH_PREPARATIONS'";
-    all_ok="false";
+    _all_ok_973418034="false";
   fi
 
-  if [[ "$all_ok" == "true" ]]; then
+  if [[ "$_all_ok_973418034" == "true" ]]; then
     _ret_13048749814="true";
   fi
 }
@@ -347,7 +384,7 @@ command_workspace()
 command_show_manual()
 {
   echou "Manual: Terminal colours...";
-  grep -e "terminal-bold" "$dotfiles/data/colours.txt";
+  grep -e "terminal-bold" "$dotfiles/data/colours.txt" || true;
   echou "Manual: (Re-)use old firefox profile (when restored from tarball): visit 'about:profiles'. You might need to sudo snap refresh firefox to get newest version.";
 }
 
@@ -416,6 +453,7 @@ command_install_missing_term_readkey()
 command_install_collected_apt()
 {
   # This function install different utilities that can be easily loaded by apt
+  # or any other external system.
   echol "Installing collected apt packages...";
   {
 
@@ -423,7 +461,7 @@ command_install_collected_apt()
     {
       {
         # Allow vim 9 on ubuntu
-        sudo add-apt-repository ppa:jonathonf/vim &&
+        sudo add-apt-repository -y ppa:jonathonf/vim &&
         sudo apt install vim;
       } ||
       {
@@ -609,10 +647,12 @@ declare -r install_help_string="Install components (incomplete)
 DESCRIPTION
   Install individual components by specifying them as --argument(s). Targets are
   executed in unspecified order.
+  Returns with success even if installation fails. Check output for errors.
 OPTIONS
   --fzf: Install fzf command line fuzzy finder
   --mcfly: Install mcfly shell history search
-  --nvim: Install nvim text editor";
+  --nvim: Install nvim text editor
+  --tree-sitter: Install tree-sitter from cargo";
 declare -r symlink_dotfiles_help_string="Crete symlinks to files in dot/
 OPTIONS
   --user=USER: Link to /home/USER instead of /home/$(whoami)";

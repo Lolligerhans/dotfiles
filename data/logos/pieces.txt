@@ -1,0 +1,12 @@
+pieces/bishop_b
+pieces/bishop_w
+pieces/king_b
+pieces/king_w
+pieces/knight_b
+pieces/knight_w
+pieces/pawn_b
+pieces/pawn_w
+pieces/queen_b
+pieces/queen_w
+pieces/rook_b
+pieces/rook_w

@@ -29,33 +29,74 @@
 	# Shorthands
 	br = branch
 	ci = commit
+	cl = clean
 	co = checkout
-	cp = cherry-pick
+	f = fetch
+	# "pick" ("git-cp" already exists, preventing alias "cp")
+	pi = cherry-pick
+	r = rebase
 	st = status
+	m = merge
 	mt = mergetool
 
 	# Commit variants
 	cia = commit --amend
 	cit = commit -m "Tmp"
+	cif = commit --fixup
 	ciane = commit --amend --no-edit
 	cire = commit --reedit-message
 	cirh = commit --reuse-message=HEAD
 	cireh = commit --reedit-message=HEAD
 
+	# Fetch variants
+	# Use fp/fu: 'git fu dev:dev' to update local branch 'dev'
+	fu = fetch @{upstream}
+	fp = fetch @{push}
+
+	# Listing commits
+	# Unlike log --graph this order matches git rev-list --all
+	li = log --oneline --decorate --all
+	# Double-letter variants using --date-order
+	# NOTE Originally we wanted to have lower- and upper-case variants of
+	#         {s,ss,h,hh}, but git config is case-insensitive. We prefix upper
+	#         case variants with "q".
+	# TODO Think of a better alternative some time.
+	s = qS -20
+	qS = qSS --date-order
+	ss = qSS -20
+	# TODO Would like to have 'h' accept a <commit> as well but not sure how
+	h = qH HEAD -20
+	qH = !git qHH --all --date-order --until=$(git show -s --format=%cI ${1:-HEAD})
+	hh = qHH HEAD -20
+
 	# Merge variants
+	ma = merge --abort
 	ms = merge --squash
+
+	# Pick variants
+	pia = cherry-pick --abort
+	pic = cherry-pick --continue
 
 	# Push varints
 	pushu = push --set-upstream
 
+	# Rebase variants
+	ra = rebase --abort
+	rc = rebase --continue
+	ri = rebase --interactive
+
 	# Reset variants
-	re = reset
-	res = reset --soft
-	reh = reset --hard
-	rep = reset --hard @{push}
-	reu = reset --hard @{upstream}
-	resp = reset --soft @{push}
-	resu = reset --soft @{upstream}
+	re = reset --keep
+	# "Reset backwards" by N commits (not working)
+	#reb = !git reh HEAD~$1
+	reh = reset --keep --hard
+	reseth = reset --hard # --hard w/o --keep should not be too easy
+	res = reset --keep --soft
+	# Catching up with upstream/push
+	rep = reh @{push}
+	reu = reh @{upstream}
+	resp = res @{push}
+	resu = res @{upstream}
 
 	# Shorthands used by bash aliases s,h,r,rr,p,pp. We prefix the intended name
 	# with "q-" to avoid matching prefixes of other commands.
@@ -79,10 +120,10 @@
 	#   12: "brightblue"
 
 	# Use %ar/%cr when %ah/%ch does not yet work on a platform
-	s = log --graph --abbrev-commit \
-		--pretty=format:'%C(dim yellow)%h %C(dim cyan)(%ch) %C(auto)%s %C(8)• %an %C(reset)%C(dim)%ah%C(auto)%d' --all -20
-	h = log --graph --abbrev-commit \
-		--pretty=format:'%C(dim yellow)%h %C(dim 12)(%ch) %C(auto)%s %C(8)• %an %C(reset)%C(dim)%ah%C(auto)%d' -20
+	qSS = log --graph --abbrev-commit \
+		--pretty=format:'%C(dim yellow)%h %C(dim cyan)(%ch) %C(auto)%s %C(8)• %an %C(reset)%C(dim)%ah%C(auto)%d' --all
+	qHH = log --graph --abbrev-commit \
+		--pretty=format:'%C(dim yellow)%h %C(dim 12)(%ch) %C(auto)%s %C(8)• %an %C(reset)%C(dim)%ah%C(auto)%d'
 	lg = log --graph --abbrev-commit --decorate \
 		--format=format:'%C(yellow)%h%C(reset) %C(cyan)%ci %C(12)(%ah) %C(8)• %an%C(reset)%C(auto)%d%C(reset)%n%w(,8)%s'
 	lg2 = log --graph --abbrev-commit --decorate \
@@ -293,7 +334,8 @@
 	#updateRefs = true
 
 [rerere]
-	# Resolve merge conflicts the same way as in previous conflict
+	# Resolve merge conflicts the same way as in previous conflict. A bit
+	# dangerous if we may resolve in different directions.
 	enabled = true
 	#autoUpdate =
 

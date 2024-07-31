@@ -19,11 +19,24 @@
 # git
 
 alias g='git';
+# TODO We wanted this as git alias 'git reb' but did not know how
+# Git reset backwards
+reb() { git reh "HEAD~${1:-1}"; };
+
+# Our symlinked 'git-completion.bash' file is sourced by our own
+# 'bash_completion' file. Default Ubuntu bashrc sources 'bash_completion' over
+# some corners. If it did not we would have to source 'bash_completion' in our
+# 'bashrc_personal'.
 __git_complete g __git_main;
 
 alias s='git --no-pager q-f; git s; git q-b;';
-alias S='git s -99999'; # Also good to type 'S -3' or S -100'
+alias ss='git ss';
+alias S='git qS'; # Also good to type 'S -3' or S -100'
+alias SS='git qSS';
 alias h='git --no-pager q-f; git h; git q-b;';
+alias hh='git hh'
+alias H='git qH';
+alias HH='git qHH';
 
 alias n='git st';
 alias m='git st --short --branch';
@@ -34,32 +47,87 @@ alias pw='git q-di-pw; git q-di-pw2';
 alias r='git q-di-r; git q-di-r2;';
 alias rr='git q-di-rr; git q-di-rr2';
 alias rw='git q-di-rw; git q-di-rw2';
-alias H='git diff master HEAD';
 
 alias a='git add -p';
 alias a='git add -p';
 alias u='git add -u';
 
+# Show commiter time of git commit (in whatever format git prefers). Helper for
+# git stuff below.
+_commit_time()
+{
+  # $1: format
+  # $2: commit or --options for git show
+  git show -s --format="%cI" "${@}";
+};
+
+# "git all"
 # List all commits starting with newest. Add -1 to list only the newest commit.
 # For ad-hoc scripting. Note that the order is not the same as in git log- Git
 # log also starts with newest commit, but then follows with immediate parent
 # commits first. Only when a common ancestor is reached are the other branche
 # snuck in.
-alias ga='git rev-list --all'; # "git all"
+alias ga='git rev-list --date-order --all'; # `ga -3` to list newest 3 commits
+
+# "git all since"
+# Similar to 'ga' but list commits since commit $1 (as-if deducing a reasonable
+# number). Include --not <commit> to emulate STRICT --since. We use this for
+# cherry-picking so we do not need what usually will be HEAD.
+# The main drawback is that if there are commits with the same time as <commit>
+# on other branches, they will be erroneously listed. Alternatively we could add
+# 1 to the (unix) time to exclude <commit> and everything of that time, but that
+# has a failure mode when rebasing produces commits within 1 seconds (since this
+# is not meant for distributed workflow there are no other committers).
+# The last alternative would be to manually remove everything below <commit>
+# from the 'git rev-list':
+#   git rev-list | head -n $(git rev-list | grep -nq <commit>)
+#
+# If the <commit> exclusion is error prone we can also remote it later since
+# cherry-picking should just be a NOP typically.
+gas()
+{
+  # $1: commit (defaut: HEAD)
+  # $2: --options for git rev-list
+  ga --since="$(_commit_time "${1:-HEAD}")" --not "${1:-HEAD}" "${@:2}";
+};
+# "git all since HEAD"
+alias gash='gas HEAD'; # Allows easier gash --reverse when scripting, like ga -3
+
+# "Pick"
+# Git cherry-pick the newest $1 commits (default 1). Alias 's' does not show in
+# this order! Use --reverse so git cherry-picks in chronological order.
+pi()
+{
+  # $1: count (default: 1)
+  # $2: --options for git cherry-pick
+  git pi $( ga --reverse -"${1:-1}" ) "${@:2}";
+};
+
+# "Pick since"
+# Git cherry-pick commits newer than $1 (default HEAD).
+# Know how many commits are new, guess from 'alias s', or verify explicitly
+# using 'alias ss'. Then 'pis' cherry-picks everything that is newer than our
+# branch.
+# The idea is to be able to commit in the live repo dotfiles/ and then 'pis' the
+# result into the separate dotfiles-repo dev branch once working. Or, if the
+# changes are disruptive, build in dev and pick in live using 'pi <count>' or
+# 'pis <hash>' by deducing count/hash from 'alias s' and 'alias ss'..
+pis()
+{
+  # $1: commit (default: HEAD)
+  # $2: --options for git cherry-pick
+  git pi $( gas "${1:-HEAD}" --reverse ) "${@:2}";
+};
 
 # ______________________________________________________________________________
 # Vim
-#
-  declare -x _vim='nvim'; # Set to "vim" or "nvim"
-  alias Nvim='nvim -i NONE'; # New-vim: ignore shada
-
-  # Short term session
-  alias vims="${_vim} -S Session.vim"
-  # Long term session
-  alias vimS="${_vim} -S Session_long.vim"
-  # Switch to vim: Bring to foreground or open new.
-  alias v='(("$(jobs -p | wc -l)" == 0)) && { vims || :; } || fg '"'"'${_vim}'"'"' || fg nvim || fg vim;'
-  alias V='(("$(jobs -p | wc -l)" == 0)) && { vimS || :; } || fg '"'"'${_vim}'"'"' || fg nvim || fg vim';
+  # Lower case = vim, Upper case = nvim.
+  alias vims="vim -S Session_active.vim";
+  alias vimS="vim -S Session.vim";
+  # Start new or foreground 'fg' if possible.
+  alias  V='(("$(jobs -p vim  | wc -l)" == 0)) && { vims || :; } || fg vim;'
+  alias VV='(("$(jobs -p vim  | wc -l)" == 0)) && { vimS || :; } || fg vim;';
+  alias  v='(("$(jobs -p nvim | wc -l)" == 0)) && { nvim || :; } || fg nvim;';
 
 # ______________________________________________________________________________
 # Git
@@ -367,19 +435,25 @@ body()
 # ______________________________________________________________________________
 # File browsing
 
+  alias conf='cd ~/.config';
+  alias nconf='cd ~/.config/nvim';
   alias dot='cd ~/dotfiles';
   alias Dot='pushd ~/dotfiles';
+  alias DOT='Dotr; Dot';
+  alias dotr='cd ~/github/dotfiles-repo';
+  alias Dotr='pushd ~/github/dotfiles-repo';
   alias the='cd ~/thesis';
-  alias fin='find . -iname';
   alias fuzz='cd ~/Workspace/SSH-Fuzzer/ || cd ~/github/ssh-fuzzer';
   alias muse='cd ~/Documents/MuseScore4/Scores';
 
-  # ℹ -h ➜  hidden files
-  # ℹ -H ➜  hidden dirs
-  # ℹ -F ➜  exclude files
+  alias fin='find . -iname';
+  # `find_file --help` for more info
   alias f='find_file -p'; # page file
   alias d='find_file -Fc';  # cd dir
   alias dd='find_file -Fd'; # pushd dir
+  alias fh='find_file -p -hH';
+  alias dh='find_file -Fc -hH';
+  alias ddh='find_file -Fd -hH';
 
   _dirs()
   {
@@ -454,7 +528,8 @@ del()
   alias ,gpu='git push --set-upstream';
   # "git commit -m Tmp"
   alias ,gct='git cit';
-  alias ,gt='git cit && git push';
+  alias ,gcf='git cif HEAD';
+  alias ,gt='git add -u && git cit && git push'; # Git Tmp: commit all to "Tmp"
   # "git commit --amend"
   alias ,gca='git cia';
   alias ,gms='git ms';
@@ -474,17 +549,14 @@ del()
   # Fuzzy find within files
   ,,()
   {
-    # TODO
-    >&2 echo [!] "Not iplemented yet https://github.com/junegunn/fzf/blob/master/ADVANCED.md#ripgrep-integration";
-
+    # https://github.com/junegunn/fzf/blob/master/ADVANCED.md#ripgrep-integration";
     rg --color=always --line-number --no-heading --smart-case "${*:-}" |
     fzf --ansi \
         --color "hl:-1:underline,hl+:-1:underline:reverse" \
         --delimiter : \
-        --preview 'bat --color=always {1} --highlight-line {2}' \
+        --preview 'batcat --color=always {1} --highlight-line {2}' \
         --preview-window 'up,60%,border-bottom,+{2}+3/3,~3' \
         --bind 'enter:become(vim {1} +{2})'
-    # TODO Old fzf does not support become action
   }
 
 # vim: set ft=bash:

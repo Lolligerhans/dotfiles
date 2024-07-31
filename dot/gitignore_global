@@ -2,11 +2,13 @@
 # Vim
 ################################################################
 Session.vim
-Session_long.vim
+Session_active.vim
 *.swp
 *.un~
-# Generated automatically by vim fzf plugin (or :MakeTags)
+# Generated automatically by fzf-vim plugin (or :MakeTags)
 tags
+.vimrc
+.nvimrc
 
 ################################################################
 # Git

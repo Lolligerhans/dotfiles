@@ -1,4 +1,4 @@
-#/bin/false
+#!/bin/false
 
 # version 0.0.0
 
@@ -6,8 +6,71 @@
 # short. We keep 1 installation per function to allow calling them individually
 # from run.sh.
 
+install_diff_highlight()
+{
+  errchol "$FUNCNAME";
+  # Didnt work
+#  errchoi "Downloading git diff-highlight from: $git_diff_hl_url";
+#  wget "$git_diff_hl_url";
+
+  # Use local file
+  errchot "Using hardcoded path to existing diff-highlight script";
+  errchot "Using ~ as target path (instead of the path chosen in ./install)";
+  declare -r spath="/usr/share/doc/git/contrib/diff-highlight/diff-highlight";
+  declare -r tpath=~/".local/bin/diff-highlight";
+
+  if [[ -f "$tpath" ]]; then
+    errchos "installing diff-highight [file foud: $tpath]";
+    return 0;
+  fi
+
+  declare mode;
+  mode="$(sudo stat --format '%a' -- "$spath")"
+  if (( "${mode:2:1}" % 2 != 1 )); then
+    echol "Making diff-highight executable...";
+    sudo chmod +x "$spath";
+  else
+    echot "If you expected to make diff-highlight executable.. it did not happen";
+    progress_sleep 10 "Going to continue with installation anyway.";
+  fi
+
+  if [[ ! -f "$spath" ]]; then
+    abort "No regular file: $spath";
+  fi
+  ensure_directory ~/.local/bin;
+  cp -v "$spath" ~/.local/bin;
+
+  # TODO Is it enough to make sourece executable?
+  chmod u+x "$tpath";
+  # shellcheck disable=SC2010
+  ls -Fh -A -lD ~/.local/bin | grep --color=auto -e "diff-highlight";
+  errchok "Installed diff-highlight script";
+}
+
+install_difftastic()
+{
+  declare -r difft_path="/usr/local/bin/difft";
+  if [[ -x "$difft_path" ]]; then
+    errchos "[binary exists] installing difftastic";
+    return;
+  fi
+  ensure_directory /tmp/difftastic;
+  cd /tmp/difftastic;
+  wget -c https://github.com/Wilfred/difftastic/releases/download/0.52.0/difft-x86_64-unknown-linux-gnu.tar.gz;
+#  wget -c https://github.com/Wilfred/difftastic/releases/download/0.52.0/difft-aarch64-unknown-linux-gnu.tar.gz;
+  tar -xvzf difft-x86_64-unknown-linux-gnu.tar.gz;
+  sudo mv -v difft "$difft_path";
+  # shellcheck disable=SC2010
+  ls -alF /usr/local/bin | grep -ie difft;
+}
+
 install_fzf()
 {
+  if which fzf >/dev/null; then
+    echos "fzf (found)";
+    return;
+  fi
+
   declare -i ret="";
   if ! (
     echol "Installing fzf";
@@ -27,6 +90,10 @@ install_fzf()
 install_mcfly()
 {
   declare -r link="https://raw.githubusercontent.com/cantino/mcfly/master/ci/install.sh";
+  if which mcfly >/dev/null; then
+    echos "(found) not installing mcfly";
+    return
+  fi
   echol "Installing mcfly";
   if curl -LSfs "$link" | sudo sh -s -- --git cantino/mcfly; then
     echok "Installed mcfly";
@@ -39,6 +106,11 @@ install_mcfly()
 
 install_nvim()
 {
+  if which nvim >/dev/null; then
+    echos "(found) not installing nvim";
+    return;
+  fi
+
   declare -r link='https://github.com/neovim/neovim-releases/releases/download/v0.10.0/nvim-linux64.deb';
   echol "Installing nvim v0.10.0";
   pushd ~/Downloads || return;
@@ -50,11 +122,26 @@ install_nvim()
     return 1;
   fi
   sudo apt install ./nvim-linux64.deb || return;
-  echok "Installed nvim";
   popd;
 }
 
 install_tree_sitter()
 {
+  if which tree-sitter >/dev/null; then
+    echos "(found) tree-sitter";
+    return;
+  fi
   cargo install tree-sitter-cli;
+}
+
+install_vundle()
+{
+  if [[ -d "$HOME/.vim/bundle/Vundle.vim" ]]; then
+    echos "(found) vundle"
+  else
+      echo "installing..."
+      git clone "https://github.com/VundleVim/Vundle.vim.git" "$HOME/.vim/bundle/Vundle.vim" &&
+      echo "Removing .git file from Vundle" &&
+      rm -rfv "$HOME/.vim/bundle/Vundle.vim/.git"
+  fi
 }

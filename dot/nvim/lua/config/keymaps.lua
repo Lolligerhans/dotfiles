@@ -32,11 +32,13 @@ m.set("n", "<leader>:", "<cmd>Telescope command_history<cr>",
 
 -- Using []{} through öä
 -- FIXME Does not work with flash.nvim
--- FIXME Does not work in replace-pending
-m.set({ "", "!", "l" }, "<c-c>", "<esc>", { desc = "[Esc]" })
-m.set({ "", "!", "l", "t" }, "ö", "[", { remap = true }) -- Essentially replace the key as far as vim is concerned
-m.set({ "", "!", "l", "t" }, "Ö", "{", { remap = true })
-m.set({ "", "!", "l", "t" }, "ä", "]", { remap = true })
+-- FIXME Does not work in "replace-pending" mode
+m.set({ "", "!", "l", "o" }, "<c-c>", "<esc>", { desc = "[Esc]" })
+m.set({ "", "!", "l", "t", "o" }, "ö", "[", { remap = true }) -- Essentially replace the key as far as vim is concerned
+m.set({ "", "!", "l", "t", "o" }, "Ö", "{", { remap = true })
+-- m.set({ "", "!", "l", "t", "o" }, "öö", "[[", { remap = true })
+m.set({ "", "!", "l", "t", "o" }, "ÖÖ", "{{", { remap = true }) -- for imap {{
+m.set({ "", "!", "l", "t", "o" }, "ä", "]", { remap = true })
 m.set({ "", "!", "l", "t", "o" }, "Ä", "}", { remap = true })
 -- Quitting
 m.set("n", "<c-q>", ":q<cr>", { desc = "Close window hard" })
@@ -56,12 +58,19 @@ m.set("n", "<leader>qw", "<cmd>xa<cr>", { remap = false, desc = "Write & Quit" }
 -- Remove annoying default <f1> mapping
 m.set("i", "<f1>", "<nop>", { remap = false })
 m.set("n", "<f1>", "<cmd>make<cr>", { remap = false })
+m.set("n", "<f2>", "<cmd>!./run.sh<cr>", { remap = false })
+
+-- -- Delete errors for Shellcheck error code under cursor
+m.set("n", "<leader>ces", "m`*<cmd>g//-2,+2d<cr>``", { remap = false, desc = "Code edit [s]hellcheck" })
 
 -- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Windows, tabs and viewiing                                                │
 -- ╰───────────────────────────────────────────────────────────────────────────╯
 
 -- TODO Bring back normal tabs in lazyvim
+
+m.set("n", "<M-H>", "<cmd>BufferLineMovePrev<cr>", { remap = false, desc = "Move buffer left" })
+m.set("n", "<M-L>", "<cmd>BufferLineMoveNext<cr>", { remap = false, desc = "Move buffer right" })
 
 m.set({ "n" }, "<A-.>", "<cmd>30vsp .<cr>", { remap = false, desc = "Folder of this file" })
 
@@ -95,6 +104,10 @@ m.set("n", "<leader>wt",
   "<cmd>-tab terminal<cr>i",
   { remap = false, desc = "Terminal" })
 
+-- TODO options group
+m.set("n", "<leader>tc", function() vim.opt.cursorcolumn = not vim.opt.cursorcolumn:get() end,
+  { remap = false, desc = "Toggle cusor [c]olumn" })
+
 -- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Editing / Insert mode                                                     │
 -- ╰───────────────────────────────────────────────────────────────────────────╯
@@ -106,7 +119,7 @@ nnoremap <leader>d<space> BElcw<space><esc>
 "nnoremap <leader>d( <esc>
 ]])
 -- FIXME Not working with auto-{} creation
-m.set("i", "{{", "{<cr>}<esc>O", { remap = false, desc = "Block start" })
+m.set("i", "{{", "{<cr>}<esc>O", { remap = false, desc = "Open block" })
 
 m.set("i", "<c-r>L", 'line(".")', { remap = false, expr = true, desc = "Lineno" })
 
@@ -143,8 +156,8 @@ m.set("v", "<leader>{", ":s/\\(\\s*\\)\\S.\\{-}\\zs\\s*{$/\\r\\1{/g<cr>",
 
 -- NOTE LazyVim shows buffers in tablist. Once we get to change it, use
 --     <c-{H, L}> to move between tabs, HL with their normal function.
-m.set("n", "<c-h>", "<cmd>bN<cr>", { remap = false, desc = "Tab before" })
-m.set("n", "<c-l>", "<cmd>bn<cr>", { remap = false, desc = "Tab next" })
+-- m.set("n", "<c-h>", "<cmd>bN<cr>", { remap = false, desc = "Tab before" })
+-- m.set("n", "<c-l>", "<cmd>bn<cr>", { remap = false, desc = "Tab next" })
 
 -- temporary. do we like this?
 -- FIXME lazyvim jumplist is broken
@@ -166,6 +179,11 @@ m.set("n", "<S-F9>", "<cmd>call JumpToString('<<<<<<<', 'N')<cr>",
   { remap = false, desc = "conflict previous" })
 m.set("n", "<S-F10>", "<cmd>call JumpToString('>>>>>>>', 'n')<cr>",
   { remap = false, desc = "conflict next" })
+-- TODO: Can we make this work for different key codes at once?
+m.set("n", "<F21>", "<cmd>call JumpToString('<<<<<<<', 'N')<cr>",
+  { remap = false, desc = "conflict previous" })
+m.set("n", "<F22>", "<cmd>call JumpToString('>>>>>>>', 'n')<cr>",
+  { remap = false, desc = "conflict next" })
 
 if vim.opt.diff:get() then
   -- This is for vimdiff. Wont trigger if we manually set, but ok for now.
@@ -185,6 +203,11 @@ end
 -- Retired
 -- nnoremap ⅞ yiw<c-w>vh/\<<c-r>0\><cr> " shift altgr 7
 
+-- This allows marking with m and jumping with M. Recover normal behaviour of
+-- "M" in the new mappign "<c-m>".
+m.set("n", "M", "'", { remap = false, desc = "jump to mark" })
+m.set("n", "<c-m>", "M", { remap = false, desc = "To Middle line of window" })
+
 --╭────────────────────────────────────────────────────────────────────────────╮
 --│ Plugin control                                                             │
 --╰────────────────────────────────────────────────────────────────────────────╯
@@ -195,18 +218,26 @@ m.set({ "n" }, "ßb", "<cmd>Buffers<cr>", { remap = false, desc = "Buffer list" 
 m.set({ "n" }, "ßt", "<cmd>Tags<cr>", { remap = false, desc = "tags (.tags)" })
 m.set({ "n" }, "ßT", "<cmd>BTags<cr>", { remap = false, desc = "tags (buffer)" })
 m.set({ "n" }, "ßl", "<cmd>Lines<cr>", { remap = false, desc = "Lines (loaded buffers)" })
-m.set({ "n" }, "ßL", "<cmd>BLines<cr>", { remap = false, desc = "Lines (this buffer)" })
+m.set({ "n" }, "ßß", "<cmd>BLines<cr>", { remap = false, desc = "Lines (this buffer)" })
 -- Use :Rg for static ripgrep query to be searched with fzf
-m.set({ "n" }, "ßg", "<cmd>RG<cr>", { remap = false, desc = "Lines (ripgrep)" })
+m.set({ "n" }, "ßL", "<cmd>RG<cr>", { remap = false, desc = "Lines (ripgrep)" })
+
+-- Even shorter mappings for tags!
+m.set({ "n" }, "ü", "<cmd>BTags<cr>", { remap = false, desc = "tags (buffer)" })
+m.set({ "n" }, "Ü", "<cmd>Tags<cr>", { remap = false, desc = "tags (.tags)" })
 
 -- TODO Name the <leader>i group "insert/edit text"
 m.set({ "n", "v" }, "<leader>ib", "<cmd>:CBclbox<cr>", { remap = false, desc = "Box insert" })
 
 -- Noice
-m.set({ "n" }, "<leader>uH", "<cmd>Noice history<cr>G", { remap = false, desc = "History <cmd>" })
+m.set({ "n" }, "<leader>uH", "<cmd>Noice history<cr>G", { remap = false, desc = "History" })
 
 -- Tagbar
 m.set("n", "<F34>", "<cmd>TagbarToggle<cr>", { remap = false, desc = "Tagbar" })
+
+-- Noice/Messages
+m.set("n", "<leader>mh", "<cmd>Noice history<cr>G", { remap = false, desc = "Message history" })
+m.set("n", "<leader>ml", "<cmd>Noice last<cr>", { remap = false, desc = "Last message" })
 
 -- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Digraphs / Symbols                                                        │
@@ -226,7 +257,7 @@ end
 
 ---Map any text in input mode after double <c-ß>
 local inputMap = function(input, output)
-  m.set({ "i" }, "<c-ß><-ß>" .. input, output,
+  m.set({ "i" }, "<C-ß><C-ß>" .. input, output,
     { remap = false })
 end
 

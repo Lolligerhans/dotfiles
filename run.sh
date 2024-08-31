@@ -63,14 +63,22 @@ declare -r update_alternatives_default_link="/usr/bin";
 # │ ⌨  Commands          │
 # ╰──────────────────────╯
 
-# Default command (when no arguments are given)
-# shellcheck disable=2317 # unreachable
-command_default()
+command_run()
 {
-  set_args "--help" "$@";
+  set_args "--help"  "$@";
   eval "$get_args";
 
-  subcommand "help";
+  subcommand install;
+}
+
+# Default command (when no arguments are given)
+# shellcheck disable=2317,2120 # unreachable, no args passed
+command_default()
+{
+  # set_args "--help" "$@";
+  # eval "$get_args";
+  #
+  subcommand "help" "$@";
 }
 
 command_test()
@@ -98,8 +106,8 @@ command_timer()
   eval "$get_args";
 
   # Sanity check
-  if ! 2>&1 >/dev/null notify-send --version; then
-    abort "$FUNCNAME: notify-send not installed";
+  if ! >/dev/null 2>&1 notify-send --version; then
+    abort "${FUNCNAME[0]}: notify-send not installed";
   fi
 
   # Start tiemr in background
@@ -108,7 +116,7 @@ command_timer()
     # This is the predefined 'alert' alias in Ubuntu 20
     notify-send --urgency=low "$message: $minutes minutes";
     if [[ "$console" == "true" ]]; then
-      echou "$FUNCNAME: $message: $minutes minutes";
+      echou "${FUNCNAME[0]}: $message: $minutes minutes";
     fi
 
   } &
@@ -128,7 +136,7 @@ command_update_alternatives()
 
   if [[ "${path:0:1}" != "/" ]]; then
     declare _before="${path}";
-    path="$(which "$path")" || abort "$FUNCNAME: --path (${text_dim}$_before${text_normal}) inaccessible for 'which'";
+    path="$(which "$path")" || abort "${FUNCNAME[0]}: --path (${text_dim}$_before${text_normal}) inaccessible for 'which'";
     echon "Which'd relative path $text_dim${_before}$text_normal ➜ $text_dim$path$text_normal";
   fi
 
@@ -145,7 +153,7 @@ command_update_alternatives()
     #echoi "no_version=$no_version";
     #echoi "len_noversion=$len_noversion";
     if ((len_noversion >= ${#path})); then
-      abort "$FUNCNAME: Could not deduce name from $text_dim$path$text_normal";
+      abort "${FUNCNAME[0]}: Could not deduce name from $text_dim$path$text_normal";
     fi
     declare -r ua_name="$(basename "$no_version")";
   else
@@ -162,16 +170,15 @@ command_update_alternatives()
   # Deduce version/priority
   if [[ "$priority" == "false" ]]; then
     if [[ "$ua_name" == *[[:digit:]]* ]]; then
-      abort "$FUNCNAME: Not deducing priority with more digits contained in $text_dim$ua_name$text_normal";
+      abort "${FUNCNAME[0]}: Not deducing priority with more digits contained in $text_dim$ua_name$text_normal";
     fi
     declare -r ua_priority="${path:$len_noversion}";
     if [[ "${ua_priority:0:1}" == "0" ]]; then # start:len
-      abort "$FUNCNAME: Deduced priority starts with '0' in $text_dim$ua_priority$text_normal";
+      abort "${FUNCNAME[0]}: Deduced priority starts with '0' in $text_dim$ua_priority$text_normal";
     fi
   else
     declare -r ua_priority="$priority";
   fi
-  declare -ri number_test="$ua_priority";
 
   # Sanity check
   if [[ ! -a "$path" ]]; then
@@ -323,27 +330,30 @@ command_wipe_cache()
 
 command_upgrade()
 {
-  set_args "--force-upgrade --help" "$@";
+  set_args "--force-upgrade --with-new-pkgs --help" "$@";
   eval "$get_args";
 
   # (!) Force upgrade resets the daily cache on error. Dont use in scripts.
   declare update_needed;
   update_needed="$(cache_daily "upgrade" "get")";
   if [[ "$force_upgrade" == "true" ]] || [[ "$update_needed" == "true" ]]; then
-    # TODO More readable version
-    {
-      echol "Upgrading apt packages" &&
-      sudo apt-get update && sudo apt-get upgrade -y &&
-      echok "apt upgrade";
-      echol "Upgrading snap packages" &&
-      sudo snap refresh &&
-      echok "snap refresh";
-      cache_daily "upgrade" "set" >/dev/null;
-    } ||
-    {
-      cache_daily "upgrade" "reset";
-      errchoe "Failed to upgrade apt/snap packages. Will try again next time";
-    }
+  # TODO More readable version
+  {
+    echol "Upgrading apt packages" &&
+    sudo apt-get update && sudo apt-get upgrade -y &&
+    echok "apt upgrade";
+    if [[ "$with_new_pkgs" == "true" ]]; then
+      sudo apt --with-new-pkgs upgrade;
+    fi
+    echol "Upgrading snap packages" &&
+    sudo snap refresh &&
+    echok "snap refresh";
+    cache_daily "upgrade" "set" >/dev/null;
+  } ||
+  {
+    cache_daily "upgrade" "reset";
+    errchoe "Failed to upgrade apt/snap packages. Will try again next time";
+  }
   else
     echos "(daily) apt/snap upgrades";
   fi
@@ -444,7 +454,7 @@ command_termcaps_manpage()
 command_install()
 {
   # Invoke default command to install dotfiles
-  subcommand rundir scripts/install default "$@";
+  subcommand rundir scripts/install "$@";
 }
 
 # Copy dotfiles directory to another location, but only files that are relevant
@@ -723,9 +733,7 @@ command_import()
   if [[ -e "$target_path" ]]; then
     abort "Target $target_path already exists";
   fi
-  declare -i is_dir;
   if [[ -d "$from" ]]; then
-    is_dir=1;
     declare file;
     pushd "$from";
     for file in **/*; do
@@ -939,10 +947,9 @@ true_colour_old()
 # │ 🖹 Help strings       │
 # ╰──────────────────────╯
 
-declare -r default_help_string='Ephemeral command for whatever is required at the moment
+declare -r run_help_string='Ephemeral command for whatever is required at the moment
 DESCIPTION
   Better not rely on this command to have any specific effect.';
-
 declare -r test_help_string="Run tests
 SYNOPSIS
   test
@@ -1065,7 +1072,10 @@ DESCRIPTION
   Upgrades only once per day unless --force-upgrade is given.
 OPTIONS
   --force-upgrade: Ignore daily-time and do upgrades now. Note that an error
-    during upgrading will reset the daily timer; avoid this for scripting.";
+                   during upgrading will reset the daily timer; avoid this for
+                   scripting.
+  --with-new-pkgs: Run an additional pass with --with-new-pkgs when doing 'apt
+                   upgrade'";
 
 declare -r shutdown_upgrade_help_string="Do daily apt upgrades and shutdown after 1 minute
 DESCRIPTION

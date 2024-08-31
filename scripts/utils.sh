@@ -86,7 +86,7 @@ print_values()
 
 # $1  Name
 # $2  Value colour (may be "")
-# $3  Neutral colour (may be "")
+# $3  Operator colour (may be "")
 # ${@:4}  Values
 #
 # Resets the colour *after* printing the name
@@ -94,15 +94,15 @@ print_values_decorate()
 {
 #  set -eEuo pipefail;
   declare -r name="${1}";
-  declare -r colour="${text_normal}${2:-"$text_user"}";
-  declare -r neutral="${text_normal}${3:-"$text_normal"}";
+  declare -r value="${text_normal}${2:-"$text_normal"}";
+  declare -r operator="${text_normal}${3:-"$text_user_soft"}";
   declare listed="";
   if (($# > 3)); then
-    printf -v listed "$colour%s$neutral, " "${@:4}";
+    printf -v listed "$value%s$operator, " "${@:4}";
   else
     listed="";
   fi
-  printf "%s${neutral}[$(( $# >= 3 ? $#-3 : 0))]=(%s)${text_normal}" "$name" "${listed}";
+  printf "%s${operator}[${value}$(( $# >= 3 ? $#-3 : 0))${operator}]=(%s)${text_normal}" "$name" "${listed}";
 }
 
 # $1: Name of array
@@ -134,7 +134,7 @@ function abort()
   declare -ri code="${3:-1}";
 
   if (( code == 0 )); then abort "Must abort with nonzero code"; fi
-  errchow "$text_blo$code $text_dim←$text_normal ${text_orange}${FUNCNAME[1]}()$text_normal »$msg«";
+  errchow "${text_orange}${text_dim}${BASH_SOURCE[1]}:${BASH_LINENO[1]} ${text_normal}${text_blo}${FUNCNAME[1]}() → ${code} »${text_normal}${msg}${text_blo}«${text_normal}";
   if [[ "$fail" == "exit" ]]; then
     exit "$code"; # Exit to fail semi silently
   else

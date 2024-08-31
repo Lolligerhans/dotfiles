@@ -43,8 +43,8 @@ report_error()
     declare -ir error_frames="$_error_handling_frames";
   fi
 
+  # If we set it before we no longer need it
   set +vx;
-#  IFS=" "; # TODO Can we expand without changing this?
 
   #TODO Use nameref variables to capture context from actual error
 

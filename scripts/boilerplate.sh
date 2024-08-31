@@ -123,8 +123,8 @@ _sym() { if (($1)); then printf "✖"; else printf "✔"; fi; }
 
 # Use syntax ${array[@]:0:1} which works for empty arrays, too
 # shellcheck disable=SC2145
-errchol "$text_blb$text_dim• •$text_normal $text_blb›(${runscript_relativepath_coloured} $(print_values_decorate "${text_user}${runscript_args[@]:0:1} ${text_normal}" "${text_user_soft}" "$text_dim" "${runscript_args[@]:1}")${text_blb})${text_normal} ${text_dim}⌂ $text_italic$parent_path$text_normal";
-trap '_ret="$?"; _cval="$(_col "$_ret")"; errchol "$text_bold${_cval}$(_sym "$_ret") $_ret ‹(${runscript_relativepath_coloured} $(print_values_decorate "${text_user}${runscript_args[@]:0:1} ${text_normal}" "${text_user_soft}" "$text_dim" "${runscript_args[@]:1}")${_cval}${text_bold})$text_normal $text_dim⌂ $text_italic$parent_path$text_normal";'\
+errchol "$text_blb$text_dim• •$text_normal $text_blb›(${runscript_relativepath_coloured} $(print_values_decorate "${text_user}${runscript_args[@]:0:1} ${text_normal}" "${text_dim}" "$text_user_soft" "${runscript_args[@]:1}")${text_blb})${text_normal} ${text_dim}⌂ $text_italic$parent_path$text_normal";
+trap '_ret="$?"; _cval="$(_col "$_ret")"; errchol "$text_bold${_cval}$(_sym "$_ret") $_ret ‹(${runscript_relativepath_coloured} $(print_values_decorate "${text_user}${runscript_args[@]:0:1} ${text_normal}" "${text_dim}" "${text_user_soft}" "${runscript_args[@]:1}")${_cval}${text_bold})$text_normal $text_dim⌂ $text_italic$parent_path$text_normal";'\
   EXIT;
 
 ################################################################################
@@ -198,7 +198,7 @@ command_help()
 
     if ((N <= 1)); then
       repeat_string "$((max_length - ${#com} + 2))" "…" buffer;
-      col="${text_user}";
+      col="${text_user_soft}";
       tcol="";
     else
       buffer=" • ";
@@ -295,9 +295,8 @@ command_runscript()
 {
   if (($# < 1)); then abort "Usage: $text_bi$0$text_normal runscript ${text_italic}path/script.sh$text_normal"; fi
   if [[ ! -e "$1" ]]; then abort "$FUNCNAME: No such file: $1"; fi
-  # Kinda useless message since the script itself logs it already
-  #errchol "Delegating to $text_italic$1$text_normal";
-  "$1" "${@:2}";
+
+  command "$1" "${@:2}";
 }
 
 # Execute bash function that is part of the default includes
@@ -359,18 +358,21 @@ command_has_completion()
 # Helper
 ################################################################################
 
-# Command dispatcher
+# Allow implicit default command as special case
 function subcommand()
 {
-  # Call command from args
-  if (( $# > 0 )); then
-    "command_${1}" "${@:2}"; # Pass rest of the arguments to subcommand
-  else
-    # Run default when no arguments give nso that runscript remains scriptable
-    # in simple cases with only the default command
+  if (( $# == 0 )); then
+    # Run default when no arguments given so that runscript remains scriptable
+    # in simple cases with only the default command.
     command_default;
+  elif [[ "${1:0:1}" == "-" ]]; then
+    # Allow only passing "--help" (and other options) by implying default
+    # command. Is more intuitive. We cannot start our command names with a dash.
+    command_default "${@:1}";
+  else
+    # Pass rest of the arguments to subcommand
+    "command_${1}" "${@:2}";
   fi
-  return "$?";
 }
 
 ################################################################################

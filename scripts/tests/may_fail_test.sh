@@ -2,6 +2,8 @@
 
 # version 0.0.0
 
+# shellcheck disable=SC2030,SC2031
+
 # may_fail() test functions for commands_test.sh.
 # Source the tested may_fail function where you are sourcing this.
 

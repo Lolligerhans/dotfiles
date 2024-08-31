@@ -3,12 +3,18 @@
 local o = vim.opt
 
 -- ╭───────────────────────────────────────────────────────────────────────────╮
+-- │ LazyVim                                                                   │
+-- ╰───────────────────────────────────────────────────────────────────────────╯
+
+vim.g.autoformat = false;
+
+-- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Look/Display                                                              │
 -- ╰───────────────────────────────────────────────────────────────────────────╯
 
 o.cursorline = true
 o.cursorcolumn = true
-o.laststatus = 2
+o.laststatus = 3
 o.number = true
 o.relativenumber = true;
 
@@ -53,7 +59,7 @@ o.path:append { "**" }
 o.wildignore:append { "tags", "Session.vim", "Session_active.vim", ".git" }
 o.wildignorecase = true
 o.fileignorecase = true
-o.makeprg = "./run.sh make"
+o.makeprg = "./run.sh build"
 
 -- vim.opt.foldmethid = "indent" -- not sure we want this
 
@@ -110,14 +116,14 @@ o.startofline = false
 o.grepprg = "rg --vimgrep" -- LazyVim default anyway
 vim.g.netrw_liststyle = 3
 
-o.foldlevelstart = 3
+o.foldlevelstart = 2
 
 -- ╭──────────────────────────────────────────────────────────────────────────╮
 -- │ editing                                                                  │
 -- ╰──────────────────────────────────────────────────────────────────────────╯
 
-o.expandtab = true
 o.tabstop = 8
+o.expandtab = true
 o.softtabstop = 2            -- Pseudo-tab width. Keep tabstop at 8.
 o.shiftwidth = 2             -- Else uses tabstop
 o.smartindent = false        -- lazyvim: true
@@ -127,8 +133,8 @@ o.textwidth = 80             -- lazyvim: 0
 -- FIXME: there appears an "o" in ':se fo?' too? something rests this
 o.formatoptions = "cr/qn1jl" -- :h fo-table
 -- The lua string eats one level of bakspace \ escapin
-o.formatlistpat = "^\\s*\\(•\\|◦\\|·\\|TODO:\\?\\|NOTE\\|FIXME\\|\\d\\+[\\]:.)}\\t ]\\)\\s*"
+o.formatlistpat = "^\\s*\\(•\\|◦\\|·\\|TODO:\\?\\|NOTE:\\?\\|FIXME:\\?\\|HACK:\\?\\|INFO:\\?\\|\\d\\+[\\]:.)}\\t ]\\)\\s*"
 o.joinspaces = false
 
 -- TODO: filetype mappings for our comment-preserving ground mappings. Or can
---     you maybe even use a vim indternal variable as comment string? sad
+--     you maybe even use a vim internal variable as comment string? sad

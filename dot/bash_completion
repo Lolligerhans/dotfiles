@@ -4,7 +4,7 @@ _supercd_completion()
 {
   if ((${#COMP_WORDS[@]} != 2)); then return; fi
 
-#  >&2 printf "\n[command] find . -maxdepth 2 -type d -iregex %s\n" ".*${COMP_WORDS[1]}.*";
+  #>&2 printf "\n[command] find . -maxdepth 2 -type d -iregex %s\n" ".*${COMP_WORDS[1]}.*";
 
   # If the -not -path does not stop 'find' from loading large ".git" and similar
   # directories, we could also try using only "*" — without quotes — as path
@@ -13,17 +13,21 @@ _supercd_completion()
   IFS=$'\n' list=(\
     $(find . -maxdepth 3 -type d -not -path '*/.*' -iregex ".*${COMP_WORDS[1]}.*")\
     );
-#    grep ---color=auto -e "git")\
+    #grep ---color=auto -e "git")\
 
-#  >&2 printf "\n[list] {%s}\n" "${list[*]}";
+  #>&2 printf "\n[list] {%s}\n" "${list[*]}";
 
   COMPREPLY=("${list[@]#+(./)}");
 
-#  >&2 printf "\n[reply] {%s}\n" "${COMPREPLY[*]}";
+  #>&2 printf "\n[reply] {%s}\n" "${COMPREPLY[*]}";
 }
 # These match the names in .bash_aliases
 complete -F _supercd_completion "supercd";
 complete -F _supercd_completion ",";
+
+# ╭────────────────────────────────────────────────────────────────────────────╮
+# │ Runscripts                                                                 │
+# ╰────────────────────────────────────────────────────────────────────────────╯
 
 # Bash completion for default runscripts (and its aliased uses)
 #   ~/dotfiles/scripts/run_script.sh
@@ -57,7 +61,7 @@ _runscript_completion()
         # executed. Instead, test if the command has a help_string and only THEN
         # generate autocompletion.
         if [[ "$(2>/dev/null "$path" has_completion "${COMP_WORDS[1]}")" == "true" ]]; then
-#          1>&2 "DOING completion for ${COMP_WORDS[1]}";
+          # 1>&2 "DOING completion for ${COMP_WORDS[1]}";
           IFS=$'\n' COMPREPLY=($(compgen -o default -W "$(2>/dev/null "$path" "${COMP_WORDS[1]}" "--autocomplete")" -- "${COMP_WORDS[-1]}"));
         else
           # TODO Use default completion in this case
@@ -94,40 +98,47 @@ _wW_completion()
   declare word_list="$(fc "-${flag}l" -50 | sed -e 's/^[[:blank:]]*//' -e 's/\t/ /g')";
 
   # Block obsolete because better early processing
-#  >&2 echo "WORDLIST [with whitespace] (${#word_list[@]}): [${word_list/+( )/_}]";
+  #>&2 echo "WORDLIST [with whitespace] (${#word_list[@]}): [${word_list/+( )/_}]";
   # Replace the leading spaces that fc introduces for no reason
-#  word_list="$(sed -ze 's/\n/✖/g' -e 's/✖[[:space:]]*/✖/g' -e 's/✖/\n/g' <<< "$word_list")";
-#  >&2 echo "WORDLIST [wi/o whitespace] (${#word_list[@]}): [${word_list}]";
-#  >&2 echo "INPUT comp_words: [${COMP_WORDS[1]}]";
+  #word_list="$(sed -ze 's/\n/✖/g' -e 's/✖[[:space:]]*/✖/g' -e 's/✖/\n/g' <<< "$word_list")";
+  >&2 echo "WORDLIST [wi/o whitespace] (${#word_list[@]}): [${word_list}]";
+  >&2 echo "INPUT comp_words: [${COMP_WORDS[1]}]";
 
   declare -a suggestions=($(compgen -W "$word_list" -- "${COMP_WORDS[1]}"))
 
-#  >&2 IFS="•" eval 'echo "Raw compgen suggestions [${#suggestions[@]}]:" "${suggestions[*]}"';
+  #>&2 IFS="•" eval 'echo "Raw compgen suggestions [${#suggestions[@]}]:" "${suggestions[*]}"';
 
-#  >&2 echo "(${#suggestions[@]} suggestions)";
+  #>&2 echo "(${#suggestions[@]} suggestions)";
   if [ "${#suggestions[@]}" -eq "1" ]; then
     (( $# == 0 )) &&
       declare number="${suggestions[0]/%% */}" ||
       declare number="${suggestions[0]}";
-#    >&2 echo "Using single match: [$number]";
+    #>&2 echo "Using single match: [$number]";
     COMPREPLY=("$number")
-#    >&2 IFS="•" eval 'echo "RETURNING: [${COMPREPLY[*]}]"';
+    # >&2 IFS="•" eval 'echo "RETURNING: [${COMPREPLY[*]}]"';
   else
     #(( $# == 0 )) && for i in "${!suggestions[@]}"; do
     #  suggestions[$i]="$(printf '%*s' "-$COLUMNS"  "${suggestions[$i]}")"
     #done
-#    IFS="•" echo "Suggestions: ${suggestions[*]}";
+    #IFS="•" echo "Suggestions: ${suggestions[*]}";
 
     COMPREPLY=("${suggestions[@]}")
-#    IFS="•";
-#    >&2 IFS="•" eval 'echo "RETURNING: [${COMPREPLY[*]}]"';
+    #IFS="•";
+    #>&2 IFS="•" eval 'echo "RETURNING: [${COMPREPLY[*]}]"';
 
   fi
 }
 _w_completion() { _wW_completion; };
 _W_completion() { _wW_completion n; };
-complete -F _w_completion w
-complete -F _W_completion W
+complete -F _w_completion w;
+complete -F _W_completion W;
+
+# ╭────────────────────────────────────────────────────────────────────────────╮
+# │ Git completion                                                             │
+# ╰────────────────────────────────────────────────────────────────────────────╯
 
 # This file is symlinked by the install script
 source ~/.local/share/git-completion.bash;
+__git_complete co git_checkout;
+
+# vim: ft=bash

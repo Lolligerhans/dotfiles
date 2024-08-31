@@ -49,8 +49,8 @@ _generate_new()
   if [[ -v "$var_name" ]]; then
     abort "setargs: Won't overwrite existing variable $var_name";
   fi
-  declare -n eval_snippet="${3:?set_args: Missing eval string snippet for _$FUNCNAME}";
-  printf -v eval_snippet 'declare %s=%s;' "${var_name##*(_)}" "${2@Q}";
+  declare -n _sa_gn_eval_snippet_735="${3:?set_args: Missing eval string snippet for $FUNCNAME}";
+  printf -v _sa_gn_eval_snippet_735 'declare %s=%s;' "${var_name##*(_)}" "${2@Q}";
 }
 
 set_args()
@@ -412,9 +412,6 @@ set_args()
 
   eval_string+="$eval_string_end";
 
-  # Store names to unset manually later
-  declare funcname="${FUNCNAME[1]}";
-
   # Write global eval string that can import variables to local scope. Use as:
   #
   #     set_args "--params" "$@"
@@ -423,6 +420,7 @@ set_args()
   # Evaluating get_args must follow set_args immediately because the "get_args"
   # string would be overwritten by a subcommand's set_args.
 
+  eval_string+='get_args="";'; # Prevent accidental re-use
   printf -v get_args '%s' "$eval_string";
 
   # TODO use this instead:

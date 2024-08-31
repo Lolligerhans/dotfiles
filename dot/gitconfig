@@ -27,17 +27,24 @@
 	ad = add -p
 
 	# Shorthands
+	bi = bisect
 	br = branch
 	ci = commit
 	cl = clean
 	co = checkout
-	f = fetch
+	fe = fetch
 	# "pick" ("git-cp" already exists, preventing alias "cp")
 	pi = cherry-pick
-	r = rebase
-	st = status
 	m = merge
 	mt = mergetool
+	rb = rebase
+	st = status
+	sub = submodule
+
+	# Bisect variants
+	bis = bisect skip
+	big = bisect good
+	bib = bisect bad
 
 	# Commit variants
 	cia = commit --amend
@@ -50,8 +57,8 @@
 
 	# Fetch variants
 	# Use fp/fu: 'git fu dev:dev' to update local branch 'dev'
-	fu = fetch @{upstream}
-	fp = fetch @{push}
+	feu = fetch @{upstream}
+	fep = fetch @{push}
 
 	# Listing commits
 	# Unlike log --graph this order matches git rev-list --all
@@ -60,11 +67,11 @@
 	# NOTE Originally we wanted to have lower- and upper-case variants of
 	#         {s,ss,h,hh}, but git config is case-insensitive. We prefix upper
 	#         case variants with "q".
-	# TODO Think of a better alternative some time.
+	# TODO: Think of a better alternative some time.
 	s = qS -20
 	qS = qSS --date-order
 	ss = qSS -20
-	# TODO Would like to have 'h' accept a <commit> as well but not sure how
+	# TODO: Would like to have 'h' accept a <commit> as well but not sure how
 	h = qH HEAD -20
 	qH = !git qHH --all --date-order --until=$(git show -s --format=%cI ${1:-HEAD})
 	hh = qHH HEAD -20
@@ -81,22 +88,25 @@
 	pushu = push --set-upstream
 
 	# Rebase variants
-	ra = rebase --abort
-	rc = rebase --continue
-	ri = rebase --interactive
+	rba = rebase --abort
+	rbc = rebase --continue
+	rbi = rebase --interactive
+	rbp = rebase @{push}
+	rbu = rebase @{upstream}
 
 	# Reset variants
-	re = reset --keep
+	res = reset --keep
 	# "Reset backwards" by N commits (not working)
-	#reb = !git reh HEAD~$1
-	reh = reset --keep --hard
-	reseth = reset --hard # --hard w/o --keep should not be too easy
-	res = reset --keep --soft
+	#resb = !git reh HEAD~$1
+	resh = reset --keep --hard
 	# Catching up with upstream/push
-	rep = reh @{push}
-	reu = reh @{upstream}
-	resp = res @{push}
-	resu = res @{upstream}
+	resp = resh @{push}
+	resu = resh @{upstream}
+
+	# Submodule variants
+	subu = submodule update
+	subui = submodule update --init
+	subuir = submodule update --init --recursive
 
 	# Shorthands used by bash aliases s,h,r,rr,p,pp. We prefix the intended name
 	# with "q-" to avoid matching prefixes of other commands.
@@ -115,18 +125,14 @@
 	q-di-rw = dw --staged
 	q-di-rw2 = di --staged --stat
 
-	# TODO: Currently Using numbers instead of names to work on more platforms:
-	#   8: "brightblack"
-	#   12: "brightblue"
-
 	# Use %ar/%cr when %ah/%ch does not yet work on a platform
 	qSS = log --graph --abbrev-commit \
 		--pretty=format:'%C(dim yellow)%h %C(dim cyan)(%ch) %C(auto)%s %C(8)• %an %C(reset)%C(dim)%ah%C(auto)%d' --all
 	qHH = log --graph --abbrev-commit \
 		--pretty=format:'%C(dim yellow)%h %C(dim 12)(%ch) %C(auto)%s %C(8)• %an %C(reset)%C(dim)%ah%C(auto)%d'
-	lg = log --graph --abbrev-commit --decorate \
-		--format=format:'%C(yellow)%h%C(reset) %C(cyan)%ci %C(12)(%ah) %C(8)• %an%C(reset)%C(auto)%d%C(reset)%n%w(,8)%s'
-	lg2 = log --graph --abbrev-commit --decorate \
+
+	# Author and committer + both times
+	lo = log --graph --abbrev-commit --decorate \
 		--format=format:'%C(yellow)%h%C(reset) %C(cyan)%ci %C(12)(%ch) %C(8)• %cn%C(reset)%C(auto)%d%C(reset)%n%C(dim)%w(,8,8)%ai (%ah) %C(reset)%C(8)• %an%C(reset)%n%C(bold)%s%n%b'
 
 [branch]
@@ -221,18 +227,17 @@
 	#ui = auto
 
 [core]
-	# TODO Do we like -F -X at all?
-	#pager = less -rFX
-	# Using delta pager for slightly better word-diffing and whitespace errors.
-	# In some situations, we replace this pager explicitly in [pager] section.
-	pager = delta
+	# Pagers:
+	#  -  diff-highlight | less -rFX
+	#  - delta --color-only
+	pager = diff-highlight | less -rFX
 	editor = nvim
 	whitespace=trailing-space
 	autocrlf = input
 	excludesfile = ~/.gitignore_global
 
 [commit]
-	# Show diff while committing
+	# Show diff while committing. Good for text completion.
 	verbose = true
 
 [credential]
@@ -257,7 +262,7 @@
 
 	# ❔
 	submodule = log
-	# TODO Remove ignore=untracked later if we dont like it
+	# TODO: Remove ignore=untracked later if we dont like it
 	ignoreSubmodules = untracked
 
 [difftool]
@@ -278,8 +283,11 @@
 
 [interactive]
 	singlekey = true # Accept by single key stroke, without enter
+	# Other diff filters:
+	#  - delta --color-only
+	#  - diff-highlight
+	# Using delta pager for better word-diffing and whitespace errors.
 	diffFilter = delta --color-only
-	#diffFilter = diff-highlight
 
 [log]
 	date = iso-local
@@ -312,14 +320,14 @@
 	#diff = diff-highlight | less -rFX
 	#show = diff-highlight | less -rFX
 	# In log --graph -p, git-delta pager doesnt work, so we fallback
-	# TODO: Do we like the less options -FX?
-	log = diff-highlight | less -rFX
+	#log = diff-highlight | less -rFX
 
 [pull]
 	ff = only
 
 [push]
 	autoSetupRemote = true
+	# Push to remote branch with matching name
 	default = simple
 	# Push tags automatically, when pushing the commit. We use tags locally
 	# a lot so we dont use it now, but maybe later.
@@ -344,7 +352,7 @@
 
 [submodule]
 	# Behaves like --recursive for fetch, checkout, ...
-	recursive = true
+	recurse = true
 
 [url "git@github.com"]
 	# Replaces https clones with ssh automatically
@@ -363,7 +371,7 @@
 	#sort =  taggerdate
 	sort = version:refname
 
-# TODO do we want this ❔
+# TODO: do we want this ❔
 #transfer.fsckobjects = true
 #fetch.fsckobjects = true
 #receive.fsckobjects = true

@@ -26,3 +26,7 @@ vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" },
       vim.filetype:set("cpp")
     end,
   })
+
+-- Thwart ftplugins overwriting our formatoptions
+vim.api.nvim_create_autocmd("FileType",
+  { command = "set formatoptions-=o", })

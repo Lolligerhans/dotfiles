@@ -5,3 +5,13 @@ disable=SC2119
 # pushd ~/github;
 # ^------------^ SC2164 (warning): Use 'pushd ... || exit' or 'pushd ... || return' in case pushd fails.
 disable=SC2164
+
+# #!/usr/bin/false
+# ^-- SC1008 (error): This shebang was unrecognized. ShellCheck only supports sh/bash/dash/ksh. Add a 'shell' directive to specify.
+disable=SC1008
+
+# Used but not assigned happens all the time because set_args
+disable=SC2154
+
+# Unused variable. Because Shellckeck cannot understand help strings.
+disable=SC2034

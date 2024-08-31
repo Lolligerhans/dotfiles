@@ -67,6 +67,7 @@ assert_not_eq()
 assert_match()
 {
   declare -r msg="${3-""}"
+  # shellcheck disable=2053
   if [[ "$1" == $2 ]]; then # Match $2 as pattern
     (( "${#msg}" != 0 )) && log_success "'$1' == pattern{'$2'} | $msg" || :;
     return 0

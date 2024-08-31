@@ -72,7 +72,7 @@ Plugin 'majutsushi/tagbar'
 " fzf-vim plugin to open files by name easier
   "Plugin 'junegunn/fzf'
   " Use this line to automatically update the plugin
-  Plugin 'junegunn/fzf', { 'do': { -> fzf#install() } }
+  Plugin 'junegunn/fzf.vim', { 'do': { -> fzf#install() } }
 
   "Plugin 'junegunn/fzf.vim'
 
@@ -592,7 +592,7 @@ nnoremap <F5> g;
 nnoremap <F6> g,
 
 " Git: <F5> to <F8>
-" These deals with git by using our bash aliases (dotfiles/vim_bashenv.sh). We
+" These deals with git by using our bash aliases (dotfiles/dot/vim_bashenv.sh). We
 " open tabs before current tab so we come back after closing. Naturally, the
 " aliases depend on our .bash_aliases. We use Fugitive when a term version is
 " too annoying.
@@ -840,7 +840,7 @@ se complete-=t
   inoremap <leader>uz <c-v>u1dbb
 
 "let $BASH_ENV = "~/.bash_aliases"
-let $BASH_ENV = "~/dotfiles/vim_bashenv.sh"
+let $BASH_ENV = "~/dotfiles/dot/vim_bashenv.sh"
 
 " Relics:
   "nnoremap <tab>c :!c<cr>
@@ -893,7 +893,8 @@ let $BASH_ENV = "~/dotfiles/vim_bashenv.sh"
   nnoremap <leader>G :call GoGarb()<cr>:Git<space>
   "nnoremap <tab>g :call GoGarb()<cr>
 
-  " Is this needed? Do they get overwritten?
+  " Is this needed? Do they get overwritten? They might be in ftplugins. Try
+  " autocmd on "FileType".
   "autocmd BufNewFile,BufRead * setlocal formatoptions=cro/qn1jl
 
   " Show tab characters

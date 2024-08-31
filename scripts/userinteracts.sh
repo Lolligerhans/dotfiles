@@ -24,6 +24,7 @@ source "$dotfiles/scripts/utils.sh";
 # ╰──────────────────────╯
 
 # 1-tap version of boolean_prompt. Prints "true" or "false".
+# if $2 is given, output is assigned to it by reference.
 ask_user()
 {
   if (( $# < 1 || 2 < $# )); then abort "Wrong usage"; fi
@@ -48,7 +49,7 @@ ask_user()
 boolean_prompt()
 {
   if (( $# < 1 || 2 < $# )); then
-    abort "Wrong usage"
+    abort "Wrong usage";
   fi
   declare _bp_confirm_1748500628; # Avoid name conflicts
   declare -n _bp_res_1402420156="${2-"_bp_confirm_1748500628"}";
@@ -59,7 +60,7 @@ boolean_prompt()
     _bp_res_1402420156="n";
   fi
   if (($# == 1)); then
-    printf "%s" "$_bp_res_1402420156";
+    printf -- "%s" "$_bp_res_1402420156";
   fi
 }
 

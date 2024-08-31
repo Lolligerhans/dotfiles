@@ -33,6 +33,7 @@
 stty -ixon
 
 shopt -s autocd;
+shopt -s globstar;
 
 declare -x HISTSIZE=; # Unlimited
 declare -x HISTFILE=~/.local/share/bash_history;

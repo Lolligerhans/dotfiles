@@ -12,10 +12,18 @@ end
 -- HACK: NOt sure if commands are supposed to be created this way in lazyvim
 return
 {
+
   vim.api.nvim_create_user_command(
   -- Command generating ctags
     "MakeTags",
-    "!ctags -R --c++-kinds=+p --fields=+iaS --extras=+q",
+    "!touch .ctagsignore && ctags -R --c++-kinds=+p --fields=+iaS --extras=+q",
+    {}
+  ),
+
+  vim.api.nvim_create_user_command(
+  -- Command generating ctags
+    "MakeTagsAgain",
+    "!rm tags && touch .ctagsignore && ctags -R --c++-kinds=+p --fields=+iaS --extras=+q",
     {}
   ),
 

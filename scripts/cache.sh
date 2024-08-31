@@ -92,6 +92,6 @@ cache_daily()
 
 cache_clear()
 {
-  rm -vrf "$cache_path/*";
+  rm -vrf "${cache_path:?Invalid cahce path}/*";
   echok "Cleared cache";
 }

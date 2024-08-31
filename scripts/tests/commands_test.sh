@@ -82,7 +82,8 @@ test_boilerplate()
   for opt in e u E T; do # -h is not crucial
     assert_match "$-" "*${opt}*" "We need option ${opt}";
   done
-  for opt in inherit_errexit; do
+  # shellcheck disable=SC2043
+  for opt in "inherit_errexit"; do
     assert_eq "$(shopt -p "${opt}")" "shopt -s ${opt}" "We need shopt ${opt}";
   done
 }

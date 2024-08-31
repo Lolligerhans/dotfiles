@@ -39,7 +39,7 @@ load_version "$dotfiles/scripts/version.sh" 0.0.0;
 #load_version "$dotfiles/scripts/assert.sh" 0.0.0;
 load_version "$dotfiles/scripts/bash_meta.sh" 0.0.0;
 #load_version "$dotfiles/scripts/boilerplate.sh" 0.0.0;
-#load_version "$dotfiles/scripts/cache.sh" 0.0.0;
+load_version "$dotfiles/scripts/cache.sh" 0.0.0;
 #load_version "$dotfiles/scripts/error_handling.sh" 0.0.0;
 load_version "$dotfiles/scripts/fileinteracts.sh" 0.0.0;
 #load_version "$dotfiles/scripts/git_utils.sh" 0.0.0;
@@ -48,11 +48,17 @@ load_version "$dotfiles/scripts/termcap.sh" 0.0.0;
 load_version "$dotfiles/scripts/userinteracts.sh" "0.0.0";
 load_version "$dotfiles/scripts/utils.sh" 0.0.0;
 
-source install.sh; # Individual install subroutines
+# shellcheck source-path=scripts/install
+source "install.sh"; # Individual install subroutines
+source "symlink.sh"; # Individual symlink subroutines
 
 # ┌────────────────────────┐
 # │ Constants              │
 # └────────────────────────┘
+
+# Installation stdout/stderr is written here
+declare -r logfile="log/install.log";
+: >"$logfile";
 
 # TODO Create global array with paths of dotfiles? Just for install runscript?
 declare -r completion_path="$dotfiles/dot/bash_completion";
@@ -69,8 +75,6 @@ command_default()
   set_args "--force --help" "$@";
   eval "$get_args";
 
-  errchof "$FUNCNAME is still untested";
-
   declare all_ok="false";
   subcommand add_credentials all_ok;
   if [[ "$force" == "false" && "$all_ok" == "false" ]]; then
@@ -79,54 +83,106 @@ command_default()
   subcommand full_install;
 }
 
-# TODO Move commands install_xyz to install.sh and call them from here
-command_install()
-{
-  set_args "--help --fzf --mcfly --nvim --tree-sitter" "$@";
-  eval "$get_args";
-
-  # Maps the --parameter name to internal function. We filter parameters not
-  # describing an install target (like --help) by setting a NOP as their
-  # function. Then their value does not matter.
-  declare -Ar install_functions=(
-      ["help"]=":"
-      ["fzf"]="install_fzf"
-      ["mcfly"]="install_mcfly"
-      ["nvim"]="install_nvim"
-      ["tree_sitter"]="install_tree_sitter"
-      );
-
-  declare arg="" func="";
-  declare -i succeeded;
-  for arg in "${!install_functions[@]}"; do
-    declare -n _arg="$arg"; # Reference the variable created by set_args.
-    if [[ "$_arg" == "true" ]]; then
-      func="${install_functions[$arg]}";
-      may_fail succeeded -- "$func"
-      if ((!succeeded)); then errchow "Failed to install $arg"; fi
-    fi
-  done
-}
-
 command_full_install()
 {
+  set_args "--help" "$@";
+  eval "$get_args";
+
   declare choice="n";
-  choice="$(boolean_prompt "Install dotfiles?")";
+  choice="$(boolean_prompt "Install now?")";
   if [[ "$choice" == "n" ]]; then
     abort "Aborted by user";
   fi
   subcommand install_collected_apt; echo;
-  subcommand symlink_dotfiles; echo;
-  subcommand install_difftastic; echo;
-  subcommand install_diff_highlight; echo;
-  subcommand generate_ssh_keypairs --silent; echo;
-  subcommand install_missing_term_readkey --yes; echo;
-  subcommand install --fzf; echo;
-  subcommand install --mcfly; echo;
-  subcommand install --nvim; echo;
-  subcommand install --tree-sitter; echo;
-  subcommand show_manual; echo;
+  subcommand symlink --all;
+  subcommand generate_ssh_keypairs --silent;
+  subcommand install_missing_term_readkey --yes;
+  subcommand install --all;
+  subcommand show_manual;
+
+  echo
   echok "Full installation done!";
+  echo
+}
+
+# TODO: Move other commands install_xyz to install.sh and call them from here
+command_install()
+{
+  set_args "--help --all --diff-highlight --difftastic --fzf --mcfly --nvim --tree-sitter --vundle" "$@";
+  eval "$get_args";
+
+  declare -Ar install_functions=(
+      ["diff_highlight"]="install_diff_highlight"
+      ["difftastic"]="install_difftastic"
+      ["fzf"]="install_fzf"
+      ["mcfly"]="install_mcfly"
+      ["nvim"]="install_nvim"
+      ["tree_sitter"]="install_tree_sitter"
+      ["vundle"]="install_vundle"
+      );
+
+  declare arg="" func="";
+  declare -i exit_code;
+  for arg in "${!install_functions[@]}"; do
+    declare -n _arg="$arg"; # Reference the variable created by set_args.
+    if [[ "$all" == "true" || "$_arg" == "true" ]]; then
+      func="${install_functions[$arg]}";
+      {
+        may_fail exit_code -- "$func";
+      } ;
+      if (( 0 == exit_code )); then
+        echok "${arg//_/-}: Installed";
+      else
+        echow "${arg//_/-}: Not installed";
+      fi
+    fi
+  done
+}
+
+command_symlink()
+{
+  set_args "--help --all --bash-aliases --bash-completion --bash-gitcompletion \
+      --bashrc --ctags --gdbinit --gitconfig --gitignore-global --iftoprc \
+      --neovim --ripgrep-config --ssh-config --vim-operatorhighlight \
+      --vim-ftplugin --vimrc --vundle" \
+    "$@";
+  eval "$get_args";
+
+  declare -Ar symlink_functions=(
+      ["bash_aliases"]="symlink_bash_aliases"
+      ["bash_completion"]="symlink_bash_completion"
+      ["bash_gitcompletion"]="symlink_bash_gitcompletion"
+      ["bashrc"]="symlink_bashrc"
+      ["ctags"]="symlink_uctags"
+      ["ctags"]="symlink_ectags"
+      ["gdbinit"]="symlink_gdbinit"
+      ["gitconfig"]="symlink_gitconfig"
+      ["gitignore_global"]="symlink_gitignore_global"
+      ["iftoprc"]="symlink_iftoprc"
+      ["neovim"]="symlink_neovim"
+      ["ripgrep_config"]="symlink_ripgrep_config"
+      ["ssh_config"]="symlink_ssh_config"
+      ["vim_operatorhighlight"]="symlink_vim_operatorhighlight"
+      ["vim_ftplugin"]="symlink_vim_ftplugin"
+      ["vimrc"]="symlink_vimrc"
+      );
+
+  declare arg="" func="";
+  declare -i exit_code;
+  for arg in "${!symlink_functions[@]}"; do
+    declare -n _arg="$arg"; # Reference the variable created by set_args.
+    if [[ "$all" == "true" || "$_arg" == "true" ]]; then
+      func="${symlink_functions["$arg"]}";
+      {
+        may_fail exit_code -- "$func";
+      } &>> "${logfile}"
+      if (( 0 == exit_code )); then
+        echok "${arg//_/-}: Symlinked" | tee -a "$logfile";
+      else
+        echow "${arg//_/-}: Not symlinked" | tee -a "$logfile";
+      fi
+    fi
+  done
 }
 
 command_symlink_dotfiles()
@@ -164,163 +220,6 @@ command_symlink_dotfiles()
   echo "Installing components:"
   echo
 
-  # install vundle
-  echo "Vundle..."
-  if [ -d "$home_dir/.vim/bundle/Vundle.vim" ]; then
-      echo "skip"
-      echo
-  else
-      echo "installing..."
-      git clone "https://github.com/VundleVim/Vundle.vim.git" "$home_dir/.vim/bundle/Vundle.vim" &&
-      echo "Removing .git file from Vundle" &&
-      rm -rfv "$home_dir/.vim/bundle/Vundle.vim/.git"
-      echo "done"
-      echo
-  fi
-
-  # Install vimrc
-  subcommand run "$dotfiles" deploy --name=".vimrc" --yes --keep --file="$dotfiles/dot/vimrc" --dir="$home_dir" || :;
-  echo
-
-  # Install neovim config (from init.lua)
-  may_fail -- subcommand run "$dotfiles" deploy --yes --keep \
-    --file="$dotfiles/dot/nvim" --dir="$home_dir/.config";
-  echo
-
-  # Install init.vim for neovim
-  #subcommand run "$dotfiles" deploy --yes --keep --file="$dotfiles/dot/init.vim" --dir="$home_dir/.config/nvim" || :;
-  #echo
-
-  # Instll .vim/ftplugin files
-  subcommand run "$dotfiles" deploy --yes --keep --file="$dotfiles/dot/ftplugin" --dir="$home_dir/.vim" || :;
-  echo
-
-  # install .ctags (exuberant)
-  subcommand run "$dotfiles" deploy --name=".ctags" --yes --keep --file="$dotfiles/dot/ctags" --dir="$home_dir" || :;
-  echo
-
-  # install .ctags (universal)
-  subcommand run "$dotfiles" deploy --yes --keep --file="$dotfiles/dot/ignore.ctags" --dir="$home_dir/.ctags.d" || :;
-  echo
-
-  # install wombat colorscheme for vim
-#  if false; then
-#      echo "wombat (vim colorscheme)"
-      #if [ -d "$dotfiles_dir/.vim/
-#      echo "Installing wombat colorscheme for vim"
-#      git clone "https://github.com/vim-scripts/wombat256.vim.git" &&
-#      echo "Removing .git from wombat"
-#      rm -rf "${dotfiles_dir:?}/"
-      # TODO lol watch out this is dotfiles dir
-#  fi
-
-  # use .bash_aliases
-  path="$home_dir/.bash_aliases"
-  echo "bash_aliases..."
-  if [ -f "$path" ]; then
-      echo "skip"
-  else
-      echo "installing..."
-      ln -v -s "$dotfiles_dir/dot/bash_aliases" "$path" &&
-      echo "done"
-  fi
-  echo
-
-  # use ssh_config
-  subcommand rundir "$dotfiles" deploy --name="config" --keep --yes --file="$dotfiles/dot/ssh_config" --dir="${home_dir}/.ssh/" || :;
-  chmod 600 ~/.ssh/config;
-  echo
-
-  # use .gitconfig
-  subcommand run "$dotfiles" deploy --name=".gitconfig" --yes --keep --file="$dotfiles/dot/gitconfig" --dir="$home_dir" || :;
-  echo
-
-  # Use gitignore_global
-  subcommand run "$dotfiles" deploy --name=".gitignore_global" --yes --keep --file="$dotfiles/dot/gitignore_global" --dir="$home_dir" || :;
-  echo;
-
-  # use .bashrc_personal
-  # FIXME This is scuffed
-  declare -r brcp="$home_dir/.bashrc"
-  declare -r brcl="source ~/dotfiles/dot/bashrc_personal; # The install command greps for this line. Do not change it.";
-  echo "bashrc_personal..."
-  if [ ! -f "$brcp" ]; then
-      echo "creating file..."
-      touch "$brcp"
-  else
-      echo "(file exists)"
-  fi
-  # Prevent setting of HISTSIZE and HISTFILESIZE. Hope to prevent truncation of
-  # the file before it is overwritten by our dot/bashrc_personal.
-  sed -i -e '/HISTSIZE/ s/^[^#]/:; # [history handled by dotfiles] &/' "$brcp";
-  sed -i -e '/HISTFILESIZE/ s/^[^#]/:; # [history handled by dotfiles] &/' "$brcp";
-  # Prevent sourcing of .bash_aliases. Hope to prevent sourcing the aliases
-  # symlink before our dopt/bashrc_personal has sourced dot/git-completion.bash.
-  sed -i -e '/\(\.\|source\) .*\.bash_aliases/ s/^[^#]/:; # [aliases handled by dotfiles] &/' "$brcp";
-  if grep -q -F "$brcl" "$brcp"; then
-      echo "skip"
-  else
-      echo "installing..."
-      # Source dot/bashrc_personal but keep the default bashrc in case it is
-      # interesting.
-      echo "$brcl" >> "$brcp" &&
-      echo "done"
-  fi
-  echo
-
-  # Plant our own gdbinit
-  source_path="gdbinit";
-  target_path="$home_dir/.gdbinit";
-  echo "gdbinit...";
-  if [[ "$(create_if_missing "$target_path")" == "1" ]]; then
-    echo "installing...";
-    cat "$source_path" >> "$target_path" &&
-    echo "done";
-  else
-    echo "skip";
-  fi
-  echo
-
-  # install operator coloration
-  echo "C++ operator colors (vim)..."
-  path="$home_dir/.vim/after/syntax"
-  file="cpp.vim"
-  if [ -f "$path/$file" ]; then
-      echo "skip"
-  else
-      if [ ! -d "$path" ]; then
-          echo "creating directory..."
-          mkdir -p -v "$path"
-      else
-          echo "(directory exists)"
-      fi
-      echo "installing..."
-      ln -s "$dotfiles_dir/.vim/after/syntax/cpp.vim" "$path/$file" &&
-      echo "done"
-  fi
-  echo
-
-  # Install alias completion
-  subcommand rundir "$dotfiles" deploy --name=".bash_completion" --yes --keep --file="$completion_path" --dir="$home_dir" || :;
-  echo;
-
-  # Git completion.
-  # Maybe also /etc/bash_completion.d/git
-  declare git_completion="/usr/share/bash-completion/completions/git";
-  may_fail subcommand rundir "$dotfiles" deploy --name="git-completion.bash" --yes --keep --file="$git_completion" --dir="$home_dir/.local/share";
-  echo
-
-  # Completion options
-  ~/dotfiles/run.sh deploy --name=".inputrc" --yes --keep --file="$dotfiles_dir/dot/inputrc" --dir="$home_dir" || :;
-  echo
-
-  # Iftop config (.iftoprc)
-  ~/dotfiles/run.sh deploy --yes --name=".iftoprc" --yes --keep --file="$dotfiles_dir/dot/iftoprc" --dir="$home_dir" || :;
-  echo
-
-  # Ripgrep config
-  may_fail -- subcommand rundir "$dotfiles" deploy --yes --keep --file="$dotfiles_dir/dot/ripgrep.conf" --dir="$home_dir/.config";
-
   errchok "Command $FUNCNAME done!";
 }
 
@@ -334,25 +233,25 @@ command_add_credentials()
   declare _all_ok_973418034="true";
 
   # Insert the unquote-quote so this line does not match the token
-  if ! grep -RF "TOKEN_""DOTFILES_USER_CREDENTIALS" "$dotfiles"; then
-    echos "DOTFILES_USER_CREDENTIALS: All done";
-  else
+  if grep --exclude-dir=.git/ -RF "TOKEN_""DOTFILES_USER_CREDENTIALS" "$dotfiles"; then
     echou "Add your credentials at 'DOTFILES_USER_CREDENTIALS'";
     _all_ok_973418034="false";
+  else
+    echos "DOTFILES_USER_CREDENTIALS: All done";
   fi
 
-  if ! grep -RF "TOKEN_""DOTFILES_WORKSPACE_PREPARATIONS"; then
-    echos "DOTFILES_WORKSPACE_PREPARATIONS: All done";
-  else
+  if grep --exclude-dir=.git/ -RF "TOKEN_""DOTFILES_WORKSPACE_PREPARATIONS"; then
     echou "Prepare a workspace at 'DOTFILES_WORKSPACE_PREPARATIONS'";
     _all_ok_973418034="false";
+  else
+    echos "DOTFILES_WORKSPACE_PREPARATIONS: All done";
   fi
 
-  if ! grep -RF "TOKEN_""DOTFILES_BRANCH_PREPARATIONS"; then
-    echos "DOTFILES_BRANCH_PREPARATIONS: All done";
-  else
+  if grep --exclude-dir=.git/ -RF "TOKEN_""DOTFILES_BRANCH_PREPARATIONS"; then
     echou "Prepare a new branch at 'DOTFILES_BRANCH_PREPARATIONS'";
     _all_ok_973418034="false";
+  else
+    echos "DOTFILES_BRANCH_PREPARATIONS: All done";
   fi
 
   if [[ "$_all_ok_973418034" == "true" ]]; then
@@ -388,22 +287,6 @@ command_show_manual()
   echou "Manual: (Re-)use old firefox profile (when restored from tarball): visit 'about:profiles'. You might need to sudo snap refresh firefox to get newest version.";
 }
 
-command_install_idea()
-{
-  set_args "--help" "$@";
-  eval "$get_args";
-
-  declare -r filename="ideaIC-2023.3.3.tar.gz";
-  declare -r direct_link="https://download.jetbrains.com/idea/${filename}";
-  pushd "$HOME/Downloads";
-  wget -c "$direct_link";
-  sha256sum -c <<< "dc123ded3c7ede89e7cd3d4d5e46fada96b8763f648cd0cdbc5b7d6e26203fd2 ideaIC-2023.3.3.tar.gz";
-  declare -r dir_name="idea-IDE"; # Used in $dotfiles/dot/bashrc_personal
-  ensure_directory "$dir_name";
-  tar -xzf "${filename}" -C "$dir_name" --strip-components=1;
-  popd;
-}
-
 command_install_nala_legacy()
 {
   errchof "I think nala legacy build was broken last time I tried";
@@ -434,6 +317,7 @@ command_install_nala_legacy()
 
 command_install_missing_term_readkey()
 {
+  # TODO: Check for existing installation
   declare confirm="false";
   set_args "--yes" "$@";
   eval "$get_args";
@@ -449,9 +333,17 @@ command_install_missing_term_readkey()
   fi
 }
 
-
 command_install_collected_apt()
 {
+  # TODO: check for existing installation
+  declare -r cache_key="install_apt";
+  declare upgrade_needed;
+  upgrade_needed="$(cache_daily "$cache_key" "get")";
+  if [[ "$upgrade_needed" == "false" ]]; then
+    echos "(daily) apt upgrade";
+    return 0;
+  fi
+
   # This function install different utilities that can be easily loaded by apt
   # or any other external system.
   echol "Installing collected apt packages...";
@@ -479,6 +371,7 @@ command_install_collected_apt()
       curl \
       iftop \
       shellcheck \
+      npm \
       git-delta \
     &&
     {
@@ -491,73 +384,15 @@ command_install_collected_apt()
       done
     }
     echok "Installed collected apt packages";
+    cache_daily "$cache_key" "set" >/dev/null;
   } ||
   errchoe "$FUNCNAME: Failed to install collected (some) apt packages";
-}
-
-command_install_diff_highlight()
-{
-  errchol "$FUNCNAME";
-  # Didnt work
-#  errchoi "Downloading git diff-highlight from: $git_diff_hl_url";
-#  wget "$git_diff_hl_url";
-
-  # Use local file
-  errchot "Using hardcoded path to existing diff-highlight script";
-  errchot "Using ~ as target path (instead of the path chosen in ./install)";
-  declare -r spath="/usr/share/doc/git/contrib/diff-highlight/diff-highlight";
-  declare -r tpath=~/".local/bin/diff-highlight";
-
-  if [[ -f "$tpath" ]]; then
-    errchos "installing diff-highight [file foud: $tpath]";
-    return 0;
-  fi
-
-  declare mode;
-  mode="$(sudo stat --format '%a' -- "$spath")"
-  if (( "${mode:2:1}" % 2 != 1 )); then
-    echol "Making diff-highight executable...";
-    sudo chmod +x "$spath";
-  else
-    echot "If you expected to make diff-highlight executable.. it did not happen";
-    progress_sleep 10 "Going to continue with installation anyway.";
-  fi
-
-  if [[ ! -f "$spath" ]]; then
-    abort "No regular file: $spath";
-  fi
-  ensure_directory ~/.local/bin;
-  cp -v "$spath" ~/.local/bin;
-
-  # TODO Is it enough to make sourece executable?
-  chmod u+x "$tpath";
-  # shellcheck disable=SC2010
-  ls -Fh -A -lD ~/.local/bin | grep --color=auto -e "diff-highlight";
-  errchok "Installed diff-highlight script";
 }
 
 command_install_cpan()
 {
   # CPAN is from perl and does the git interactive immediate key presses
   sudo cpan Term::ReadKey;
-}
-
-command_install_difftastic()
-{
-  declare -r difft_path="/usr/local/bin/difft";
-  if [[ -x "$difft_path" ]]; then
-    errchos "[binary exists] installing difftastic";
-    return 0;
-  fi
-  ensure_directory /tmp/difftastic;
-  cd /tmp/difftastic;
-  wget -c https://github.com/Wilfred/difftastic/releases/download/0.52.0/difft-x86_64-unknown-linux-gnu.tar.gz;
-#  wget -c https://github.com/Wilfred/difftastic/releases/download/0.52.0/difft-aarch64-unknown-linux-gnu.tar.gz;
-  tar -xvzf difft-x86_64-unknown-linux-gnu.tar.gz;
-  sudo mv -v difft "$difft_path";
-  # shellcheck disable=SC2010
-  ls -alF /usr/local/bin | grep -ie difft;
-  errchol "$text_green✓ Installed: difftastic $text_dim$difft_path$text_normal";
 }
 
 command_generate_ssh_keypairs()
@@ -569,25 +404,52 @@ command_generate_ssh_keypairs()
   errchol "Done: Creating ssh key pairs";
 }
 
+# Download IDEA and unpack tarball to ~/Downloads/idea-IDE. This path matches
+# the change we make to PATH in our bashrc_personal.
+command_install_idea()
+{
+  set_args "--help" "$@";
+  eval "$get_args";
+
+  declare -r filename="ideaIC-2023.3.3.tar.gz";
+  declare -r direct_link="https://download.jetbrains.com/idea/${filename}";
+  pushd "$HOME/Downloads";
+  wget -c "$direct_link";
+  sha256sum -c <<< "dc123ded3c7ede89e7cd3d4d5e46fada96b8763f648cd0cdbc5b7d6e26203fd2 ideaIC-2023.3.3.tar.gz";
+  declare -r dir_name="idea-IDE"; # Used in $dotfiles/dot/bashrc_personal
+  ensure_directory "$dir_name";
+  tar -xzf "${filename}" -C "$dir_name" --strip-components=1;
+  popd;
+}
+
+command_load_font()
+{
+  set_args "--help --zip=" "$@";
+  eval "$get_args";
+
+  # Sanity check
+  if [[ "${zip}" != *.zip ]]; then
+    abort "Not a zip file: ${zip}";
+  fi
+  ensure_directory "$HOME/.local/share/fonts";
+
+  echol "Installing $text_user$zip$text_normal";
+
+  # Extract
+  declare dir;
+  dir="$(mktemp -d -t font-XXXXXX)";
+  unzip -d "$dir" "$zip" &>> "$logfile";
+
+  # Install
+  declare -a files;
+  files=( "$dir"/*.ttf );
+  mv -v "${files[@]}" ~/.local/share/fonts &>> "$logfile";
+  echok $"Installed font $text_user$zip$text_normal";
+}
+
 # ┌────────────────────────┐
 # │ Helpers                │
 # └────────────────────────┘
-
-# Outputs 1 when file is being created
-create_if_missing()
-{
-  if [ "$#" -ne 1 ]; then
-    abort "ensure_file() with wrong number of arguments";
-  fi
-
-  if [[ -a "$1" ]]; then
-    printf "0";
-  else
-    touch "$1";
-    errchok "Created file [$1]";
-    printf "1";
-  fi
-}
 
 generate_single_ssh_keypair()
 {
@@ -643,23 +505,47 @@ DESCRIPTION
       ◦ manual actions
 OPTIONS
   --force: Skip credentials check. Dotfile smight not work correctly.";
+declare -r full_install_help_string="Install (almost) everything
+DESCRIPTION
+  Installs things that are small and we likely want. Some larger things must be
+  added by their own commands (e.g., idea-IDE).
+  Does no run add_credentials beforehand, unlile the default command.";
 declare -r install_help_string="Install components (incomplete)
+SYNOPSIS
+  install --help
+  install [--target, ...]
 DESCRIPTION
   Install individual components by specifying them as --argument(s). Targets are
   executed in unspecified order.
   Returns with success even if installation fails. Check output for errors.
 OPTIONS
-  --fzf: Install fzf command line fuzzy finder
-  --mcfly: Install mcfly shell history search
-  --nvim: Install nvim text editor
-  --tree-sitter: Install tree-sitter from cargo";
+  --all: Install all selectable options
+  [--target]: Target to be installed. Use --help to get a list.":
+  # shellcheck disable=SC2155,SC1070
+declare -r install_idea_help_string="Install IDEA
+DESCRIPTION
+  Download and unpack tarball to ~/Downloads/idea-IDE. This path matches the
+  change we make to PATH in our bashrc_personal.";
+declare -r load_font_help_string="Load zipped font
+SYNOPSIS
+  load_font --zip=ZIP_FILE
+DESCRIPTION
+  Extract zip and copy all contained .ttf files to .local/share/fonts. A list of
+  copied files can be found in the logfile.";
 declare -r symlink_dotfiles_help_string="Crete symlinks to files in dot/
+SYNOPSIS
+  symlink --help
+  symlink [--target, ...]
 OPTIONS
-  --user=USER: Link to /home/USER instead of /home/$(whoami)";
+  --all: Link all available targets.
+  [--target]: Targets to link. Use --help so get a list.";
+# shellcheck disable=SC1070,SC1079,SC1078
 declare -r add_credentials_help_string="List places where to add credentials
 DESCRIPTION
   Greps for TOKEN_""DOTFILES_USER_CREDENTIALS token, which identifies the lines
-  where to add user credentials.";
+  where to add user credentials.
+
+  The default commands runs add_credentials by default.";
 declare -r workspace_help_string="Setup/Download workspaces for given use case
 DESCRIPTION
   Prepare workspaces for given use case. Preparation could entail simple git
@@ -678,10 +564,6 @@ OPTIONS
 NOTE
   Workspace names should only contain [a-zA-Z] because we grep for the
   corresponding function name.";
-declare -r install_idea_help_string="Install IntelliJ IDEA free version
-DESCRIPTION
-  Download IDEA and unpack tarball to ~/Downloads/idea-IDE. This path matches
-  the addition we make to PATH in our bashrc_personal.";
 
 # Transition to provided command
 subcommand "${@}";

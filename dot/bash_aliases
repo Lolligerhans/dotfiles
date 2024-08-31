@@ -128,6 +128,7 @@ pis()
   alias  V='(("$(jobs -p vim  | wc -l)" == 0)) && { vims || :; } || fg vim;'
   alias VV='(("$(jobs -p vim  | wc -l)" == 0)) && { vimS || :; } || fg vim;';
   alias  v='(("$(jobs -p nvim | wc -l)" == 0)) && { nvim || :; } || fg nvim;';
+  alias newvim='nvim -u NONE -U NONE -N -i NONE';
 
 # ______________________________________________________________________________
 # Git
@@ -442,6 +443,8 @@ body()
   alias DOT='Dotr; Dot';
   alias dotr='cd ~/github/dotfiles-repo';
   alias Dotr='pushd ~/github/dotfiles-repo';
+  alias rep='cd ~/thesis/report';
+  alias Rep='pushd ~/thesis/report';
   alias the='cd ~/thesis';
   alias fuzz='cd ~/Workspace/SSH-Fuzzer/ || cd ~/github/ssh-fuzzer';
   alias muse='cd ~/Documents/MuseScore4/Scores';
@@ -471,7 +474,7 @@ body()
     mapfile -t outa <<< "${out#*$'\n'}";
     #echoi ${outa[@]@A};
 
-    echo "$text_user_soft$prefix…$text_normal ${outa[@]//"${prefix}"/…}";
+    echo "$text_user_soft$prefix…$text_normal  ${outa[@]//"${prefix}"/…}";
   }
 
   _pushd() { pushd "$@" >/dev/null; _dirs; };

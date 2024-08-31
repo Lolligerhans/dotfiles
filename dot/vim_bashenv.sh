@@ -10,6 +10,7 @@
 # FIXME Consider using functions instead to not have to use this
 shopt -s expand_aliases;
 
-# shellcheck source=/dev/null
-source ~/.bash_completion;
-source ~/.bash_aliases;
+# shellcheck source=dot/bash_completion
+source "$HOME/.bash_completion";
+# shellcheck source=dot/bash_aliases
+source "$HOME/.bash_aliases";

@@ -100,7 +100,7 @@ may_fail()
   if [[ "$-" != *e* ]]; then
     abort "Expected 'set -e'";
   fi
-  errchol "☐ $(print_values "$FUNCNAME" "$@")";
+  #errchol "☐ $(print_values "$FUNCNAME" "$@")";
   declare -i _mf_result_834u92834;
 
 #  declare -r _subshell_assign="$("$@")";
@@ -119,11 +119,11 @@ may_fail()
     set -e;
   fi
 
-  if (( _mf_result_834u92834 == 0 )); then
-    errchol "☑ $(print_values "$FUNCNAME" "$@")";
-  else
-    errchol "☒ $(print_values "$FUNCNAME" "$@")";
-  fi
+  #if (( _mf_result_834u92834 == 0 )); then
+  #  errchol "☑ $(print_values "$FUNCNAME" "$@")";
+  #else
+  #  errchol "☒ $(print_values "$FUNCNAME" "$@")";
+  #fi
   if [[ -n "$ret_name" ]]; then
     declare -n -- _mf_ret_777734234="${ret_name}";
     _mf_ret_777734234="$_mf_result_834u92834";

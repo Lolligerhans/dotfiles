@@ -6,21 +6,21 @@
 # ╭──────────────────────╮
 # │ 🛈 Info               │
 # ╰──────────────────────╯
-# Dotfiles runscript template
+# TODO: This is a template runscript.
 # ╭──────────────────────╮
 # │ ⚙ Boilerplate        │
 # ╰──────────────────────╯
 declare -gr dotfiles="${DOTFILES:-"$HOME/dotfiles"}"; # TOKEN_DOTFILES_GLOBAL
 # ☯ Every file prevents multi-loads itself using this global dict
-declare -gA _sourced_files=( ["runscript"]="" ); # Source only once
+declare -gA _sourced_files=( ["runscript"]="" );
 # 🖈 If the runscript requires a specific location, set it here
 #declare -gr this_location="";
 source "$dotfiles/scripts/boilerplate.sh" "${BASH_SOURCE[0]}" "$@";
 # ╭──────────────────────╮
 # │ 🛠Configuration      │
 # ╰──────────────────────╯
-_run_config["versioning"]=0;
-_run_config["log_loads"]=0;
+_run_config["versioning"]=0; # {0, 1}
+_run_config["log_loads"]=0; # {0, 1}
 _run_config["error_frames"]=4; # {1, 2, ...}
 # ╭──────────────────────╮
 # │ 🗀 Dependencies       │

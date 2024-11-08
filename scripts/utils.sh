@@ -220,15 +220,14 @@ repeat_string()
   declare -i count="${1}";
   declare str="${2:-"="}";
 
-  ## NEW VERSION (good)
   declare res;
-  printf -v res "%${count}s";
+  printf -v res -- "%${count}s";
   res="${res// /"$str"}";
   if (($# == 3)); then
     declare -n _repeat_string__ref="${3}";
-    printf -v _repeat_string__ref "%s" "$res";
+    printf -v _repeat_string__ref -- "%s" "$res";
   else
-    printf "%s" "${res}";
+    printf -- "%s" "${res}";
   fi
   return 0;
 }

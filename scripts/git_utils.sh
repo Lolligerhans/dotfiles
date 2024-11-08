@@ -49,13 +49,13 @@ git_test_clean()
 git_is_clean()
 {
   # TODO Verify that we are in a git directory (see how we do it in bash prompt)
-  declare -n ret="${1}";
+  declare -n ret_4817932="${1}";
   declare output="";
   output="$(git status --porcelain)";
   if [[ -z "$output" ]]; then
-    printf -v ret -- "y";
+    printf -v ret_4817932 -- "y";
   else
-    printf -v ret -- "n";
+    printf -v ret_4817932 -- "n";
   fi
 }
 

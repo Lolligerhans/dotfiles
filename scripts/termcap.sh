@@ -9,7 +9,8 @@ if [[ -v _sourced_files["termcap"] ]]; then
 fi
 _sourced_files["termcap"]="";
 
-declare -r user_colour=$'\x1b[38;2;255;170;102m';
+declare -r user_colour=$'\x1b[38;2;255;144;192m';
+# declare -r user_colour=$'\x1b[38;2;255;170;102m';
 #declare -r user_colour=$'\x1b[38;2;0;128;255m';
 
 # TODO test this:

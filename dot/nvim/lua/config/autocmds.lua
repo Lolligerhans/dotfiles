@@ -30,3 +30,7 @@ vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" },
 -- Thwart ftplugins overwriting our formatoptions
 vim.api.nvim_create_autocmd("FileType",
   { command = "set formatoptions-=o", })
+
+-- Start :terminal buffers in insert mode
+-- autocmd TermOpen * startinsert
+vim.api.nvim_create_autocmd("TermOpen", { pattern = "*", command = "startinsert" })

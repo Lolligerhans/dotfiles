@@ -1,0 +1,26 @@
+
+================================================================================
+font?
+================================================================================
+
+
+
+
+================================================================================
+GPU driver
+================================================================================
+
+sudo lshw -C display
+
+lscpi|grep -ie vga
+
+GeForce GTX 760 OEM
+
+ubuntu-drivers devices # find out ubuntu-drivers
+
+sudo apt install nvidia-<driver number> # 470
+
+Once the installation is finished, restart your PC.
+Then run prime-select query to check which graphic card is being used by your device.
+If you want to change the graphic card used by your PC, run : sudo prime-select <intel/ nvidia>; choose between Nvidia and Intel graphic cards.
+After that, restart your PC to apply changes

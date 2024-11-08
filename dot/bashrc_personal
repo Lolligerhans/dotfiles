@@ -126,6 +126,18 @@ shopt -s histappend;
 #    declare _ret="$?";
     # Termcap for bold text has a fallthrough in the __git_ps1 format string
     __git_ps1 "$_new_before_git_ps1" "$_new_after_git_ps1" "$_new_git_ps1_format";
+
+    # if [[ "${IFS}" != $' \t\n' ]] || (( RANDOM%10 == 0 )); then
+    #   declare col;
+    #   if [[ "${IFS}" != $' \t\n' ]]; then
+    #     col="${text_blr}";
+    #   else
+    #     col="${text_dim}";
+    #   fi
+    #   echo
+    #   echo "${col}Prompt: Currently ${IFS@A}${text_normal}";
+    #   echo
+    # fi
   }
 
 # The other bash prompt parts
@@ -136,7 +148,8 @@ shopt -s histappend;
   # Select prompt
   declare -x PS3="${text_user_hard}№›${text_normal} ";
 
-source ~/.bash_aliases; # Symlink
+source ~/.bash_aliases;
+source ~/.bash_aliases_local || true; # Might not exist
 
 if command -v mcfly &> /dev/null; then
   # Doing this twice leads to errors!
@@ -145,5 +158,19 @@ fi
 
 # Env
 declare -gx RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep.conf";
+
+# ╭────────────────────────────────────────────────────────────╮
+# │ Programs                                                   │
+# ╰────────────────────────────────────────────────────────────╯
+
+# ── Delta (git-deltaa) ────────────────────────────────────────
+# Start out enabled, toggle using an alias by setting to "+" instead.
+declare -x DELTA_FEATURES="+side-by-side";
+
+# ╭────────────────────────────────────────────────────────────╮
+# │                                                            │
+# ╰────────────────────────────────────────────────────────────╯
+
+command xmodmap -e 'clear Lock' -e 'keycode 0x42 = Escape';
 
 # vim: filetype=bash

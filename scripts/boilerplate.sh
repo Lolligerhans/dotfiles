@@ -348,9 +348,9 @@ command_has_completion()
 {
   declare -r cmd="${1:?"FUNCNAME: Missing input parameter 1"}";
   if [[ -v "${cmd}_help_string" ]]; then
-    printf "true";
+    printf -- "true";
   else
-    printf "false";
+    printf -- "false";
   fi
 }
 
@@ -365,13 +365,19 @@ function subcommand()
     # Run default when no arguments given so that runscript remains scriptable
     # in simple cases with only the default command.
     command_default;
+
   elif [[ "${1:0:1}" == "-" ]]; then
     # Allow only passing "--help" (and other options) by implying default
     # command. Is more intuitive. We cannot start our command names with a dash.
     command_default "${@:1}";
-  else
+
+  elif [[ "$(type -t "command_$1")" == "function" ]]; then
     # Pass rest of the arguments to subcommand
     "command_${1}" "${@:2}";
+
+  else
+    subcommand help "${@:1}";
+    abort "Command not found: ${*:1}";
   fi
 }
 
@@ -398,9 +404,9 @@ if [[ -v this_location ]] && [[ -n "$this_location" ]] && [[ ! "$this_location" 
   exit "$?";
 fi
 
-# Sanity check
+# Sanity checks
 if ! shopt -qp extglob inherit_errexit; then
-  # Many of the scripts use extglob
+  # Many of the scripts use these
   abort "Expected 'extglob' and 'inherit_errexit' to be on";
 fi
 # We allow flags -hHxv to be either set or unset

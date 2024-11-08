@@ -62,7 +62,7 @@ may_fail()
   #     set -euETo pipefail; # nice try!
   #     shopt -s inherit_errexit;
   #     cd /;
-  #     isntall_program()
+  #     install_program()
   #     {
   #       mkdir a || true;
   #       set -e; ❔
@@ -73,8 +73,7 @@ may_fail()
   #     install_program || true; # ❌ bad
   #
   # We disable set -e surrounding a subshell. Unfortunately this prevents
-  # interaction with the parent process. We would have to restore set -e by hand
-  # if it may not have been set before.
+  # interaction with the parent process.
   #
   # An alternative would be to use:
   #     declare dummy="$( "$@" )";
@@ -82,7 +81,6 @@ may_fail()
   # The declaration counts as last command (so this line returns 0 regardless
   # failures of $@). However, we might not like storing stdout in a variable and
   # we may need a return value.
-  # what $@).
   if (( $# < 2 )); then
     abort "Expected at least 2 arguments";
   fi
@@ -101,7 +99,7 @@ may_fail()
     abort "Expected 'set -e'";
   fi
   #errchol "☐ $(print_values "$FUNCNAME" "$@")";
-  declare -i _mf_result_834u92834;
+  declare -i _mf_result_834u92834; # Avoid name collisions
 
 #  declare -r _subshell_assign="$("$@")";
 #  _mf_result_834u92834="$?";

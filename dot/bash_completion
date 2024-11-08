@@ -1,5 +1,8 @@
 #!/bin/false
 
+# NOTE: This file is sourced by bash automatically from ~/.bash_completion. If
+#       that did not happen we could source it manually over bashrc.
+
 _supercd_completion()
 {
   if ((${#COMP_WORDS[@]} != 2)); then return; fi
@@ -35,12 +38,13 @@ _runscript_completion()
 {
   declare -r path="${1:-"./run.sh"}";
   declare -r params_cmd="${2:-""}";
+  declare IFS=$'\n';
   if (( "${#COMP_WORDS[@]}" == 2 )); then
-    IFS=$'\n' COMPREPLY=($(compgen -W "$(2>/dev/null "$path" "print_commands")" -- "${COMP_WORDS[1]}"));
+    COMPREPLY=($(compgen -W "$(2>/dev/null "$path" "print_commands")" -- "${COMP_WORDS[1]}"));
 
     # Add --parameter completion if requested (used for the help alias)
     if [[ -n "$params_cmd" ]]; then
-      IFS=$'\n' COMPREPLY+=($(compgen -W "$(2>/dev/null "$path" "$params_cmd" "--autocomplete")" -- "${COMP_WORDS[-1]}"));
+      COMPREPLY+=($(compgen -W "$(2>/dev/null "$path" "$params_cmd" "--autocomplete")" -- "${COMP_WORDS[-1]}"));
     fi
   else
   # Replace 'else' with contition if completion can be called with 1 or fewer words:
@@ -49,7 +53,7 @@ _runscript_completion()
     if [[ -n "$params_cmd" ]]; then
       # Spacial case for help command: Complete second arg with --params ONLY, no
       # fallbacks.
-      IFS=$'\n' COMPREPLY=($(compgen -W "$(2>/dev/null "$path" "$params_cmd" "--autocomplete")" -- "${COMP_WORDS[-1]}"));
+      COMPREPLY=($(compgen -W "$(2>/dev/null "$path" "$params_cmd" "--autocomplete")" -- "${COMP_WORDS[-1]}"));
     else
       # Normal case:
       # Complete as parameter when startign with dash "-" and possible. Else
@@ -62,7 +66,7 @@ _runscript_completion()
         # generate autocompletion.
         if [[ "$(2>/dev/null "$path" has_completion "${COMP_WORDS[1]}")" == "true" ]]; then
           # 1>&2 "DOING completion for ${COMP_WORDS[1]}";
-          IFS=$'\n' COMPREPLY=($(compgen -o default -W "$(2>/dev/null "$path" "${COMP_WORDS[1]}" "--autocomplete")" -- "${COMP_WORDS[-1]}"));
+          COMPREPLY=($(compgen -o default -W "$(2>/dev/null "$path" "${COMP_WORDS[1]}" "--autocomplete")" -- "${COMP_WORDS[-1]}"));
         else
           # TODO Use default completion in this case
 
@@ -137,8 +141,17 @@ complete -F _W_completion W;
 # │ Git completion                                                             │
 # ╰────────────────────────────────────────────────────────────────────────────╯
 
+declare -x GIT_COMPLETION_SHOW_ALL="1"; # --allow-empty
+declare -x GIT_COMPLETION_IGNORE_CASE="1";
+
 # This file is symlinked by the install script
 source ~/.local/share/git-completion.bash;
+__git_complete a git_add;
 __git_complete co git_checkout;
+__git_complete c git_commit;
+__git_complete C git_commit;
+__git_complete di git_diff;
+__git_complete dis git_diff;
+__git_complete die git_diff;
 
 # vim: ft=bash

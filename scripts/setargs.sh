@@ -49,7 +49,7 @@ _generate_new()
   if [[ -v "$var_name" ]]; then
     abort "setargs: Won't overwrite existing variable $var_name";
   fi
-  declare -n _sa_gn_eval_snippet_735="${3:?set_args: Missing eval string snippet for $FUNCNAME}";
+  declare -n _sa_gn_eval_snippet_735="${3:?set_args: Missing eval string snippet for ${FUNCNAME[0]}}";
   printf -v _sa_gn_eval_snippet_735 'declare %s=%s;' "${var_name##*(_)}" "${2@Q}";
 }
 
@@ -287,7 +287,7 @@ set_args()
       if [[ -v required["$p"] ]]; then name_colour+="${_setargs_colour_required}";
       elif [[ -v defaulted["$p"] ]]; then name_colour+="${_setargs_colour_defaulted}";
       elif [[ -v optional["$p"] ]]; then name_colour+="${_setargs_colour_optional}";
-      else abort "set_args: $BASH_SOURCE:$LINENO unreachable";
+      else abort "set_args: ${BASH_SOURCE[0]}:${LINENO[0]} unreachable";
       fi
       if [[ -v by_name["$p"] ]]; then
         name_colour+="${text_bold}";
@@ -354,7 +354,7 @@ set_args()
 
   # Special cases: --autocomplete provided
   if [[ -v provided["--autocomplete"] ]]; then
-    errchoe "set_args: --autocomplete is meant ONLY for autocompletion script use";
+    errchoe "set_args: --autocomplete is meant only for autocompletion script use";
     ((_setargs_debug)) && errchod "set_args: Exit to provide --autocomplete: $(print_values available "${available[@]}")" || :;
     printf "%s" "${available[*]}";
     exit 0;
@@ -398,16 +398,9 @@ set_args()
 
   # Generate argv (only in eval mode; eventually that should be our only mode)
   if ((allow_leftover_argv)); then
-#    declare argv_values="";
-#    if (( "${#leftover_argv[@]}" != 0 )); then
-      # Bash-encode and quote data. Then declare can reconstruct them correctly.
-      # The other variables are passed by global rariables so they do not need it.
-#      printf -v argv_values '%Q ' "${leftover_argv[@]}";
-#    fi
-    # shellcheck disable=SC2124 # False popsitive
-    declare -r argv_values="${leftover_argv[@]@Q}"; # Encode as eval-able string
-    ((_setargs_debug)) && errchof "declaring argv as: argv=($argv_values)" || :;
-    eval_string+="declare argv=(${argv_values});";
+    declare -a argv=("${leftover_argv[@]}"); # Encode as eval-able string
+    ((_setargs_debug)) && errchof "declaring argv as: ${argv[*]@A}" || :;
+    eval_string+="${argv[*]@A};";
   fi
 
   eval_string+="$eval_string_end";

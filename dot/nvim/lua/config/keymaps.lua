@@ -13,41 +13,50 @@ local m = vim.keymap
 -- INFO: We preserve replaced commands below prefix "<leader>ß"
 -- TODO: Name this group something fitting
 
--- LazyVim defaults that we move slightly deeper
--- changed to "<leader>L"
-m.del("n", "<leader>l")
--- moved to <leader>ß
+-- moved to <leader>ßL
 m.del("n", "<leader>L")
-m.set("n", "<leader>L", "<cmd>Lazy<cr>", { remap = false, desc = "LazyVim" })
 -- TODO How to get the short log?
 m.set("n", "<leader>ßL", "<cmd>Lazy<cr>", { remap = false, desc = "?Lazy log" })
+
+-- changed to "<leader>L"
+m.del("n", "<leader>l")
+m.set("n", "<leader>L", "<cmd>Lazy<cr>", { remap = false, desc = "LazyVim" })
+
 -- moved to <leader>ß:
 m.del("n", "<leader>:")
-m.set("n", "<leader>:", "<cmd>Telescope command_history<cr>",
+m.set("n", "<leader>ß:", "<cmd>Telescope command_history<cr>",
   { remap = false, desc = "Command History" })
+
+-- Replaced with our own (remains at <leader>ff)
+m.del("n", "<space><space>")
 
 -- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Global/Generic                                                            │
 -- ╰───────────────────────────────────────────────────────────────────────────╯
 
--- Using []{} through öä
--- FIXME Does not work with flash.nvim
--- FIXME Does not work in "replace-pending" mode
-m.set({ "", "!", "l", "o" }, "<c-c>", "<esc>", { desc = "[Esc]" })
-m.set({ "", "!", "l", "t", "o" }, "ö", "[", { remap = true }) -- Essentially replace the key as far as vim is concerned
+-- FIXME: None of these mappings work with flash.nvim
+-- FIXME: Using only the single-letter mappings does not enable using
+--        double-bracket movements in operator-pending mode.
+-- FIXME: None of these work in "replace-pending" mode
+
+-- Try mapping öäÖÄ to produce []{} always, except for i_CTRL-V
+m.set({ "", "!", "l" }, "<c-c>", "<esc>", { desc = "[Esc]" })
+m.set({ "", "!", "l", "t", "o" }, "ö", "[", { remap = true })
 m.set({ "", "!", "l", "t", "o" }, "Ö", "{", { remap = true })
--- m.set({ "", "!", "l", "t", "o" }, "öö", "[[", { remap = true })
-m.set({ "", "!", "l", "t", "o" }, "ÖÖ", "{{", { remap = true }) -- for imap {{
+m.set({ "", "!", "l", "t", "o" }, "öö", "[[", { remap = true })
+m.set({ "", "!", "l", "t", "o" }, "ÖÖ", "]]", { remap = true })
 m.set({ "", "!", "l", "t", "o" }, "ä", "]", { remap = true })
 m.set({ "", "!", "l", "t", "o" }, "Ä", "}", { remap = true })
+m.set({ "i" }, "ÖÖ", "{{", { remap = true }) -- for imap {{
+m.set({ "i" }, "ÄÄ", "}}", { remap = true }) -- for imap }}
 -- Quitting
 m.set("n", "<c-q>", ":q<cr>", { desc = "Close window hard" })
 m.set("n", "<leader>Q", ":sus<cr>", { remap = false, desc = "suspend" })
 m.set("n", "<leader>qQ", ":qa<cr>", { remap = false, desc = "Quit hard" })
 
 -- nnoremap <leader>: :enew\|pu=execute(':help')<c-f>T:ve
-m.set("n", "<leader>:", ":enew\\|pu=execute(':help')<c-f>T:ve",
-  { remap = false, desc = "Capture :cm output" })
+m.set("n", "<leader>:", ":enew|pu=execute(':help')<c-f>T:ve",
+  { remap = false, desc = "Capture :command output" })
 
 m.set("n", "<leader>qw", "<cmd>xa<cr>", { remap = false, desc = "Write & Quit" })
 
@@ -60,17 +69,45 @@ m.set("i", "<f1>", "<nop>", { remap = false })
 m.set("n", "<f1>", "<cmd>make<cr>", { remap = false })
 m.set("n", "<f2>", "<cmd>!./run.sh<cr>", { remap = false })
 
--- -- Delete errors for Shellcheck error code under cursor
+-- Delete errors for Shellcheck error code under cursor
 m.set("n", "<leader>ces", "m`*<cmd>g//-2,+2d<cr>``", { remap = false, desc = "Code edit [s]hellcheck" })
+
+-- Git add using bash alias 'a' in the LazyVim terminal popup
+m.set("n", "<F5>", "<c-/>a<cr>", { remap = true, desc = "Git add" })
 
 -- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Windows, tabs and viewiing                                                │
 -- ╰───────────────────────────────────────────────────────────────────────────╯
 
--- TODO Bring back normal tabs in lazyvim
+-- ── Jumping and tags ───────────────────────────────────────
+m.set("n", "<A-+>", "<C-w>v*", { remap = false, desc = "Search word in split window" })
+m.set("n", "<A-9>", "<cmd>tab split<cr><C-]>zz", { remap = false, desc = "Jump to ta in new tab" })
 
-m.set("n", "<M-H>", "<cmd>BufferLineMovePrev<cr>", { remap = false, desc = "Move buffer left" })
-m.set("n", "<M-L>", "<cmd>BufferLineMoveNext<cr>", { remap = false, desc = "Move buffer right" })
+-- ── Tabs ───────────────────────────────────────────────────
+-- Switch tabs using AltGr-h AltGr-l. The main benefit is that we can cycle n tabs
+-- with ~1*n key presses (rather than ~2*n when alternating gt or gT).
+m.set("n", "ħ", "gT", { remap = false, desc = "tabprevious" })
+m.set("n", "ł", "gt", { remap = false, desc = "tabnext" })
+-- Split in new tab. Since the buffer is already open there is no reason to
+-- start a new buffer.
+m.set("n", "<c-w><c-t>", "<cmd>tab split<cr>", { remap = false, desc = "new tab" })
+
+-- LazyVim defaults increases only 2 only
+m.del("n", "<c-left>")
+m.del("n", "<c-right>")
+m.del("n", "<c-up>")
+m.del("n", "<c-down>")
+m.set("n", "<c-left>", "<cmd>vertical resize -10<cr>", { remap = false, desc = "Decrease window width" })
+m.set("n", "<c-right>", "<cmd>vertical resize +10<cr>", { remap = false, desc = "Increase window width" })
+m.set("n", "<c-down>", "<cmd>resize -10<cr>", { remap = false, desc = "Decrease window height" })
+m.set("n", "<c-up>", "<cmd>resize +10<cr>", { remap = false, desc = "Increase window height" })
+
+m.set("n", "<c-e>", "5<c-e>", { remap = false, desc = "Scroll view up" })
+m.set("n", "<c-y>", "5<c-y>", { remap = false, desc = "Scroll view down" })
+
+-- TODO: Bring back normal tabs in lazyvim
+m.set("n", "<A-e>", "<cmd>BufferLineMovePrev<cr>", { remap = false, desc = "Move buffer left" })
+m.set("n", "<A-y>", "<cmd>BufferLineMoveNext<cr>", { remap = false, desc = "Move buffer right" })
 
 m.set({ "n" }, "<A-.>", "<cmd>30vsp .<cr>", { remap = false, desc = "Folder of this file" })
 
@@ -104,22 +141,46 @@ m.set("n", "<leader>wt",
   "<cmd>-tab terminal<cr>i",
   { remap = false, desc = "Terminal" })
 
--- TODO options group
-m.set("n", "<leader>tc", function() vim.opt.cursorcolumn = not vim.opt.cursorcolumn:get() end,
-  { remap = false, desc = "Toggle cusor [c]olumn" })
+-- TODO: How to define whichkey group?
+m.set(
+  "n", "<leader>tc",
+  function() vim.opt.cursorcolumn = not vim.opt.cursorcolumn:get() end,
+  { remap = false, desc = "Toggle cusor [c]olumn" }
+)
+
+m.set("n", "<A-h>", "zc", { remap = true, desc = "Close fold" })
+m.set("n", "<A-l>", "zo", { remap = true, desc = "Open fold" })
+m.set("n", "<A-H>", "zC", { remap = true, desc = "Close all folds" })
+m.set("n", "<A-L>", "zO", { remap = true, desc = "Open all folds" })
+m.set("n", "<A-j>", "zj", { remap = true, desc = "Jump to nect fold" })
+m.set("n", "<A-k>", "zk", { remap = true, desc = "Jump to previous fold" })
 
 -- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Editing / Insert mode                                                     │
 -- ╰───────────────────────────────────────────────────────────────────────────╯
 
-vim.cmd([[
-" Delete whitespace between WORDS
-nnoremap <leader>d<space> BElcw<space><esc>
-" Delete whitespace padding within () TODO
-"nnoremap <leader>d( <esc>
-]])
--- FIXME Not working with auto-{} creation
-m.set("i", "{{", "{<cr>}<esc>O", { remap = false, desc = "Open block" })
+-- ── Sorting ────────────────────────────────────────────────
+-- Highlight the desired lines in visual mode before moving to step 2.
+-- Mnemonic: "insert sort".
+m.set("n", "<leader>iss", "<cmd>SortMark<cr>",
+  { remap = false, desc = "1. Mark for sorting" })
+m.set("n", "<leader>isc", "<cmd>SortCollapse<cr>",
+  { remap = false, desc = "2. Collapse except sort marks" })
+m.set("n", "<leader>iso", "<cmd>SortSort<cr>",
+  { remap = false, desc = "3. Order sort marks" })
+m.set("n", "<leader>ise", "<cmd>SortExpand<cr>",
+  { remap = false, desc = "4. Expand sort around marks" })
+m.set("n", "<leader>ist", "<cmd>SortTrim<cr>",
+  { remap = false, desc = "5. Trim sort marks" })
+
+m.set("n", "<leader>d<space>", "gElcw<space><esc>",
+  { remap = false, desc = "Shrink leading whitespace" })
+
+m.set("i", "{{", "{<cr>}<esc>O", { remap = false, desc = "Open block line" })
+m.set("i", "{;", "{<cr>};<esc>O", { remap = false, desc = "Open block line with ;" })
+m.set("i", "}}", "{<cr>}<left>", { remap = false, desc = "Open empty block line" })
+m.set("i", "};", "{<cr>};<left><left>", { remap = false, desc = "Open empty block line with ;" })
+m.set("i", "{}", "{}<left>", { remap = false, desc = "Open empty block" })
 
 m.set("i", "<c-r>L", 'line(".")', { remap = false, expr = true, desc = "Lineno" })
 
@@ -137,18 +198,26 @@ m.set({ "n", "v" }, "gj",
   "<cmd>s/.*\\(,\\zs \\+\\ze\\|\\zs \\+\\ze[\\])}]\\|[\\[({]\\zs \\+\\ze\\)/\\r<cr>``",
   { remap = false, desc = "Scrape at end" })
 
--- Create hexdump encoding
+-- Convert binary <--> hexadecimal <--> hexdump
 m.set({ "v" }, "<leader>xr", "<esc>'<kmh'>jml<cmd>HexRead<cr>'hjV'lk>",
-  { remap = false, desc = "Hex read" })
+  { remap = false, desc = "Hex read (hex->dump)" })
 m.set({ "n" }, "<leader>cxr",
   "/[^[:xdigit:][:space:]]<cr>VN$/[[:xdigit:]]<cr>o^N<bslash>xr<cmd>silent nohl<cr>",
-  { remap = false, desc = "Hex read" })
+  { remap = false, desc = "Hex read (within next non-pure-hex lines)" })
+m.set({ "v" }, "<leader>xx", "<cmd>!xxd -p<cr>", { remap = false, desc = "Hex encode (bin->hex)" })
+m.set({ "v" }, "<leader>xb", "<cmd>!xxd -r -p<cr>", { remap = false, desc = "Hex decode (hex->bin)" })
+m.set({ "v" }, "<leader>xs", "<cmd>!xxd -r | xxd -p<cr>", { remap = false, desc = "Hex string (dump->hex)" })
 
 -- Replace { at end of line with { at start of line
--- TODO: Does this work with our global ö → { mapping}
-m.set("v", "<leader>{", ":s/\\(\\s*\\)\\S.\\{-}\\zs\\s*{$/\\r\\1{/g<cr>",
+-- FIXME: Does not work with our global "ö" → "{" mapping
+m.set({ "n", "v" }, "<leader>{", ":s/\\(\\s*\\)\\S.\\{-}\\zs\\s*{$/\\r\\1{/g<cr>",
   { remap = false, desc = "Replace trailing {" }
 )
+
+-- Hard wrap after 80 characters. Because n_gww does not work on lines without
+-- whitespace.
+m.set({ "n", "v" }, "gwW", "<cmd>s/.\\{80}\\zs/\\r/g<cr>",
+  { remap = false, desc = "hard wrap 80 characters" })
 
 -- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Movements                                                                 │
@@ -159,37 +228,24 @@ m.set("v", "<leader>{", ":s/\\(\\s*\\)\\S.\\{-}\\zs\\s*{$/\\r\\1{/g<cr>",
 -- m.set("n", "<c-h>", "<cmd>bN<cr>", { remap = false, desc = "Tab before" })
 -- m.set("n", "<c-l>", "<cmd>bn<cr>", { remap = false, desc = "Tab next" })
 
--- temporary. do we like this?
--- FIXME lazyvim jumplist is broken
-m.set("n", "<A-h>", "g;", { remap = false, desc = "Change backwards" })
-m.set("n", "<A-h>", "g,", { remap = false, desc = "Change forwards" })
+-- Traverse changelist with <A-i> and <A-o>. Similar to the jumplist.
+m.set("n", "<A-O>", "g;", { remap = false, desc = "Previous change" })
+m.set("n", "<A-I>", "g,", { remap = false, desc = "Next change" })
 
 m.set("n", "<F3>", "<cmd>cN<cr>zvzz", { remap = false, desc = "quickfix previous" })
 m.set("n", "<F4>", "<cmd>cn<cr>zvzz", { remap = false, desc = "quickfix next" })
 m.set("n", "<S-F3>", "<cmd>:cNf<cr>", { remap = false, desc = "quickfix file previous" })
 m.set("n", "<S-F4>", "<cmd>:cnf<cr>", { remap = false, desc = "quickfix file next" })
--- TODO map some keys to ':n'?
 
 -- Diff jumps
 m.set("n", "<F9>", "[czz", { remap = false, desc = "hunk previous" })
 m.set("n", "<F10>", "]czz", { remap = false, desc = "hunk next" })
-m.set("n", "<F9>", "[czz", { remap = false, desc = "hunk previous" })
-m.set("n", "<F10>", "]czz", { remap = false, desc = "hunk next" })
-m.set("n", "<S-F9>", "<cmd>call JumpToString('<<<<<<<', 'N')<cr>",
-  { remap = false, desc = "conflict previous" })
-m.set("n", "<S-F10>", "<cmd>call JumpToString('>>>>>>>', 'n')<cr>",
-  { remap = false, desc = "conflict next" })
--- TODO: Can we make this work for different key codes at once?
+m.set("n", "<S-F9>", "<F21>", { remap = true, desc = "conflict previous" })
+m.set("n", "<S-F10>", "<F22>", { remap = true, desc = "conflict next" })
 m.set("n", "<F21>", "<cmd>call JumpToString('<<<<<<<', 'N')<cr>",
   { remap = false, desc = "conflict previous" })
 m.set("n", "<F22>", "<cmd>call JumpToString('>>>>>>>', 'n')<cr>",
   { remap = false, desc = "conflict next" })
-
-if vim.opt.diff:get() then
-  -- This is for vimdiff. Wont trigger if we manually set, but ok for now.
-  m.set("n", "<F3>", "[czz", { remap = false, desc = "hunk previous" })
-  m.set("n", "<F4>", "]czz", { remap = false, desc = "hunk next" })
-end
 
 -- LazyVim setting something similar enough
 -- We could think about mapping Alt-j to the regular behaviour
@@ -204,40 +260,81 @@ end
 -- nnoremap ⅞ yiw<c-w>vh/\<<c-r>0\><cr> " shift altgr 7
 
 -- This allows marking with m and jumping with M. Recover normal behaviour of
--- "M" in the new mappign "<c-m>".
+-- "M" in the new mappign "gM".
 m.set("n", "M", "'", { remap = false, desc = "jump to mark" })
-m.set("n", "<c-m>", "M", { remap = false, desc = "To Middle line of window" })
+m.set("n", "gM", "M", { remap = false, desc = "To Middle line of window" })
+
+-- ╭───────────────────────────────────────────────────────────╮
+-- │ Mergetool mode                                            │
+-- ╰───────────────────────────────────────────────────────────╯
+
+--- NOTE: We try doing this in scripts.lua
+-- vim.cmd([[
+-- function DiffToggle()
+--   if &diff
+--     diffoff
+--   else
+--     diffthis
+--   endif
+-- endfunction
+-- ]])
+m.set("n", "dO", "<cmd>call DiffToggle()<cr>", { remap = false, desc = "Diff toggle" })
+
+-- if vim.opt.diff:get() then
+--   -- Wont trigger if we manually set diff mode, but ok for now.
+--   m.set("n", "<F3>", "[czz", { remap = false, desc = "hunk previous" })
+--   m.set("n", "<F4>", "]czz", { remap = false, desc = "hunk next" })
+-- end
 
 --╭────────────────────────────────────────────────────────────────────────────╮
 --│ Plugin control                                                             │
 --╰────────────────────────────────────────────────────────────────────────────╯
 
+-- ── FzfLua ─────────────────────────────────────────────────
 -- ß (fzf) Find file/buffer (<c-x>, <c-v>, <c-t> to split, vert, tab open them)
-m.set({ "n" }, "ßf", "<cmd>Files<cr>", { remap = false, desc = "Files" })
-m.set({ "n" }, "ßb", "<cmd>Buffers<cr>", { remap = false, desc = "Buffer list" }) -- <leader>,
-m.set({ "n" }, "ßt", "<cmd>Tags<cr>", { remap = false, desc = "tags (.tags)" })
-m.set({ "n" }, "ßT", "<cmd>BTags<cr>", { remap = false, desc = "tags (buffer)" })
-m.set({ "n" }, "ßl", "<cmd>Lines<cr>", { remap = false, desc = "Lines (loaded buffers)" })
-m.set({ "n" }, "ßß", "<cmd>BLines<cr>", { remap = false, desc = "Lines (this buffer)" })
--- Use :Rg for static ripgrep query to be searched with fzf
-m.set({ "n" }, "ßL", "<cmd>RG<cr>", { remap = false, desc = "Lines (ripgrep)" })
-
--- Even shorter mappings for tags!
-m.set({ "n" }, "ü", "<cmd>BTags<cr>", { remap = false, desc = "tags (buffer)" })
-m.set({ "n" }, "Ü", "<cmd>Tags<cr>", { remap = false, desc = "tags (.tags)" })
+m.set({ "n" }, "ßf", "<cmd>FzfLua files<cr>", { remap = false, desc = "Find file" })
+-- Similar to <leader>,
+m.set({ "n" }, "ßb", "<cmd>FzfLua buffers<cr>", { remap = false, desc = "Find buffer" })
+m.set({ "n" }, "ßt", "<cmd>FzfLua btags<cr>", { remap = false, desc = "Search buffer tags" })
+m.set({ "n" }, "ßT", "<cmd>FzfLua tags<cr>", { remap = false, desc = "Search tags (.tags)" })
+m.set({ "n" }, "ßl", "<cmd>FzfLua lines<cr>", { remap = false, desc = "Search loaded buffers" })
+m.set({ "n" }, "ßß", "<cmd>FzfLua blines<cr>", { remap = false, desc = "Search buffer" })
+m.set({ "n" }, "ßg", "<cmd>FzfLua grep<cr>", { remap = false, desc = "Search (ripgrep)" })
+m.set({ "n" }, "ßG", "<cmd>FzfLua grep_project<cr>", { remap = false, desc = "Search project ripgrep (?)" })
+m.set({ "n" }, "ßL", "<cmd>FzfLua live_grep_glob<cr>", { remap = false, desc = "Search live (ripgrep)" })
+m.set({ "n" }, "ßc", "<cmd>FzfLua live_grep_resume<cr>", { remap = false, desc = "Continue FzfLua search" })
+m.set({ "n" }, "ßn", "<cmd>FzfLua live_grep_native<cr>", { remap = false, desc = "Search (native grep) (faster?)" })
+m.set({ "n" }, "ßs", "<cmd>FzfLua tags_grep_cword<cr>", { remap = false, desc = "Search cursor tag" })
+m.set({ "n" }, "ßw", "<cmd>FzfLua grep_cword<cr>", { remap = false, desc = "Search cursor word" })
+m.set({ "v" }, "<leader>ü", "<cmd>FzfLua grep_visual<cr>", { remap = false, desc = "Search visual selection" }) -- visual-ß is for surround already
+m.set({ "n" }, "ßr", "<cmd>FzfLua lsp_references<cr>", { remap = false, desc = "Search references" })
+m.set({ "n" }, "ßü", "<cmd>FzfLua lsp_document_symbols<cr>", { remap = false, desc = "Search document symbols" })
+m.set({ "n" }, "ßÜ", "<cmd>FzfLua lsp_workspace_symbols<cr>", { remap = false, desc = "Search workspace symbols" })
+m.set({ "n" }, "ßq", "<cmd>FzfLua quickfix<cr>", { remap = false, desc = "Search quickfix window" })
+-- Remaps to more conventient key combinations:
+m.set({ "n" }, "<leader><leader>", "ßf", { remap = true, desc = "Find file" })
+m.set({ "n" }, "<leader><C-space>", "ßL", { remap = true, desc = "Search lines (ripgrep)" })
+m.set({ "n" }, "ü", "ßt", { remap = true, desc = "Search tags (buffer)" })
+m.set({ "n" }, "Ü", "ßT", { remap = true, desc = "Search tags (.tags)" })
+m.set({ "n" }, "<leader>ü", "ßü", { remap = true, desc = "Search document symbols" })
+m.set({ "n" }, "<leader>Ü", "ßÜ", { remap = true, desc = "Search workspace symbols" })
 
 -- TODO Name the <leader>i group "insert/edit text"
-m.set({ "n", "v" }, "<leader>ib", "<cmd>:CBclbox<cr>", { remap = false, desc = "Box insert" })
+m.set({ "n", "v" }, "<leader>ib", "<cmd>:CBclbox<cr>", { remap = false, desc = "Insert box header" })
+m.set({ "n", "v" }, "<leader>il", "<cmd>:CBclline<cr>", { remap = false, desc = "Insert line header" })
 
 -- Noice
-m.set({ "n" }, "<leader>uH", "<cmd>Noice history<cr>G", { remap = false, desc = "History" })
+m.set({ "n" }, "<leader>uH", "<cmd>NoiceHistory<cr>G", { remap = false, desc = "History" })
 
--- Tagbar
+-- Tagbar <C-F10>
 m.set("n", "<F34>", "<cmd>TagbarToggle<cr>", { remap = false, desc = "Tagbar" })
 
 -- Noice/Messages
-m.set("n", "<leader>mh", "<cmd>Noice history<cr>G", { remap = false, desc = "Message history" })
+m.set("n", "<leader>mh", "<cmd>NoiceHistory<cr>G", { remap = false, desc = "Message history" })
 m.set("n", "<leader>ml", "<cmd>Noice last<cr>", { remap = false, desc = "Last message" })
+
+-- ArgWrap
+m.set("n", "gS", ":ArgWrap<CR>", { remap = false, desc = "(Un)wrap args" })
 
 -- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Digraphs / Symbols                                                        │
@@ -247,17 +344,19 @@ m.set("n", "<leader>ml", "<cmd>Noice last<cr>", { remap = false, desc = "Last me
 
 ---@param code string number in decimal
 ---@param digraph string two digraph letters
----@param description string description used for map()
+---@param _description string unused
 --- Set a digraph and the corresponding <c-ß> keymap
-local asDigraph = function(digraph, code, description)
+local asDigraph = function(digraph, code, _description)
   vim.cmd("digraph " .. digraph .. " " .. code)
-  m.set({ "i" }, "<c-ß>" .. digraph, "<c-k>" .. digraph,
-    { remap = false, desc = description })
 end
 
----Map any text in input mode after double <c-ß>
+-- Recover digraph overwritten by LazyVim
+m.set("i", "<c-l>", "<c-k>", { remap = false, desc = "digraph" })
+
+---Map any text in input mode after double <c-l>
+-- TODO: Can we map <C-ß> somehow?
 local inputMap = function(input, output)
-  m.set({ "i" }, "<C-ß><C-ß>" .. input, output,
+  m.set({ "i" }, "<C-l><C-l>" .. input, output,
     { remap = false })
 end
 
@@ -385,7 +484,8 @@ inputMap("cB", "♝")
 inputMap("cN", "♞")
 inputMap("cP", "♟")
 
--- Large, square and curly brackets (with top, middle, bottom)
+-- Large, square and curly brackets (with top, middle, bottom).
+-- You can copy-paste from here, too.
 inputMap("(t", "⎛")
 inputMap("(m", "⎜")
 inputMap("(b", "⎝")

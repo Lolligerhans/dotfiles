@@ -37,12 +37,12 @@ set -o errexit -o nounset -o errtrace -o functrace -o pipefail;
 #   Copy the 'home' directory to '/' (overwriting only exactly the things that
 #   were present in the backup).
 
-declare -g caller_path
-caller_path="$(pwd -P)"
+declare -g caller_path;
+caller_path="$(pwd -P)";
 declare -r caller_path;
 cd "$(dirname "${BASH_SOURCE}")";
 declare -g parent_path;
-parent_path="$(pwd -P)"
+parent_path="$(pwd -P)";
 declare -r parent_path;
 
 declare -r backup_default_name="NO_BACKUP_NAME_GIVEN";

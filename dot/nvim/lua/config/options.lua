@@ -13,14 +13,18 @@ vim.g.autoformat = false;
 -- ╰───────────────────────────────────────────────────────────────────────────╯
 
 o.cursorline = true
+o.cursorlineopt = "both"
 o.cursorcolumn = true
 o.laststatus = 3
 o.number = true
 o.relativenumber = true;
 
-o.wrap = true;         -- wrap long lines
-o.linebreak = false;   -- dont wrap within words
-o.smoothscroll = true; -- scrolling by screen line
+o.showbreak = "↪ ";
+o.wrap = true;                               -- wrap long lines
+o.breakindent = true;                        -- indent wrapped lines
+o.breakindentopt = "min:20,shift:8,list:-1"; -- default ""
+o.linebreak = true;                          -- dont wrap within words
+o.smoothscroll = true;                       -- scrolling by screen line
 
 o.colorcolumn = { 81 }
 
@@ -36,7 +40,12 @@ o.listchars =
   trail = '▓',
 }
 
-o.foldcolumn = "auto"
+-- vimrc fillchars options
+-- set fillchars=vert:▏,foldopen:▾,foldclose:▸,fold:─,foldsep:│
+o.fillchars.diff = "░" -- FIXME: Has no effect
+
+-- LazyVim has its own folding. Else use o.foldcolumn = "auto".
+o.foldcolumn = "0"
 
 -- TODO terminal colors?
 
@@ -62,6 +71,8 @@ o.fileignorecase = true
 o.makeprg = "./run.sh build"
 
 -- vim.opt.foldmethid = "indent" -- not sure we want this
+o.foldenable = true
+o.foldlevelstart = 0
 
 o.splitright = true
 o.splitbelow = true
@@ -75,7 +86,8 @@ o.smartcase = true
 o.mouse = "a"
 o.fileformat = "unix"
 
-o.ttimeoutlen = 50 -- Was ok on vim. Too short now?
+o.timeoutlen = 1000 -- For regular mappings
+o.ttimeoutlen = 50  -- Only for <esc> byte \x1b
 
 -- TODO No idea how this would be done in lua here
 vim.cmd([[
@@ -103,7 +115,8 @@ o.virtualedit = { "block", "insert" }
 o.belloff = ""
 o.langremap = false
 
-o.sidescroll = 0 -- How far to scroll vertically when needed
+-- How far to scroll vertically when needed. Maybe sync with tabstop?
+o.sidescroll = 2
 
 o.shortmess = "finxltToO"
 
@@ -113,15 +126,16 @@ o.sessionoptions = {
 
 o.startofline = false
 
+-- No -uu option when using ripgrep
 o.grepprg = "rg --vimgrep" -- LazyVim default anyway
-vim.g.netrw_liststyle = 3
 
-o.foldlevelstart = 2
+vim.g.netrw_liststyle = 3
 
 -- ╭──────────────────────────────────────────────────────────────────────────╮
 -- │ editing                                                                  │
 -- ╰──────────────────────────────────────────────────────────────────────────╯
 
+o.digraph = true
 o.tabstop = 8
 o.expandtab = true
 o.softtabstop = 2            -- Pseudo-tab width. Keep tabstop at 8.
@@ -132,9 +146,31 @@ o.smarttab = true
 o.textwidth = 80             -- lazyvim: 0
 -- FIXME: there appears an "o" in ':se fo?' too? something rests this
 o.formatoptions = "cr/qn1jl" -- :h fo-table
--- The lua string eats one level of bakspace \ escapin
-o.formatlistpat = "^\\s*\\(•\\|◦\\|·\\|TODO:\\?\\|NOTE:\\?\\|FIXME:\\?\\|HACK:\\?\\|INFO:\\?\\|\\d\\+[\\]:.)}\\t ]\\)\\s*"
+-- The lua string eats one level of backslash \ escaping.
+-- Generic is either of these two doc-block-like formats:
+--    @word
+--    @word word:
+-- Specific uses actual doc-block keywords (with optional type):
+--    @return {type}
+--    @param {type} word
+local generic = [[\w\+\%(\s\+\w\+:\)\?\s]]
+local type = [[\%({.*}\s\)\?]] -- Anything within {}
+local arg0 = [[\%(return\|type\)\s\+]]
+local arg1 = [[\%(param\|typedef\|property\|callback\)\s\+]]
+local target = [=[\s*[^[:space:]]\+\s]=] -- WORD
+local specific = [[\%(]] .. arg0 .. type .. [[\|]] .. arg1 .. type .. target .. [[\)]]
+local docblock = [[@\%(]] .. specific .. [[\|]] .. generic .. [[\)]]
+local todo = [[\%(TEST\|TODO\|NOTE\|FIXME\|HACK\|INFO\):\?]]
+o.formatlistpat = [[^\s*\(•\|◦\|·\|]] .. docblock .. [[\|-\s\%(\s*\w*:\)\?\|]] .. todo .. [[\|\d\+[\]:.)}\t ]\)\s*]]
 o.joinspaces = false
 
--- TODO: filetype mappings for our comment-preserving ground mappings. Or can
---     you maybe even use a vim internal variable as comment string? sad
+-- TODO: Filetype mappings for our comment-preserving comment-out mappings.
+
+-- ╭───────────────────────────────────────────────────────────╮
+-- │ Mergetool mode                                            │
+-- ╰───────────────────────────────────────────────────────────╯
+
+if vim.opt.diff:get() then
+  -- o.diffopt = "iwhite"
+  o.tabline = ""
+end

@@ -1,3 +1,11 @@
+; https://git-scm.com/docs/git-config/2.47.0
+
+; NOTE: We prefix some aliases with "q" or "q-" (git does not have any commands
+;       starting with "q"):
+;        - Prevents littering shell completion
+;        - As replacement for should-be-capitalized aliases (gitconfig is case
+;          insensitive).
+
 [advice]
 	# Set the following values to true/false:
 	#pushUpdateRejected
@@ -16,15 +24,6 @@
 	#rmHints
 
 [alias]
-	# Diff variants
-	di = diff --no-ext-diff
-	dm = di AUTO_MERGE
-	# Use --no-ext-diff because difft doesnt do word diff
-	dw = di --color-words --no-ext-diff
-	sh = show --abbrev-commit --stat --pretty=short
-
-	# Add variants
-	ad = add -p
 
 	# Shorthands
 	bi = bisect
@@ -32,6 +31,7 @@
 	ci = commit
 	cl = clean
 	co = checkout
+	di = diff
 	fe = fetch
 	# "pick" ("git-cp" already exists, preventing alias "cp")
 	pi = cherry-pick
@@ -41,6 +41,13 @@
 	st = status
 	sub = submodule
 
+	# Diff variants
+	die = di --no-ext-diff
+	dis = di --stat
+	dim = di AUTO_MERGE
+	# Use --no-ext-diff because difft doesnt do word diff
+	diw = di --color-words --no-ext-diff
+
 	# Bisect variants
 	bis = bisect skip
 	big = bisect good
@@ -49,7 +56,8 @@
 	# Commit variants
 	cia = commit --amend
 	cit = commit -m "Tmp"
-	cif = commit --fixup
+	cif = commit -m "Fix"
+	cifu = commit --fixup
 	ciane = commit --amend --no-edit
 	cire = commit --reedit-message
 	cirh = commit --reuse-message=HEAD
@@ -64,10 +72,6 @@
 	# Unlike log --graph this order matches git rev-list --all
 	li = log --oneline --decorate --all
 	# Double-letter variants using --date-order
-	# NOTE Originally we wanted to have lower- and upper-case variants of
-	#         {s,ss,h,hh}, but git config is case-insensitive. We prefix upper
-	#         case variants with "q".
-	# TODO: Think of a better alternative some time.
 	s = qS -20
 	qS = qSS --date-order
 	ss = qSS -20
@@ -103,29 +107,40 @@
 	resp = resh @{push}
 	resu = resh @{upstream}
 
+	# Show variants
+	sh = show --abbrev-commit --stat --pretty=short
+	shp = show --abbrev-commit --stat --pretty=short --patch --ext-diff
+	she = show --abbrev-commit --stat --pretty=short --patch --no-ext-diff
+	shw = she --color-words
+
 	# Submodule variants
 	subu = submodule update
 	subui = submodule update --init
 	subuir = submodule update --init --recursive
 
 	# Shorthands used by bash aliases s,h,r,rr,p,pp. We prefix the intended name
-	# with "q-" to avoid matching prefixes of other commands.
-	q-f = di --stat --staged
-	q-b = di --stat
+	# with "q-" to avoid matching prefixes of git commands (for completion).
+	q-f = die --stat --staged
+	q-b = die --stat
 	q-di-p = di --ext-diff
-	q-di-p2 = di --stat
-	q-di-pp = di
-	q-di-pp2 = di --stat
-	q-di-pw = dw
-	q-di-pw2 = di --stat
+	q-di-p2 = die --stat
+	q-di-pp = die
+	q-di-pp2 = die --stat
+	q-di-pw = diw
+	q-di-pw2 = die --stat
 	q-di-r = di --ext-diff --staged
-	q-di-r2 = di --staged --stat
-	q-di-rr = di --staged
-	q-di-rr2 = di --staged --stat
-	q-di-rw = dw --staged
-	q-di-rw2 = di --staged --stat
+	q-di-r2 = die --staged --stat
+	q-di-rr = die --staged
+	q-di-rr2 = die --staged --stat
+	q-di-rw = diw --staged
+	q-di-rw2 = die --staged --stat
 
-	# Use %ar/%cr when %ah/%ch does not yet work on a platform
+	; Nicely formatted git stash list
+	qsl = stash list \
+		--pretty=format:'%C(dim yellow)%gd %C(reset 5)(%cr) %C(auto)%s %C(8)• %an %C(reset dim)%ar'
+
+	; Nicely formatter git log
+	; Use %ar/%cr when %ah/%ch does not yet work on a platform.
 	qSS = log --graph --abbrev-commit \
 		--pretty=format:'%C(dim yellow)%h %C(dim cyan)(%ch) %C(auto)%s %C(8)• %an %C(reset)%C(dim)%ah%C(auto)%d' --all
 	qHH = log --graph --abbrev-commit \
@@ -168,11 +183,11 @@
 [color "diff"]
 	#context =
 	#commit =
-	#frag =
-	meta = bold 11 # 11 == bright yellow
+	frag = cyan ul
+	meta = bold brightyellow
 	whitespace = "reverse 9"
-	old = 1
-	new = 2
+	old = 9
+	new = 10
 	oldMoved = "strike red"
 	oldMovedDimmed = "dim strike red"
 	newMoved = "ul green"
@@ -183,54 +198,58 @@
 	newMovedAlternativeDimmed = "dim ul 33"
 	#contextDimmed, oldDimmed, newDimmed, contextBold, oldBold, and newBold
 
-# We use diff-highlight to colourize changed parts between removed and added
-# lines. When available, use pager 'delta' instead because it preserved
-# highlighted whitespace error.
+# The pearl script "diff-highlight" can be used to highlight changed parts. We
+# use git-delta isntead. It offers mostly better diffing. Configure colours for
+# diff-highlight anyway and instruct git-delta to use them.
 [color "diff-highlight"]
-	# ❕ Diff-highlight script can might hide whitespace errors (compared to
-	#    both default colours and the "delta" pager).
 
-	# Subtle colours: dim vs. bright-bold
-	oldNormal = "dim 1" # Dim for visbility
-	#oldNormal = "dim normal" # Interesting alternative
-	oldHighlight = "bold 9"
+	; [color "diff"] has the remaining colours
+
+	# The subtle variant hides whitespace errors
+
+	; # Subtle colours: dim vs. bright-bold (set new/old to 1/2)
+	; oldNormal = "dim 1" # Dim for visbility
+	; #oldNormal = "dim normal" # Interesting alternative
+	; oldHighlight = "bold 9"
+	; newNormal = "dim 2"
+	; newHighlight = "bold 10"
+
+	# More pronounced difference (set new/old to 9/10)
+	oldNormal = "dim 1"
+	oldHighlight = "bold reverse 9"
 	newNormal = "dim 2"
-	newHighlight = "bold 10"
+	newHighlight = "bold reverse 10"
 
-	# Pronounced colours: using normal vs. reverse
-	#oldNormal = "1"
-	#oldHighlight = "bold reverse 1"
-	#newNormal = "2"
-	#newHighlight = "bold reverse 2"
-
-	# Some defaults from internet (for a light scheme)
-	#oldNormal = "black #f8cbcb"
-	#oldHighlight = "black #ffaaaa"
-	#newNormal = "black #cbeecb"
-	#newHighlight = "black #aaffaa"
+[color "interactive"]
+	; Available options: prompt, header, help, error
 
 [color "log"]
 	# ❔
 
 [color "status"]
 	added = "bold green"
-	branch = "bold 13" # magenta means bright purple
-	changed = "bold 208" # same config option as 'updated'
+	branch = "bold 13" # Colour 13 is bright purple
+	changed = "bold yellow" # 'changed' and 'updated' are aliases
 	header = "dim"
-	noBranch = "9 bold" # bright red "Head detached at ..."
+	noBranch = "9 bold" # Colour 9 is bright red. "Head detached from ..."
 	unmerged = "bold red"
-	untracked = "bold yellow"
+	untracked = "bold 208" # Colour 208 is orange
 	localBranch = "bold 13"
-	remoteBranch = "bold magenta" # bright magenta (means bright purple)
+	remoteBranch = "bold magenta"
 
 [column]
 	#ui = auto
 
 [core]
-	# Pagers:
-	#  -  diff-highlight | less -rFX
+	# Use delta as a pager for superior diff algorithm (when you edit one line
+	# and add another below, diff-highlight fails to highlight the edit in the
+	# first line). We configure the colours for diff-highlight and use
+	# '--diff-highlight' to apply them in delta.
+	# All our pagers:
+	#  - diff-highlight | less -rFX
 	#  - delta --color-only
-	pager = diff-highlight | less -rFX
+	# TODO: Can we convince delta to ignore indentation changes?
+	pager = delta --diff-highlight
 	editor = nvim
 	whitespace=trailing-space
 	autocrlf = input
@@ -242,6 +261,14 @@
 
 [credential]
 	helper = cache --timeout 7200
+
+[delta]
+	# Use n and N to move between diff sections
+	navigate = true
+	# Permanently enable side-by-side diff for git-delta. We configure with
+	# environment variables instead. If we were to set it here, we could not
+	# disable it usign environment variables.
+	; side-by-side = true
 
 [diff]
 	algorithm = histogram
@@ -283,11 +310,11 @@
 
 [interactive]
 	singlekey = true # Accept by single key stroke, without enter
-	# Other diff filters:
-	#  - delta --color-only
-	#  - diff-highlight
+	# All our filters:
+	#  - delta --color-only --diff-highlight --features=interactive
+	#  - diff-highlight | less -rFX
 	# Using delta pager for better word-diffing and whitespace errors.
-	diffFilter = delta --color-only
+	diffFilter = delta --color-only --diff-highlight --features=interactive
 
 [log]
 	date = iso-local
@@ -359,7 +386,7 @@
 	#insteadOf = "https://github.com/"
 	# Replaces only when pushing
 	#pushInsteadOf = "https://github.com/"
-	# Allows specifying paths simpler as github:name/repo
+	# Allows specifying GitHub URLs with "github:name/repo"
 	insteadOf = "github"
 
 [user]

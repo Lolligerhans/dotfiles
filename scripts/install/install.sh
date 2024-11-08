@@ -87,6 +87,20 @@ install_fzf()
   fi
 }
 
+install_jetbrains_mono_nerdfont()
+{
+  declare -r link="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/JetBrainsMono.zip";
+  declare -r file="JetBrainsMono.zip";
+
+  echol "Installing JetBrainsMono Nerd Font";
+  wget_verify_sha256 \
+    "${link}" \
+    "6596922aabaf8876bb657c36a47009ac68c388662db45d4ac05c2536c2f07ade" \
+    "${file}";
+  subcommand load_font --zip="$HOME/Downloads/${file}";
+  echok "Installed JetBrainsMono Nerd Font";
+}
+
 install_mcfly()
 {
   declare -r link="https://raw.githubusercontent.com/cantino/mcfly/master/ci/install.sh";
@@ -104,6 +118,27 @@ install_mcfly()
   fi
 }
 
+install_mpk()
+{
+  declare -r link="https://github.com/pluots/mpk/releases/download/v0.2.2/mpk_0.2.2_amd64.deb";
+  declare -r file_name="mpk_0.2.2_amd64.deb";
+  declare -r sha256="a4917041f0d4099b1407ae0918a945c1ebeb8b108e3ac5ba4555258c4dd05c51";
+
+  pushd ~/Downloads || return;
+  command wget -q --show-progress -c "$link";
+
+  declare check="false";
+  checksum_verify_sha256 check "${sha256}  ${file_name}";
+  if [[ "$check" != "true" ]]; then
+    command mv -vf "$file_name" "$file_name".bad;
+    errchoe "Failed to verify checksum";
+    return 1;
+  fi
+  sudo apt install "./$file_name" || return;
+
+  popd || return;
+}
+
 install_nvim()
 {
   if which nvim >/dev/null; then
@@ -114,10 +149,11 @@ install_nvim()
   declare -r link='https://github.com/neovim/neovim-releases/releases/download/v0.10.0/nvim-linux64.deb';
   echol "Installing nvim v0.10.0";
   pushd ~/Downloads || return;
-  wget -q --show-progress -c "$link";
+  wget -q --show-progress --https-only -c "$link";
   declare check="false";
   checksum_verify_sha256 check '46522ddd0ed56b22a889a25c247a9344d5767ec73d76f48dc54867c893214ffc  nvim-linux64.deb';
   if [[ "$check" != "true" ]]; then
+    mv -vf nvim-linux64.deb nvim-linux64.deb.bad;
     errchoe "Failed to verify checksum";
     return 1;
   fi

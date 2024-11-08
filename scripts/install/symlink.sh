@@ -119,8 +119,14 @@ symlink_neovim()
 
 symlink_ripgrep_config()
 {
-  subcommand rundir "$dotfiles" deploy --yes --keep \
+  subcommand run "$dotfiles" deploy --yes --keep \
   --file="$dotfiles/dot/ripgrep.conf" --dir="$HOME/.config";
+}
+
+symlink_shellcheck_config()
+{
+  subcommand run "$dotfiles" deploy --yes --keep \
+    --file="$dotfiles/dot/shellcheckrc" --name=".shellcheckrc" --dir="$HOME";
 }
 
 symlink_ssh_config()
@@ -128,6 +134,12 @@ symlink_ssh_config()
   subcommand rundir "$dotfiles" deploy --keep --yes \
     --file="$dotfiles/dot/ssh_config" --name="config" --dir="${HOME}/.ssh/";
   chmod 600 "${HOME}/.ssh/config";
+}
+
+symlink_toprc()
+{
+  subcommand run "$dotfiles" deploy --yes --keep \
+    --file="$dotfiles/dot/toprc" --dir="/home/liba/.config/procps/";
 }
 
 symlink_vim_ftplugin()

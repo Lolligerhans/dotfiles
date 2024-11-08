@@ -1,75 +1,63 @@
 #!/usr/bin/env bash
-
+# ╭──────────────────────╮
+# │ 🅅 version            │
+# ╰──────────────────────╯
 # version 0.0.0
+# ╭──────────────────────╮
+# │ 🛈 Info               │
+# ╰──────────────────────╯
+# TODO: This is a template runscript.
 
-# shellcheck disable=all
-
-declare -gr dotfiles="${DOTFILES:-"$HOME/dotfiles"}"; # TOKEN_DOTFILES_GLOBAL
-declare -gA _sourced_files=( ["runscript"]="" );
-declare -gr this_location="/tmp"; # Set this to auto-symlink when in wrong place
-source "$dotfiles/scripts/boilerplate.sh" "${BASH_SOURCE[0]}" "$@";
-satisfy_version "$dotfiles/scripts/boilerplate.sh";
-
-# ┌────────────────────────┐
-# │ Info ❔                │
-# └────────────────────────┘
-
-# ❗This is a template file. Remove this notice after copying.
-
-# Define commands:
+# Define commands by prefixing a funciton name with 'command_':
 # │   command_name() {}
-# Call commands:
-# │   "$0" name [args]  # With logging
-# │   subcommand name [args]     # Without logging
-# Deactivate automatic exit on error:
-# │   set +e;
-# │   ...
-# │   set -e;
+# Call commands from within the script:
+# │   subcommand name [args]
+# Allow nonzero exit/return:
+#     may_fail [return_value_variable] -- <command>
+# NOTE: may_fail runs <command> in a subshell
 
-# ┌────────────────────────┐
-# │ Config ⚙               │
-# └────────────────────────┘
-
-# Show loaded files on console
-#_run_config["log_loads"]=1;
-
-# Reduce error printing:
-_run_config[error_frames]=2;
-
-# ┌────────────────────────┐
-# │ Includes               │
-# └────────────────────────┘
-
-#source ~/dotfiles/scripts/git_utils.sh;
-
-# Ensuring version even if included already
+# ╭──────────────────────╮
+# │ ⚙ Boilerplate        │
+# ╰──────────────────────╯
+declare -gr dotfiles="${DOTFILES:-"$HOME/dotfiles"}"; # TOKEN_DOTFILES_GLOBAL
+# ☯ Every file prevents multi-loads itself using this global dict
+declare -gA _sourced_files=( ["runscript"]="" );
+# 🖈 If the runscript requires a specific location, set it here
+declare -gr this_location="/tmp";
+source "$dotfiles/scripts/boilerplate.sh" "${BASH_SOURCE[0]}" "$@";
+# ╭──────────────────────╮
+# │ 🛠Configuration      │
+# ╰──────────────────────╯
+_run_config["versioning"]=0; # {0, 1}
+_run_config["log_loads"]=1; # {0, 1}
+_run_config["error_frames"]=4; # {1, 2, ...}
+# ╭──────────────────────╮
+# │ 🗀 Dependencies       │
+# ╰──────────────────────╯
+# ✔ Ensure versions with satisfy_version
+satisfy_version "$dotfiles/scripts/boilerplate.sh" 0.0.0;
+# ✔ Source versioned dependencies with load_version
 load_version "$dotfiles/scripts/version.sh" 0.0.0;
-#load_version "$dotfiles/scripts/assert.sh" 0.0.0;
-load_version "$dotfiles/scripts/boilerplate.sh" 0.0.0;
-#load_version "$dotfiles/scripts/cache.sh" 0.0.0;
-#load_version "$dotfiles/scripts/error_handling.sh" 0.0.0;
-#load_version "$dotfiles/scripts/git_utils.sh" 0.0.0;
-#load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0;
-load_version "$dotfiles/scripts/setargs.sh" 0.0.0;
-load_version "$dotfiles/scripts/termcap.sh" 0.0.0;
-load_version "$dotfiles/scripts/utils.sh" 0.0.0;
-
-# ┌────────────────────────┐
-# │ Constants              │
-# └────────────────────────┘
-
-# Constants which are shared between commands
-
-declare -r this_location=""; # Intended location, default input for link_this
-
-# ┌────────────────────────┐
-# │ Commands               │
-# └────────────────────────┘
-
-# ❕Prefix commands with "command_" so that they are recognized by runscript.
-# ❕The default command should always be given.
+#load_version "$dotfiles/scripts/assert.sh";
+#load_version "$dotfiles/scripts/bash_meta.sh";
+#load_version "$dotfiles/scripts/cache.sh";
+#load_version "$dotfiles/scripts/error_handling.sh";
+#load_version "$dotfiles/scripts/fileinteracts.sh";
+#load_version "$dotfiles/scripts/git_utils.sh";
+#load_version "$dotfiles/scripts/progress_bar.sh";
+load_version "$dotfiles/scripts/setargs.sh";
+load_version "$dotfiles/scripts/termcap.sh";
+#load_version "$dotfiles/scripts/userinteracts.sh";
+load_version "$dotfiles/scripts/utils.sh";
+# ╭──────────────────────╮
+# │ 🗺 Globals           │
+# ╰──────────────────────╯
+# ╭──────────────────────╮
+# │ ⌨  Commands          │
+# ╰──────────────────────╯
 
 # Default command (when no arguments are given)
+# NOTE: The "default" command should always be present.
 command_default()
 {
   echon "• Usage: $text_bi$0$text_noitalic [COMMAND [args]]$text_normal.";
@@ -94,48 +82,48 @@ command_default()
 
 command_example()
 {
-  set_args "--required= --defaulted=false --optional --help" "$@";
-  eval "$get_args"; # Generates the local variables
+  set_args "--required= --defaulted=nope --optional --help" "$@";
+  eval "$get_args"; # Generates local variables
 
-  if [[ "$defaulted" == "false" ]]; then
-    echoi "${text_bg}✔ Required value --required=$required$text_normal";
-    echoi "${text_br}✖ Default value --defaulted unchanged.$text_normal";
+  show_ariable required;
+  show_ariable defaulted;
+  show_ariable required;
+
+  if [[ "$defaulted" == "nope" ]]; then
+    echon "${text_bg}✔ Required value --required=$required$text_normal";
+    echon "${text_br}✖ Default value --defaulted unchanged.$text_normal";
     echo "${text_bc}${text_invert}TODO${text_normal}${text_cyan} Change ${text_normal}$text_bold--defaulted${text_cyan} in the call to the example command.";
   else
-    echoi "${text_bg}✔ Required value --required=$required$text_normal";
-    echoi "${text_bg}✔ Default value changed to --defaulted=$defaulted$text_normal";
+    echon "${text_bg}✔ Required value --required=$required$text_normal";
+    echon "${text_bg}✔ Default value changed to --defaulted=$defaulted$text_normal";
     echok "${text_bg}☺  You are now ready to create your own commands";
   fi
 }
 
-# ┌────────────────────────┐
-# │ Helpers                │
-# └────────────────────────┘
+# ╭──────────────────────╮
+# │ 🖩 Utils              │
+# ╰──────────────────────╯
+# ╭──────────────────────╮
+# │ 𝑓 Functional         │
+# ╰──────────────────────╯
+# ╭──────────────────────╮
+# │ 🖹 Help strings       │
+# ╰──────────────────────╯
 
-# ┌────────────────────────┐
-# │ Stateless              │
-# └────────────────────────┘
-
-# ┌────────────────────────┐
-# │ Help strings           │
-# └────────────────────────┘
-
-# ❗
-# Only provide a help string when set_args is used: Bash completion will call
-# the command with --completion. set_args catches this and calls exit before
-# anything else is executed.
-
-  declare -r example_help_string="$(cat << EOF
+declare example_help_string;
+example_help_string="$(cat << EOF
 Illustrates the use of set_args to specify and ready arguments
 
-${text_underline}COMMAND${text_normal} ${text_italic}$0${text_normal} ${text_bold}example${text_normal}
+COMMAND
 
-  The example command teaches you how to read arguments with set_args/get_args.
+  ${text_italic}$0${text_normal} example
+
+  The example command teaches you how to read arguments with set_args.
   For more information, see ${text_blb}${text_italic}~/dotfiles/doc/setargs.txt${text_normal}.
 
   The example command accepts four parameters that illustrate how set_args works.
 
-${text_underline}PARAMETERS${text_normal}
+PARAMETERS
 
   --required=         Required parameters are indicated by a trailing =.
 
@@ -173,9 +161,11 @@ ${text_dim}${text_cyan}Hint: The parameter string of the example command defines
 EOF
   )";
 
-# ┌────────────────────────┐
-# │ Boilerplate            │
-# └────────────────────────┘
-
-# Transition to provided command
+# ╭──────────────────────╮
+# │ ⚙ Boilerplate        │
+# ╰──────────────────────╯
+# ⌂ Transition to provided command
 subcommand "${@}";
+# ╭──────────────────────╮
+# │ 🕮  Documentation     │
+# ╰──────────────────────╯

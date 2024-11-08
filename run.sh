@@ -53,7 +53,7 @@ declare -ar restoration_files=(
     "${dotfiles}"
     "${HOME}/.ssh"/id*
     "${HOME}/.ssh/known_hosts"
-    # TODO Not sure if either one of these would suffice
+    # TODO: Once we only have machines with snap remove the other
     "${HOME}/.mozilla/firefox/"
     "${HOME}/snap/firefox/common/.mozilla/firefox/"
     );
@@ -62,14 +62,6 @@ declare -r update_alternatives_default_link="/usr/bin";
 # ╭──────────────────────╮
 # │ ⌨  Commands          │
 # ╰──────────────────────╯
-
-command_run()
-{
-  set_args "--help"  "$@";
-  eval "$get_args";
-
-  subcommand install;
-}
 
 # Default command (when no arguments are given)
 # shellcheck disable=2317,2120 # unreachable, no args passed
@@ -90,6 +82,74 @@ command_test()
   subcommand rundir scripts/tests colour_test;
   subcommand rundir scripts/tests;
   subcommand rundir scripts/tests shell_check;
+}
+
+command_unun() {
+  set_args "--help" "$@";
+  eval "$get_args";
+
+  # Glob for .filename.un~
+  if command rm -v "$caller_path"/.*.un~; then
+    echok "Removed undofiles";
+  else
+    echow "Failed to remove undofiles";
+  fi
+}
+
+command_alias() {
+  set_args "--name=? --value=? --delete --help" "$@";
+  eval "$get_args";
+
+  declare -r aliases_file="${HOME}/.bash_aliases_local";
+  show_variable aliases_file;
+
+  # Disallow --value and --delete at the same time
+  if [[ "$value" != "?" && "$delete" != "false" ]]; then
+    show_variable value;
+    show_variable delete;
+    abort "Options --value and --delete cannot be used at the same time";
+  fi
+
+  command touch "$aliases_file";
+
+  # Show all aliases when no name is provided
+  if [[ "$name" == "?" ]]; then
+    command batcat "$aliases_file";
+    return 0;
+  fi
+
+  # Makes valid alias and allows using $name in regex patterns
+  declare -r valid_name='+([_.[:alnum:]-])';
+  # shellcheck disable=SC2053
+  if [[ "$name" != $valid_name ]]; then
+    show_variable name;
+    show_variable valid_name;
+    abort "Name invalid";
+  fi
+
+  if [[ "$delete" == "true" ]]; then
+    subcommand alias "$name"; # Show existing one
+    command sed -ie "/^alias ${name}=/d" "$aliases_file";
+    echok "Removed alias $name";
+    return 0;
+  fi
+
+  # HACK: Show current entry when value is "false" (i.e., not provided to
+  #       set_args).
+  if [[ "$value" == "?" ]]; then
+    if command grep -e "^alias ${name}=" "$aliases_file"; then
+      echon "✅ Alias $text_user_soft$name$text_normal found";
+    else
+      echon "❎ Alias $text_user_soft$name$text_normal not found";
+    fi
+    return 0;
+  fi
+
+  subcommand alias --delete "$name"; # Delete existing one
+
+  # Add new alias
+  echo "alias $name=${value@Q}" >> "$aliases_file";
+  echok "Added alias $text_user_soft$name$text_normal";
 }
 
 command_clear_cache()
@@ -330,13 +390,13 @@ command_wipe_cache()
 
 command_upgrade()
 {
-  set_args "--force-upgrade --with-new-pkgs --help" "$@";
+  set_args "--daily --with-new-pkgs --help" "$@";
   eval "$get_args";
 
   # (!) Force upgrade resets the daily cache on error. Dont use in scripts.
   declare update_needed;
   update_needed="$(cache_daily "upgrade" "get")";
-  if [[ "$force_upgrade" == "true" ]] || [[ "$update_needed" == "true" ]]; then
+  if [[ "$daily" != "true" ]] || [[ "$update_needed" == "true" ]]; then
   # TODO More readable version
   {
     echol "Upgrading apt packages" &&
@@ -364,17 +424,16 @@ command_shutdown_upgrade()
   set_args "--timer=60 --help" "$@";
   eval "$get_args";
 
-  subcommand update_dotfiles_branch ||
-    errchoe "Ignoring failed update_dotfiles_branch";
+  #may_fail -- subcommand update_dotfiles_branch;
 
-  subcommand upgrade ||
-    errchow "Ignoring failed upgrade";
+  may_fail -- subcommand upgrade --daily;
 
   shutdown_timer "$timer";
 }
 
 # This command updates the current dotfiles branch. Every branch should specify
 # its own version (for example, to auto-rebase on master).
+# TODO: I think this function and everything below could be removed?
 command_update_dotfiles_branch()
 {
   set_args "--help" "$@";
@@ -636,10 +695,10 @@ command_deploy()
 
   if [[ "$make_copy" == "false" ]] && [[ ! "${source_file:0:1}" == "/" ]]; then
     if [[ "$be_quiet" == "true" ]]; then
-      errchow "Quiet: Better give full paths for symlinks (is: $source_file)";
+      errchow "Quiet: Better give full paths for symlinking (is: $source_file)";
       return 0;
     else
-      abort "Better give full paths for symlinks (is: $source_file)"
+      abort "Better give full paths for symlinking (is: $source_file)"
     fi
   fi
 
@@ -721,7 +780,7 @@ command_import()
   eval "$get_args";
 
   # Sanity checks
-  if [[ ! -d "$to" && ! -e "$to" ]]; then
+  if [[ ! -d "$to" || ! -e "$to" ]]; then
     abort "Target $to is not a directory";
   fi
   if [[ ! -f "$from" && ! -d "$from" ]]; then
@@ -730,6 +789,8 @@ command_import()
   declare source_name;
   source_name="$(basename "$from")";
   declare -r target_path="$to/$source_name";
+  declare -r target_path_colour="$text_dim$to/$text_user_soft$source_name$text_normal";
+  declare -r from_colour="$text_dim$from$text_normal";
   if [[ -e "$target_path" ]]; then
     abort "Target $target_path already exists";
   fi
@@ -738,17 +799,25 @@ command_import()
     pushd "$from";
     for file in **/*; do
       if [[ ! -d "$file" && ! -f "$file" ]]; then
-        abort "Import files or directories. Not: $from/$file";
+        abort "Import files or directories. Neither: $from/$file";
       fi
     done
     popd;
   fi
 
-  declare -ra files=(**/*);
-  print_array "files";
-  echo;
-  echot "test this function";
+  declare source_dir target_path_full;
+  source_dir="$(dirname "$from")";
+  target_path_full="$(realpath -s "$target_path")";
+  show_variable from;
+  show_variable to;
+  show_variable source_dir;
+  show_variable source_name;
+  show_variable target_path;
+  show_variable target_path_full;
+  # abort "Aborting fro testing";
 
+  echol "Importing $from_colour ➜ $target_path_colour"\
+    "$(if [[ "$copy" == "true" ]]; then { echo "as copy"; }; else { echo "as link"; }; fi)";
   declare do_command;
   if [[ "$dry_run" == "true" ]]; then
     do_command="print_values";
@@ -760,18 +829,23 @@ command_import()
   else
     "$do_command" mv -v "$from" "$to";
     echo
-    "$do_command" subcommand deploy --yes --file="$to" --dir="$from";
+    "$do_command" subcommand deploy --yes --file="$target_path_full" --dir="$source_dir";
     echo
   fi
+  echok "Importing $from_colour ➜ $target_path_colour"\
+    "$(if [[ "$copy" == "true" ]]; then { echo "as copy"; }; else { echo "as link"; }; fi)";
 }
 
 # Print some basic system information
 function command_info()
 {
-  set_args "--system --inet --help" "$@";
+  set_args "--disk --inet --system --help" "$@";
   eval "$get_args";
 
   declare -r info_path="$(create_truncate_tmp "system_info.txt")";
+  if [[ "$disk" == "true" ]]; then
+    print_and_execute command df -h >> "$info_path";
+  fi
   if [[ "$system" == "true" ]]; then
     set +e;
     { print_and_execute lsb_release -a || errchow "lsb_release failed"; } >> "$info_path";
@@ -947,6 +1021,8 @@ true_colour_old()
 # │ 🖹 Help strings       │
 # ╰──────────────────────╯
 
+declare -r unun_help_string='Remove undofiles from current directory';
+
 declare -r run_help_string='Ephemeral command for whatever is required at the moment
 DESCIPTION
   Better not rely on this command to have any specific effect.';
@@ -958,11 +1034,30 @@ DESCRIPTION
   things. The tests include shellcheck, which is probably most useful
   day-to-day.";
 
+  # shellcheck disable=SC2016
+declare -r alias_help_string='Manage local alias
+SYNOPSIS
+  1) alias
+  2) alias NAME
+  3) alias NAME --value="ls $HOME/Downloads/"
+  4) alias NAME --delete
+DESCRIPTION
+  1) Show the current alias entry for NAME.
+  2) Create a new alias NAME.
+  3) Delete alias NAME.
+  Manages aliases in dot/bash_aliases_local. This is meaant for local alises
+  that would be misplaced in the regular dot/bash_aliases, but useful on
+  a specific machine.
+OPTIONS
+  --name: Name of the new alias command
+  --value: If provided, set alias to this value
+  --delete: If provided, delete alias';
 declare -r clear_cache_help_string='Clear script cache
 SYNOPSIS
   clear_cache
 DESCRIPTION
-  Remove directory "scripts/.cache/", resetting the cache. All cache uses are required to allow the sudden wipe.';
+  Remove directory "scripts/.cache/", resetting the cache. All cache uses are
+  required to allow the sudden wipe.';
 
 declare -r timer_help_string='Set a timer
 SYNOPSIS
@@ -1069,20 +1164,18 @@ declare -r wipe_cache_help_string="Delete cache directory
 declare -r upgrade_help_string="Upgrade apt/snap packages
 DESCRIPTION
   Upgrades apt and snap packages.
-  Upgrades only once per day unless --force-upgrade is given.
+  Upgrades only once per day if --daily is given.
 OPTIONS
-  --force-upgrade: Ignore daily-time and do upgrades now. Note that an error
-                   during upgrading will reset the daily timer; avoid this for
-                   scripting.
+  --daily: Ignore when called fo rthe second time on any given day.
   --with-new-pkgs: Run an additional pass with --with-new-pkgs when doing 'apt
-                   upgrade'";
+                   upgrade'.";
 
 declare -r shutdown_upgrade_help_string="Do daily apt upgrades and shutdown after 1 minute
 DESCRIPTION
   Used the scripts cache util to query upgrades only once per day (or after
   cache wipe).
 OPTIONS
-  --timer=SECONDS:  Set the timer to shut-down to SECONDS seconds. Default 60.";
+  --timer=SECONDS: Set the timer to shut-down to SECONDS seconds. Default 60.";
 
 declare -r update_dotfiles_branch_help_string=$'Update dotfiles git branch from origin
 \nThis command is meant to be individualized when a git branch is meant to, for example, be rebased on master or merging master continuously.';
@@ -1174,20 +1267,25 @@ DESCRIPTION
   Reverse of "deploy". Move a file or directory (into dotfiles). At its original
   location, place a symlink to the new location.
 
-  Menat for manual use. You may want to rename the moved fles afterwards. Or
+  Meant for manual use. You may want to rename the moved files afterwards. Or
   delete some of the contained files (if it is a directory).
 OPTIONS
   --from=SOURCE: Source file or directory to be imported.
   --to=TARGET_DIR: Target directory to move the imported file to.
   --copy: Re-deploy as a copy instead of a symlink (default false).
-          ❓ Does this work with both files and copy?
+          ❓ Does this work with both files and directories?
   --dry-run: Only print what would happen. Do not move/copy.';
 
 declare -r info_help_string='Print system information
-Executes various typical commands to obtain information. Makes it so that the
-commands need not be remembered.
-    --system    Show information about OS version and hardware
-    --inet      Show information about inernet connectivity';
+DESCRIPTION
+  Executes various typical commands to obtain information. Makes it so that the
+  commands need not be remembered.
+SYNOPSIS
+  info --disk --inet --system
+OPTIONS:
+  --disk: Disk space.
+  --inet: Internet connections.
+  --system: Operating system and hardware.';
 
 # ╭──────────────────────╮
 # │ ⚙ Boilerplate        │

@@ -103,7 +103,7 @@ test_import()
 
 test_init_standalone()
 {
-  ((loud_tests)) && echol "$FUNCNAME";
+  ((loud_tests)) && echol "${FUNCNAME[0]}";
   # Use a nontrivial path to allow recursively testing the exported version.
   # Probably should not recurse more than once because the paths get longer.
   declare fake_project_dir="/tmp/command_test_init_standalone${dotfiles%/*}";
@@ -119,7 +119,7 @@ test_init_standalone()
   else
     errchos "Not testing standalone export";
   fi
-  echok "$FUNCNAME";
+  echok "${FUNCNAME[0]}";
 }
 
 test_may_fail()
@@ -165,7 +165,7 @@ command_shell_check()
     ret=0;
     # Count errors using grep (ignore ANSII codes)
     errors="$(grep -cEe $'^(\x1b\[[0-9;]*m)*In' shellcheck.txt)";
-    echod "Found $errors errors in ${#files[@]} files";
+    echoe "Found $errors errors in ${#files[@]} files";
   else
     ret=1;
     #errors="0";
@@ -190,7 +190,7 @@ test_setargs_all()
 {
 #  echol "$FUNCNAME";
   if [[ ! -v _run_config["declare_optionals"] ]]; then
-    abort "$FUNCNAME: expected _run_config[\"declare_optionals\"] to be set";
+    abort "${FUNCNAME[0]}: expected _run_config[\"declare_optionals\"] to be set";
   fi
   # We wrote most tests when the declare_optionals config didnt exist.
   # Temporarily disable the feature.
@@ -215,12 +215,12 @@ test_setargs_all()
   done
   _run_config["declare_optionals"]="$old_optionals";
 
-  echok "$FUNCNAME";
+  echok "${FUNCNAME[0]}";
 }
 
 runscript_init_test()
 {
-  ((loud_tests)) && echol "$FUNCNAME";
+  ((loud_tests)) && echol "${FUNCNAME[0]}";
   #if [[ -d /tmp/scripttest ]]; then
   #  errchon "Test diretory /tmp/scripttest exists alredy";
   #  test_user "Overwrite?" &&
@@ -238,12 +238,12 @@ runscript_init_test()
   # Print contents as well
   #ls --color=auto -lAFhtr "$dir";
 
-  echok "$FUNCNAME";
+  echok "${FUNCNAME[0]}";
 }
 
 deploy_test()
 {
-  ((loud_tests)) && echol "$FUNCNAME";
+  ((loud_tests)) && echol "${FUNCNAME[0]}";
   declare -r test_dir="/tmp/command_deploy_test";
   declare -ri show_results=0;
   &>/dev/null ensure_directory "$test_dir";
@@ -275,7 +275,7 @@ deploy_test()
   [[ -f "$test_dir/abc" ]];
   #assert_not_eq "$(sed -ne '$=' "$test_dir/abc")" "1" "4.: Deploying as copy produces more lines";
   #head -v "$test_dir/abc_copy"
-  echok "$FUNCNAME";
+  echok "${FUNCNAME[0]}";
 }
 
 # Terminal colors
@@ -297,7 +297,7 @@ command_colour_test()
     printf '\e[0m \n'
   }
 
-  IFS=$' \t\n'
+  declare IFS=$' \t\n'
   color2 {0..15}
   for ((i=0;i<6;i++)); do
       color2 $(seq $((i*36+16)) $((i*36+51)))
@@ -319,15 +319,15 @@ command_colour_test()
       done
       echo $(tput sgr0)
   done
-#  for fg_color in {0..7}; do
-#      set_foreground=$(tput setaf $fg_color)
-#      for bg_color in {8..16}; do
-#          set_background=$(tput setab $bg_color)
-#          echo -n $set_background$set_foreground
-#          printf " F:%s ${text_bold}B:%s $text_normal" $fg_color $bg_color
-#      done
-#      echo $(tput sgr0)
-#  done
+  #  for fg_color in {0..7}; do
+  #      set_foreground=$(tput setaf $fg_color)
+  #      for bg_color in {8..16}; do
+  #          set_background=$(tput setab $bg_color)
+  #          echo -n $set_background$set_foreground
+  #          printf " F:%s ${text_bold}B:%s $text_normal" $fg_color $bg_color
+  #      done
+  #      echo $(tput sgr0)
+  #  done
 
   color(){
     for c; do

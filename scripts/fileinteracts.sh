@@ -103,6 +103,41 @@ same_file_linked()
   [[ "$(readlink -f "$1")" -ef "$(readlink -f "$2")" ]];
 }
 
+# Download to ~/Downloads/ and verify SHA256
+# $1  (in)  Link
+# $2  (in)  SHA256 as hex string
+# $3  (in, optional)  Filename that wget will create. Will use $(basename $link)
+#                     if missing.
+# Make sure link matches the filename in the test string!
+wget_verify_sha256()
+{
+  if (( "$#" < 2 || 3 < "$#" )); then
+    abort "usage: '${FUNCNAME[0]} $link $sha256 [$filaname]'";
+  fi
+
+  declare -r link="${1:?Missing link}";
+  declare -r filename="${3:-$(command basename -- "$1")}";
+  declare -r verify_string="${2:?Missing checksum}  ${filename}";
+  show_variable link;
+  show_variable filename;
+  show_variable verify_string;
+
+  echol "Get: $filename ($link)";
+  pushd "${HOME}/Downloads" || return;
+
+  command wget --quiet --continue --show-progress "$link" || true;
+
+  declare verify="false";
+  checksum_verify_sha256 verify "${verify_string}";
+  if [[ "$verify" != "true" ]]; then
+    command mv -vf "${filename}" "${filename}.bad";
+    errchoe "Failed to verify checksum";
+    return 1;
+  fi
+
+  popd || return;
+  echok Got: "$filename";
+}
 
 # $1  (out)  Output variable (set to "true" or "false")
 # $2  (in)   sha256sum test string (e.g., "b94d2...7b99 test.txt")
@@ -110,8 +145,8 @@ same_file_linked()
 # (instead of returning 0 or 1).
 checksum_verify_sha256()
 {
-  if (("$#" != 2)); then
-    abort "$FUNCNAME: usage: '${FUNCNAME[0]} out_var $file $checksum'";
+  if (( "$#" != 2 )); then
+    abort "usage: '${FUNCNAME[0]} out_var $file $checksum'";
   fi
 
   # Sanity checks

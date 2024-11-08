@@ -12,6 +12,21 @@
 -- * override the configuration of LazyVim plugins
 return
 {
+
+  -- ╭───────────────────────────────────────────────────────────╮
+  -- │ Configure LazyVim plugins                                 │
+  -- ╰───────────────────────────────────────────────────────────╯
+
+  -- {
+  --   "akinsho/bufferline.nvim",
+  --   opts = {
+  --     options = {
+  --       mode = "tabs",
+  --     },
+  --   },
+  --   -- enabled = false,
+  -- },
+
   -- add gruvbox
   -- Configure LazyVim to load gruvbox
   {
@@ -58,7 +73,13 @@ return
     -- keys = function() return { {} } end,
     config = function()
       -- calling `setup` is optional for customization
-      require("fzf-lua").setup({ "fzf-vim" })
+      require("fzf-lua").setup({
+        "default",
+        -- Prevent default layout that reverse the order
+        fzf_opts = { ['--layout'] = false },
+        -- previewer = "builtin", ??
+      })
+
       -- vim.cmd("FzfLua setup_fzfvim_cmds")
     end
   },
@@ -116,6 +137,7 @@ return
         -- pyright will be automatically installed with mason and loaded with lspconfig
         pyright = {},
       },
+      inlay_hints = { enabled = false },
     },
   },
 
@@ -161,9 +183,11 @@ return
   -- add more treesitter parsers
   {
     "nvim-treesitter/nvim-treesitter",
-    opts = {
-      ensure_installed = {
+    opts = function(_, opts)
+      -- add tsx and treesitter
+      vim.list_extend(opts.ensure_installed, {
         "bash",
+        "css",
         "html",
         "javascript",
         "json",
@@ -171,29 +195,29 @@ return
         "markdown",
         "markdown_inline",
         "python",
-        "query",
+        -- "query",
         "regex",
         "tsx",
         "typescript",
         "vim",
         "yaml",
-      },
-    },
-  },
-
-  -- since `vim.tbl_deep_extend`, can only merge tables and not lists, the code above
-  -- would overwrite `ensure_installed` with the new value.
-  -- If you'd rather extend the default config, use the code below instead:
-  {
-    "nvim-treesitter/nvim-treesitter",
-    opts = function(_, opts)
-      -- add tsx and treesitter
-      vim.list_extend(opts.ensure_installed, {
-        "tsx",
-        "typescript",
       })
     end,
   },
+
+  -- -- since `vim.tbl_deep_extend`, can only merge tables and not lists, the code above
+  -- -- would overwrite `ensure_installed` with the new value.
+  -- -- If you'd rather extend the default config, use the code below instead:
+  -- {
+  --   "nvim-treesitter/nvim-treesitter",
+  --   opts = function(_, opts)
+  --     -- add tsx and treesitter
+  --     vim.list_extend(opts.ensure_installed, {
+  --       "tsx",
+  --       "typescript",
+  --     })
+  --   end,
+  -- },
 
   -- -- the opts function can also be used to change the default opts:
   -- {
@@ -234,7 +258,7 @@ return
     },
   },
 
-  -- Is there a more distinct way than repeating the entire confi to change
+  -- Is there a more distinct way than repeating the entire config to change
   -- the logo?
   {
     "goolord/alpha-nvim",
@@ -318,13 +342,73 @@ return
     -- For easily making boxes in comments
     "LudoPinelli/comment-box.nvim",
     opts = {
-      box_width = 78, -- comment-box.nvim will write character 81 if set to 80
-      doc_width = 80, -- Used for centering
+      -- box=78, doc=80 for wide boxes
+      box_width = 62,
+      doc_width = 64, -- Used for centering
     },
   },
 
   {
     "preservim/tagbar",
+  },
+
+  {
+    "nvim-treesitter/nvim-treesitter-context",
+    opts = {
+      enable = true,            -- Enable this plugin (Can be enabled/disabled later via commands)
+      max_lines = 0,            -- How many lines the window should span. Values <= 0 mean no limit.
+      min_window_height = 0,    -- Minimum editor window height to enable context. Values <= 0 mean no limit.
+      line_numbers = true,
+      multiline_threshold = 20, -- Maximum number of lines to show for a single context
+      trim_scope = 'outer',     -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
+      mode = 'topline',         -- Line used to calculate context. Choices: 'cursor', 'topline'
+      -- Separator between context and content. Should be a single character string, like '-'.
+      -- When separator is set, the context will only show up when there are at least 2 lines above cursorline.
+      separator = nil,
+      zindex = 20,     -- The Z-index of the context window
+      on_attach = nil, -- (fun(buf: integer): boolean) return false to disable attaching
+    },
+  },
+
+  {
+    -- This plugin maps normal mode "gS" to split/join arguments over lines
+    "FooSoft/vim-argwrap",
+  },
+
+  {
+    "kylechui/nvim-surround",
+    opts = {
+      -- Defaults (we use ß instead of s to keep flash):
+      --  insert = "<C-g>s",         -- ?
+      --  insert_line = "<C-g>S",    -- ?
+      --  normal = "ys",             -- Surround movement region
+      --  normal_cur = "yss",        -- Surround whole line
+      --  normal_line = "yS",        -- Surround movement region pad with \n
+      --  normal_cur_line = "ySS",   -- Surround whole line, on new lines
+      --  visual = "S",              -- Sourround selection
+      --  visual_line = "gS",        -- Surround selection, pad with \n
+      --  delete = "ds",             -- Delete inner most surrouding
+      --  change = "cs",             -- Change inner/previous sourrounding
+      --  change_line = "cS",        -- Change inner/previous, pad with \n
+      keymaps = {
+        insert = false,
+        insert_line = false,
+        normal = false,          -- Use visual mode ß. Changes '<,'>.
+        normal_cur = "gßß",      -- Use double to be consistent with "dd", "cc", etc.
+        normal_line = "gß",
+        normal_cur_line = false, -- Use visual mode ßß. Changes '<'>.
+        visual = "ß",
+        visual_line = "ßß",
+        delete = "dß",
+        change = "cß",
+        change_line = "cßß",
+      },
+      -- surrounds =     -- Defines surround keys and behavior
+      -- aliases =       -- Defines aliases
+      -- highlight =     -- Defines highlight behavior
+      -- move_cursor =   -- Defines cursor behavior
+      -- indent_lines =  -- Defines line indentation behavior
+    },
   },
 
   -- List:

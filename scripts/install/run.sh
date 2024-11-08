@@ -7,7 +7,7 @@
 declare -gr dotfiles="${DOTFILES:-"$HOME/dotfiles"}"; # TOKEN_DOTFILES_GLOBAL
 declare -gA _sourced_files=( ["runscript"]="" );
 #declare -ga this_location="";
-source "$dotfiles/scripts/boilerplate.sh" "${BASH_SOURCE}" "$@";
+source "$dotfiles/scripts/boilerplate.sh" "${BASH_SOURCE[0]}" "$@";
 satisfy_version "$dotfiles/scripts/boilerplate.sh" "0.0.0";
 
 # ┌────────────────────────┐
@@ -50,6 +50,7 @@ load_version "$dotfiles/scripts/utils.sh" 0.0.0;
 
 # shellcheck source-path=scripts/install
 source "install.sh"; # Individual install subroutines
+# shellcheck source-path=scripts/install
 source "symlink.sh"; # Individual symlink subroutines
 
 # ┌────────────────────────┐
@@ -108,14 +109,26 @@ command_full_install()
 # TODO: Move other commands install_xyz to install.sh and call them from here
 command_install()
 {
-  set_args "--help --all --diff-highlight --difftastic --fzf --mcfly --nvim --tree-sitter --vundle" "$@";
+  set_args "--help --all \
+    --diff-highlight \
+    --difftastic \
+    --fzf \
+    --jetbrains-mono-nerdfont \
+    --mcfly \
+    --mpk \
+    --nvim \
+    --tree-sitter \
+    --vundle \
+    " "$@";
   eval "$get_args";
 
   declare -Ar install_functions=(
       ["diff_highlight"]="install_diff_highlight"
       ["difftastic"]="install_difftastic"
       ["fzf"]="install_fzf"
+      ["jetbrains_mono_nerdfont"]="install_jetbrains_mono_nerdfont"
       ["mcfly"]="install_mcfly"
+      ["mpk"]="install_mpk"
       ["nvim"]="install_nvim"
       ["tree_sitter"]="install_tree_sitter"
       ["vundle"]="install_vundle"
@@ -129,11 +142,11 @@ command_install()
       func="${install_functions[$arg]}";
       {
         may_fail exit_code -- "$func";
-      } ;
+      } &>> "${logfile}";
       if (( 0 == exit_code )); then
-        echok "${arg//_/-}: Installed";
+        echok "Install ok: ${arg//_/-}" | tee -a "$logfile";
       else
-        echow "${arg//_/-}: Not installed";
+        echow "Install failed: ${arg//_/-}" | tee -a "$logfile";
       fi
     fi
   done
@@ -141,11 +154,27 @@ command_install()
 
 command_symlink()
 {
-  set_args "--help --all --bash-aliases --bash-completion --bash-gitcompletion \
-      --bashrc --ctags --gdbinit --gitconfig --gitignore-global --iftoprc \
-      --neovim --ripgrep-config --ssh-config --vim-operatorhighlight \
-      --vim-ftplugin --vimrc --vundle" \
-    "$@";
+  set_args "--help --all \
+    --bash-aliases \
+    --bash-completion \
+    --bash-gitcompletion \
+    --bashrc \
+    --ctags \
+    --gdbinit \
+    --gitconfig \
+    --gitignore-global \
+    --iftoprc \
+    --inputrc \
+    --neovim \
+    --ripgrep-config \
+    --shellcheckrc \
+    --ssh-config \
+    --toprc \
+    --vim-operatorhighlight \
+    --vim-ftplugin \
+    --vimrc \
+    --vundle \
+    " "$@";
   eval "$get_args";
 
   declare -Ar symlink_functions=(
@@ -159,9 +188,12 @@ command_symlink()
       ["gitconfig"]="symlink_gitconfig"
       ["gitignore_global"]="symlink_gitignore_global"
       ["iftoprc"]="symlink_iftoprc"
+      ["inputrc"]="symlink_inputrc"
       ["neovim"]="symlink_neovim"
       ["ripgrep_config"]="symlink_ripgrep_config"
+      ["shellcheckrc"]="symlink_shellcheck_config"
       ["ssh_config"]="symlink_ssh_config"
+      ["toprc"]="symlink_toprc"
       ["vim_operatorhighlight"]="symlink_vim_operatorhighlight"
       ["vim_ftplugin"]="symlink_vim_ftplugin"
       ["vimrc"]="symlink_vimrc"
@@ -177,50 +209,12 @@ command_symlink()
         may_fail exit_code -- "$func";
       } &>> "${logfile}"
       if (( 0 == exit_code )); then
-        echok "${arg//_/-}: Symlinked" | tee -a "$logfile";
+        echok "Symlink ok: ${arg//_/-}" | tee -a "$logfile";
       else
-        echow "${arg//_/-}: Not symlinked" | tee -a "$logfile";
+        echow "Symlink failed: ${arg//_/-}" | tee -a "$logfile";
       fi
     fi
   done
-}
-
-command_symlink_dotfiles()
-{
-  set_args "--user --help" "$@";
-  eval "$get_args";
-
-  ################################################################
-
-  # Preparation
-
-  # FIXME use $dotfiles
-  errchot "Replace dotfiles_dir variable with dotfiles variable from runscript";
-  declare user_name;
-  if [[ "$user" != "false" ]]; then
-    user_name="$user";
-  else
-    user_name="$(whoami)";
-  fi
-  readonly user_name;
-  readonly home_dir="/home/$user_name";
-  readonly dotfiles_dir="$home_dir/dotfiles"
-  echoi "user_name=$text_user$user_name$text_normal";
-  echoi "home_dir=$home_dir";
-  echoi "dotfiles_dir=$dotfiles_dir";
-
-  cd "$dotfiles_dir";
-  pwd;
-
-  ################################################################
-
-  # separate installation of each dotfile
-
-  # promt starting message
-  echo "Installing components:"
-  echo
-
-  errchok "Command $FUNCNAME done!";
 }
 
 command_add_credentials()
@@ -324,12 +318,12 @@ command_install_missing_term_readkey()
   [[ "$yes" == "true" ]] && confirm="true";
 
   # Fix git warning missing term::readkey for interactive add
-  errchol "$FUNCNAME: Trying to fix missing Term::ReadKey";
+  errchol "${FUNCNAME[0]}: Trying to fix missing Term::ReadKey";
   apt-cache search term.*readkey;
   if [[ "$confirm" == "true" ]] || test_user "Install libterm-readkey-perl?"; then
     sudo apt install libterm-readkey-perl;
   else
-    errchol "$FUNCNAME: declined";
+    errchol "${FUNCNAME[0]}: declined";
   fi
 }
 
@@ -347,46 +341,46 @@ command_install_collected_apt()
   # This function install different utilities that can be easily loaded by apt
   # or any other external system.
   echol "Installing collected apt packages...";
+  # shellcheck disable=SC2015
   {
+    #declare ubuntu_version;
+    #ubuntu_version="$(lsb_release -rs)";
+    #{
+    #  # Allow vim 9 on ubuntu
+    #  sudo add-apt-repository -y ppa:jonathonf/vim &&
+    #  sudo apt install vim;
+    #} || {
+    #  echow "Installing vim-9 failed. Falling back to vim-gtk3";
+    #  sudo apt install vim-gtk3;
+    #} || echoe "Installing vim failed (apt)";
 
-    [[ "$(lsb_release -rs)" == 23.* ]] ||
-    {
-      {
-        # Allow vim 9 on ubuntu
-        sudo add-apt-repository -y ppa:jonathonf/vim &&
-        sudo apt install vim;
-      } ||
-      {
-        errchow "Installing vim-9 failed. Falling back to vim-gtk3";
-        sudo apt install vim-gtk3;
-      };
-    } &&
     sudo apt install \
       git \
+      python3-venv \
       bat \
       ripgrep \
-      universal-ctags \
       xclip \
       net-tools \
       curl \
       iftop \
       shellcheck \
-      npm \
       git-delta \
-    &&
+      npm \
+    || echoe "Installing apt packages failed";
+
     {
-      # Need new firefor, else our profile backup could be too new
+      # Need new firefox, else our profile backup could be too new
       declare prg;
-      for prg in snap firefox; do
+      for prg in universal-ctags snap firefox; do
         sudo snap info "$prg" &&
           sudo snap install "$prg" &&
           sudo snap refresh "$prg";
       done
-    }
-    echok "Installed collected apt packages";
+    } || echoe "Installing snap packages failed";
     cache_daily "$cache_key" "set" >/dev/null;
-  } ||
-  errchoe "$FUNCNAME: Failed to install collected (some) apt packages";
+  } &&
+  echok "Done: Installing collected/snap apt packages" ||
+  errchoe "${FUNCNAME[0]}: Failed to install from packet managers";
 }
 
 command_install_cpan()
@@ -437,13 +431,13 @@ command_load_font()
 
   # Extract
   declare dir;
-  dir="$(mktemp -d -t font-XXXXXX)";
-  unzip -d "$dir" "$zip" &>> "$logfile";
+  dir="$(command mktemp -d -t font-XXXXXX)";
+  command unzip -d "$dir" "$zip" &>> "$logfile";
 
   # Install
   declare -a files;
   files=( "$dir"/*.ttf );
-  mv -v "${files[@]}" ~/.local/share/fonts &>> "$logfile";
+  command mv -v "${files[@]}" ~/.local/share/fonts &>> "$logfile";
   echok $"Installed font $text_user$zip$text_normal";
 }
 
@@ -532,13 +526,19 @@ SYNOPSIS
 DESCRIPTION
   Extract zip and copy all contained .ttf files to .local/share/fonts. A list of
   copied files can be found in the logfile.";
-declare -r symlink_dotfiles_help_string="Crete symlinks to files in dot/
+declare -r symlink_help_string="Symlink files
 SYNOPSIS
-  symlink --help
-  symlink [--target, ...]
+  symlink --all
+  symlink --which [--more, ...]
+DESCRIPTION
+  Symlink predefined targets to their predefined locations. The exact actions
+  are specified by the functions in 'symlink.sh'. Typically, lready existing
+  files are not replaced.
+  In the first version, symlink all predefined targets.
+  In the second version, symlink only the specified targets.
 OPTIONS
-  --all: Link all available targets.
-  [--target]: Targets to link. Use --help so get a list.";
+  --all: Symlink all targets.
+  --TARGET: Symlink the specified TARGET (hardcoded parameters).";
 # shellcheck disable=SC1070,SC1079,SC1078
 declare -r add_credentials_help_string="List places where to add credentials
 DESCRIPTION
@@ -567,3 +567,12 @@ NOTE
 
 # Transition to provided command
 subcommand "${@}";
+
+# Copy the logfile to /tmp if we want to check it later.
+declare -r log_dir="log/";
+declare logfile_permanent;
+logfile_permanent="$log_dir/$(date_nocolon).log";
+declare -r logfile_permanent;
+1>&2 show_variable log_dir;
+1>&2 ensure_directory "$log_dir";
+1>&2 cp "$logfile" "$logfile_permanent";

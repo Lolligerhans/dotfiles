@@ -3,27 +3,29 @@
 
 --TODO: Rename to "commands" or "functions"
 
-function DIffToggle()
+function DiffToggle()
   if vim.opt.diff:get() then
     vim.cmd([[diffoff]])
+  else
+    vim.cmd([[diffthis]])
   end
 end
 
--- HACK: NOt sure if commands are supposed to be created this way in lazyvim
+-- HACK: Not sure if commands are supposed to be created this way in lazyvim
 return
 {
 
   vim.api.nvim_create_user_command(
   -- Command generating ctags
-    "MakeTags",
+    "MakeTagsSafe",
     "!touch .ctagsignore && ctags -R --c++-kinds=+p --fields=+iaS --extras=+q",
     {}
   ),
 
   vim.api.nvim_create_user_command(
   -- Command generating ctags
-    "MakeTagsAgain",
-    "!rm tags && touch .ctagsignore && ctags -R --c++-kinds=+p --fields=+iaS --extras=+q",
+    "MakeTags",
+    "!rm tags || true && touch .ctagsignore && ctags -R --c++-kinds=+p --fields=+iaS --extras=+q",
     {}
   ),
 
@@ -54,6 +56,23 @@ return
   --│ Editing                                                                     │
   --╰─────────────────────────────────────────────────────────────────────────────╯
 
+  -- ── Sorting ────────────────────────────────────────────────
+  -- Add small ß to the start of selected line(s)
+  vim.api.nvim_create_user_command("SortMark", "s/^/ß",
+    {}),
+  -- Repalce \n with capital ẞ anywhere except in front of small ß
+  vim.api.nvim_create_user_command("SortCollapse", "'<,'>s/\\nß\\@!/ẞ/g",
+    { range = true }),
+  -- Sort regularly
+  vim.api.nvim_create_user_command("SortSort", "'<,'>sort",
+    { range = true }),
+  -- Replace all captial ẞ with \n
+  vim.api.nvim_create_user_command("SortExpand", "'<,'>s/ẞ/\\r/g",
+    { range = true }),
+  -- Remove small ß at the start of a line
+  vim.api.nvim_create_user_command("SortTrim", "'<,'>s/^ß//",
+    { range = true }),
+
   -- Read lines with raw hexadecimal encoding (xxd -r -p)
   vim.api.nvim_create_user_command(
     "HexRead",
@@ -61,10 +80,17 @@ return
     {}
   ),
 
+  -- Not great but suffices for now
+  vim.api.nvim_create_user_command(
+    "Doc",
+    [['<,'>s#^\(\s*\)//#\1 *]],
+    { range = true }
+  ),
+
   -- TODO HexHex (binary -> hex) + HexBinary (hex -> binary)
 
   -- ╭───────────────────────────────────────────────────────────────────────────╮
-  -- │ HACK: This vim.cmd must be last or te file errors. Can't be right.        │
+  -- │ HACK: This vim.cmd must be last or the file errors. Can't be right.       │
   -- ╰───────────────────────────────────────────────────────────────────────────╯
 
   vim.cmd([[

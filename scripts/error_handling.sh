@@ -12,13 +12,13 @@ _sourced_files["$tag"]=""
 
 # Ensuring version even if included already
 load_version "$dotfiles/scripts/version.sh" 0.0.0
-#load_version "$dotfiles/scripts/assert.sh" 0.0.0;
+#load_version "$dotfiles/scripts/assert.sh" 0.0.0
 satisfy_version "$dotfiles/scripts/boilerplate.sh" 0.0.0 # _sourced_files must be available
-#load_version "$dotfiles/scripts/cache.sh" 0.0.0;
-#load_version "$dotfiles/scripts/error_handling.sh" 0.0.0;
-#load_version "$dotfiles/scripts/git_utils.sh" 0.0.0;
-#load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0;
-#load_version "$dotfiles/scripts/setargs.sh" 0.0.0;
+#load_version "$dotfiles/scripts/cache.sh" 0.0.0
+#load_version "$dotfiles/scripts/error_handling.sh" 0.0.0
+#load_version "$dotfiles/scripts/git_utils.sh" 0.0.0
+#load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0
+#load_version "$dotfiles/scripts/setargs.sh" 0.0.0
 load_version "$dotfiles/scripts/termcap.sh" 0.0.0
 load_version "$dotfiles/scripts/utils.sh" 0.0.0
 
@@ -103,7 +103,7 @@ report_error() {
   # TODO Use BASH_SUBSHELL to print only 1 frame in all non-last scrpts
   for ((i = 1; i < (${#FUNCNAME[@]} < error_frames ? ${#FUNCNAME[@]} : error_frames); i++)); do
     # FIXME Does this not work for some cases?
-    #declare s="$(basename "${BASH_SOURCE[$i]}")";
+    #declare s="$(basename "${BASH_SOURCE[$i]}")"
     # We need to keep the base dir to debug utils helper functions
     # TODO What do we need to strip the base dir for?
     declare s="${BASH_SOURCE[$i]}"

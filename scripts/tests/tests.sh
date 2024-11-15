@@ -37,6 +37,7 @@ load_version "$dotfiles/scripts/fileinteracts.sh" 0.0.0
 load_version "$dotfiles/scripts/git_utils.sh" 0.0.0
 load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0
 load_version "$dotfiles/scripts/setargs.sh" 0.0.0
+load_version "$dotfiles/scripts/string.sh" 0.0.0
 load_version "$dotfiles/scripts/termcap.sh" 0.0.0
 load_version "$dotfiles/scripts/utils.sh" 0.0.0
 
@@ -49,15 +50,34 @@ load_version "$parent_path/unit_tests/fail_test.sh" 0.0.0
 load_version "$parent_path/unit_tests/fileinteracts_test.sh" 0.0.0
 load_version "$parent_path/unit_tests/may_fail_test.sh" 0.0.0
 load_version "$parent_path/unit_tests/setargs_test.sh" 0.0.0
+load_version "$parent_path/unit_tests/string_test.sh" 0.0.0
 load_version "$parent_path/unit_tests/userinteracts_test.sh" 0.0.0
 load_version "$parent_path/unit_tests/utils_test.sh" 0.0.0
 load_version "$parent_path/unit_tests/version_test.sh" 0.0.0
 
 # TODO Does not have much effect
-# TODO Helper function that can silence and un-mute things.
-# TODO Wrapper that calls tests silently, then echos OK, or repeats loudly if
-#      they fail.
-declare -gri loud_tests=0
+declare -gir loud_tests=0
+
+declare -agr auto_test_list=(
+  # Test these first because the rest use them heavily
+  assert_test
+  boilerplate_test
+
+  # Alphabetical order
+  bash_meta_test
+  deploy_test
+  fileinteracts_test
+  test_environment
+  string_test
+  test_init_standalone
+  test_may_fail
+  runscript_init_test
+  test_setargs
+  test_userinteractions
+  test_version
+  utils_test
+  # test_import
+)
 
 # ┌────────────────────────┐
 # │ Commands               │
@@ -125,7 +145,7 @@ shell_check_test() {
     mapfile -t files < <(find . -iname "*.sh" -not -path "./extern/*")
   else
     declare -n files=argv
-    #    files=("$@");
+    #    files=("$@")
   fi
   ls --color=auto -FhA -- "${files[@]}"
   declare -i ret errors
@@ -138,7 +158,7 @@ shell_check_test() {
     echoe "Found $errors errors in ${#files[@]} files"
   else
     ret=1
-    #errors="0";
+    #errors="0"
   fi
   if [[ -s shellcheck.txt ]]; then
     if [[ "$no_pager" == "false" ]]; then batcat shellcheck.txt || :; fi
@@ -158,10 +178,10 @@ test_userinteractions() {
 runscript_init_test() {
   ((loud_tests)) && echol "${FUNCNAME[0]}"
   #if [[ -d /tmp/scripttest ]]; then
-  #  errchon "Test diretory /tmp/scripttest exists alredy";
+  #  errchon "Test diretory /tmp/scripttest exists alredy"
   #  test_user "Overwrite?" &&
   #    abort "Aborting. Treated as failure." ||
-  #    errchol "Overwriting directory";
+  #    errchol "Overwriting directory"
   #fi
 
   declare -r dir="/tmp/command_runscript_init_test"
@@ -172,7 +192,7 @@ runscript_init_test() {
   grep -q "run.sh" <<<"$out"
 
   # Print contents as well
-  #ls --color=auto -lAFhtr "$dir";
+  #ls --color=auto -lAFhtr "$dir"
 
   echok "${FUNCNAME[0]}"
 }
@@ -190,25 +210,25 @@ deploy_test() {
   &>/dev/null subcommand rundir "$dotfiles" deploy "--file=$dotfiles/snippets/runscript.sh" "--dir=$test_dir" --name=abc --yes
   ((show_results)) && ls -alF "$test_dir"
   [[ -L "$test_dir/abc" ]]
-  #assert_eq "$(sed -nie '$=' -- "$test_dir/abc")" "1" "1.: Deploying as link is basically just a file with 1 line";
+  #assert_eq "$(sed -nie '$=' -- "$test_dir/abc")" "1" "1.: Deploying as link is basically just a file with 1 line"
 
   &>/dev/null subcommand run "$dotfiles" deploy "--file=$dotfiles/snippets/runscript.sh" "--dir=$test_dir" --name=abc --yes <<<"y"
   ((show_results)) && ls -alF "$test_dir"
   [[ -L "$test_dir/abc" ]]
-  #assert_eq "$(sed -ne '$=' -- "$test_dir/abc")" "1" "2.: Deploying as link is basically just a file with 1 line";
+  #assert_eq "$(sed -ne '$=' -- "$test_dir/abc")" "1" "2.: Deploying as link is basically just a file with 1 line"
 
   # TODO Detect if the commands consumed stdin
 
   &>/dev/null subcommand run "$dotfiles" deploy --copy=true "--file=$dotfiles/snippets/runscript.sh" "--dir=$test_dir" --name=abc_copy --yes <<<"y"
   ((show_results)) && ls -alF "$test_dir"
   [[ -f "$test_dir/abc" ]]
-  #assert_not_eq "$(sed -ne '$=' "$test_dir/abc")" "1" "3.: Deploying as copy produces more lines";
+  #assert_not_eq "$(sed -ne '$=' "$test_dir/abc")" "1" "3.: Deploying as copy produces more lines"
   #head -v "$test_dir/abc_copy"
 
   &>/dev/null subcommand run "$dotfiles" deploy --copy=true "--file=$dotfiles/snippets/runscript.sh" "--dir=$test_dir" --name=abc_copy --yes <<<"y"
   ((show_results)) && ls -alF "$test_dir"
   [[ -f "$test_dir/abc" ]]
-  #assert_not_eq "$(sed -ne '$=' "$test_dir/abc")" "1" "4.: Deploying as copy produces more lines";
+  #assert_not_eq "$(sed -ne '$=' "$test_dir/abc")" "1" "4.: Deploying as copy produces more lines"
   #head -v "$test_dir/abc_copy"
   echok "${FUNCNAME[0]}"
 }

@@ -31,10 +31,10 @@ _sourced_files["$tag"]=""
 #
 # Use like so by specifying --help AND providing a help-string:
 #
-#     myCommand_help_string="Example string";
+#     myCommand_help_string="Example string"
 #     command_myCommand()
 #     {
-#         set_args "--variables=val --help" "$@";
+#         set_args "--variables=val --help" "$@"
 #         eval "$get_args";                             # Calls provide_help
 #     }
 provide_help() {
@@ -58,9 +58,9 @@ provide_help() {
   # TODO When help info line is output together with the helpstring variable,
   # we can page them together. Currently that is not possible.
   #  if >/dev/null 2>&1 batcat --version; then
-  #    sed -e "$help" <<< "$str" | batcat --plain --paging=auto;
+  #    sed -e "$help" <<< "$str" | batcat --plain --paging=auto
   #  else
-  #    sed -e "$help" <<< "$str";
+  #    sed -e "$help" <<< "$str"
   #  fi
 
   sed -e "$help" <<<"$str"

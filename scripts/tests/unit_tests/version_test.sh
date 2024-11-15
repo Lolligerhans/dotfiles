@@ -8,10 +8,10 @@
 # Source scripts/version.sh in the file you are sourcing this
 
 # Used from working dir ~/dotfiles/
-#load_version "$dotfiles/scripts/assert.sh" 0.0.0;
+#load_version "$dotfiles/scripts/assert.sh" 0.0.0
 
 test_version_sensitivity() {
-  #  echol "Testing version sensitivity";
+  #  echol "Testing version sensitivity"
   declare -r legal_versions=(
     "0.0.0"
     "2985238.42.12345632"
@@ -35,13 +35,13 @@ test_version_sensitivity() {
   for inp in "${legal_versions[@]}"; do
     version_read "$inp" out
     >/dev/null assert_not_eq "${out[0]}" "false" "Version $inp is valid"
-    >/dev/null assert_eq "${#out[@]}" "5" # "Version groups have 5 elements always";
+    >/dev/null assert_eq "${#out[@]}" "5" # "Version groups have 5 elements always"
   done
   echok "${FUNCNAME[0]}"
 }
 
 test_version_specificity() {
-  #  echol "${FUNCNAME[0]}";
+  #  echol "${FUNCNAME[0]}"
   declare -r illegal_versions=(
     "0.0.01"
     "1.2"
@@ -71,7 +71,7 @@ test_version_specificity() {
   declare inp
   declare -a out=()
   for inp in "${illegal_versions[@]}"; do
-    #    echoi "Testing $inp with length ${#inp}";
+    #    echoi "Testing $inp with length ${#inp}"
     version_read "$inp" out
     >/dev/null assert_eq "${out[0]}" "false" "Version '$inp' is invalid"
   done
@@ -79,7 +79,7 @@ test_version_specificity() {
 }
 
 test_version_compare() {
-  #  echol "${FUNCNAME[0]}";
+  #  echol "${FUNCNAME[0]}"
   declare -ra compares_true=(
     "0.0.0 ? 0.0.1"
     "1.2.3 ? 1.2.4"
@@ -103,14 +103,14 @@ test_version_compare() {
   declare out
   declare -a _a _b
   for inp in "${compares_true[@]}"; do
-    #echoi "Testing less-than: $inp";
-    #version_read "${inp%%" ? "*}" _a | tee /tmp/test | read -n 3 a_ok;
+    #echoi "Testing less-than: $inp"
+    #version_read "${inp%%" ? "*}" _a | tee /tmp/test | read -n 3 a_ok
     version_read "${inp%%" ? "*}" _a
     version_read "${inp##*" ? "}" _b
-    #errchod "Comparing versions $(version_print "_a") < $(version_print "_b")";
+    #errchod "Comparing versions $(version_print "_a") < $(version_print "_b")"
     run_silent 1 assert_not_eq "${_a[0]}" "false" "Version must be read correctly"
     run_silent 1 assert_not_eq "${_b[0]}" "false" "Version must be read correctly"
-    #echoi "Comparing: $(version_print "_a") < $(version_print "_b")";
+    #echoi "Comparing: $(version_print "_a") < $(version_print "_b")"
     version_compare out "_a" "_b"
     assert_eq "$out" "true" "${inp/"?"/<}"
   done
@@ -124,7 +124,7 @@ test_version_compare_not() {
 }
 
 test_version_satisfied() {
-  #  echol "${FUNCNAME[0]}";
+  #  echol "${FUNCNAME[0]}"
   declare -ra satisfies_true=(
     # exp    prov
     "1.2.3 ~ 1.2.3"

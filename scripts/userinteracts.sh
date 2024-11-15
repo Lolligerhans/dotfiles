@@ -8,11 +8,11 @@
 # │ ⚙ Boilerplate        │
 # ╰──────────────────────╯
 if [[ -v _sourced_files["userinteracts"] ]]; then
-  #  errchof "Not loading userinteracts";
+  #  errchof "Not loading userinteracts"
   return 0
 fi
 _sourced_files["userinteracts"]=""
-#errchof "Loading userinteracts";
+#errchof "Loading userinteracts"
 # ╭──────────────────────╮
 # │ 🗀 Dependencies       │
 # ╰──────────────────────╯

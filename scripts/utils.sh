@@ -7,13 +7,10 @@ if [[ -v _sourced_files["dot_utils"] ]]; then
 fi
 _sourced_files["dot_utils"]=""
 
-# We specificall do NOT provided a version since this is loaded before
-# versioning.
-
 # Used by versioning so cannot use version in advance.
-# TODO Move some functions into versioned files
-# TODO Remove the versioning from termcap.sh since we cant use is properly (?)
 source "$dotfiles/scripts/termcap.sh"
+
+# TODO: Move some functions into versioned files
 
 # Outputs lowest (closest) BASH_SOURCE entry index NOT identical to the one of
 # the caller to this function. If none is found, output -1.
@@ -23,8 +20,6 @@ bash_source_foreign_idx() {
   declare -n _bsfi_asdoaojasjd_="${1:-"bsfi_index"}" # Avoid name collisions
   _bsfi_asdoaojasjd_=-1
   for ((bsfi_index = 2; bsfi_index < ${#BASH_SOURCE[@]}; ++bsfi_index)); do
-    #    errchod "${FUNCNAME[0]} ➜ ${BASH_SOURCE[bsfi_index]} <=> ${BASH_SOURCE[bsfi_index - 1]}";
-    # TODO Possible -ef is better but possibly also slower
     if [[ "${BASH_SOURCE[bsfi_index]}" != "${BASH_SOURCE[bsfi_index - 1]}" ]]; then
       _bsfi_asdoaojasjd_="$((bsfi_index - 1))" # From caller perspective it's 1 less
       break
@@ -33,11 +28,6 @@ bash_source_foreign_idx() {
   if (($# == 0)); then
     printf "%s" "$((_bsfi_asdoaojasjd_))"
   fi
-}
-
-common_prefix() {
-  # https://stackoverflow.com/a/17475354
-  printf "%s\n" "$@" | sed -e '$!{N;s/^\(.*\).*\n\1.*$/\1\n\1/;D;}'
 }
 
 # Compares strings using by $(sort -Vs), sorting (version) numbers within
@@ -77,7 +67,7 @@ date_nocolon() {
 #
 # Resets the colour *after* printing the name
 print_values() {
-  #  set -eEuo pipefail;
+  #  set -eEuo pipefail
   declare -r name="${1:?print_values: Missing name}"
   declare listed=""
   printf -v listed "$text_dim%s$text_normal, " "${@:2}"
@@ -91,7 +81,7 @@ print_values() {
 #
 # Resets the colour *after* printing the name
 print_values_decorate() {
-  #  set -eEuo pipefail;
+  #  set -eEuo pipefail
   declare -r name="${1}"
   declare -r value="${text_normal}${2:-"$text_normal"}"
   declare -r operator="${text_normal}${3:-"$text_user_soft"}"
@@ -110,55 +100,6 @@ print_array() {
   declare -n _pa__dajihiahnjdsns_="${1}" # Just a super rare name
   print_values "$1" "${_pa__dajihiahnjdsns_[@]}"
   return 0
-}
-
-# Remove color escape sequences from string
-# - $1: input string
-# - stdout: string with escape sequences removed
-remove_ansi_escapes() {
-  if ! shopt -p extglob >/dev/null; then
-    abort "extglob required"
-  fi
-
-  if (($# != 1)); then
-    abort "Requires 1 argument"
-  fi
-
-  declare -r escape=$'\e'
-  # We regex for the general "escape sequence" format
-  #     ESC general_intermediateBytes general_finalByte
-  # - https://en.wikipedia.org/wiki/ISO/IEC_2022
-  # - https://www.ecma-international.org/wp-content/uploads/ECMA-35_6th_edition_december_1994.pdf
-  declare -r general_intermediateByte=$'[\x20-\x2f]'
-  declare -r general_intermediateBytes="*($general_intermediateByte)"
-  declare -r general_finalByte=$'[\x30-\x7e]'
-  # We further regex for the ANSI color code format:
-  #     CSI color_parameterBytes color_intermediateBytes color_finalByte
-  # where CSI follows the general format by choosing zero intermediate bytes:
-  #     ESC [
-  # - https://en.wikipedia.org/wiki/ANSI_escape_code#cite_note-ECMA-48-5
-  # - ISO 6429
-  declare -r controlSequenceIntroducer=$'\e'"\["
-  declare -r color_parameterByte=$'[\x30-\x3f]' # 0–9:;<=>?
-  declare -r color_parameterBytes="*($color_parameterByte)"
-  declare -r color_intermediateByte=$'[\x20-\x2f]' # !"#$%&'()*+,-./
-  declare -r color_intermediateBytes="*($color_intermediateByte)"
-  declare -r color_finalByte=$'[\x40-\x7e]' # @A–Z[\]^_`a–z{|}~
-
-  declare cleaned
-
-  # HACK: Combined pattern removing ansi colors and other escape sequences.
-  #       Happends to work for some cases but do not rely on it.
-  # printf -- "%s" "${1//${escape}?(\[)${color_parameterBytes}${color_intermediateBytes}${color_finalByte}/}"
-
-  # Color
-  # ESC[ [param...] [intermediate...] final
-  printf -v cleaned -- "%s" "${1//${controlSequenceIntroducer}${color_parameterBytes}${color_intermediateBytes}${color_finalByte}/}"
-
-  # General
-  # ESC [intermadiate...] final
-  >&2 show_variable cleaned
-  printf -- "%s" "${cleaned//${escape}${general_intermediateBytes}${general_finalByte}/}"
 }
 
 # Symlink a dotfile stored in the dotfiles directory to some location
@@ -244,28 +185,6 @@ function print_and_execute() {
   return "$?"
 }
 
-# TODO Replace gradually by version below returning ints
-
-# $1: repetition count
-# ($2: character)
-# ($3: output variable name)
-# If $3 is given, writes variable. Else writes to stdout.
-repeat_string() {
-  declare -i count="${1}"
-  declare str="${2:-"="}"
-
-  declare res
-  printf -v res -- "%${count}s"
-  res="${res// /"$str"}"
-  if (($# == 3)); then
-    declare -n _repeat_string__ref="${3}"
-    printf -v _repeat_string__ref -- "%s" "$res"
-  else
-    printf -- "%s" "${res}"
-  fi
-  return 0
-}
-
 # Convert string into array of characters
 # - $1: output array variable
 # - $2: input string
@@ -275,9 +194,6 @@ string_to_array() {
   declare -n _out_starr_57482391="${1:?Missing poutput variable}"
   declare -r string="${2:?}"
 
-  # echoi "${@@A}"
-  # show_variable string;
-
   if ((${#_out_starr_57482391[@]} != 0)); then
     abort "Expecting empty output array"
   fi
@@ -286,7 +202,6 @@ string_to_array() {
   for ((i = 0; i < ${#string}; i++)); do
     _out_starr_57482391+=("${string:i:1}")
   done
-  # show_variable _out_starr_57482391
 }
 
 # Convert array of 1-character strings to array of ASCII values (as decimal

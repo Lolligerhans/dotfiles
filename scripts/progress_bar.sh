@@ -10,13 +10,14 @@ _sourced_files["$tag"]=""
 
 # Ensuring version even if included already
 load_version "$dotfiles/scripts/version.sh" 0.0.0
-#load_version "$dotfiles/scripts/assert.sh" 0.0.0;
-#load_version "$dotfiles/scripts/boilerplate.sh" 0.0.0;
-#load_version "$dotfiles/scripts/cache.sh" 0.0.0;
-#load_version "$dotfiles/scripts/error_handling.sh" 0.0.0;
-#load_version "$dotfiles/scripts/git_utils.sh" 0.0.0;
-#load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0;
-#load_version "$dotfiles/scripts/setargs.sh" 0.0.0;
+#load_version "$dotfiles/scripts/assert.sh" 0.0.0
+#load_version "$dotfiles/scripts/boilerplate.sh" 0.0.0
+#load_version "$dotfiles/scripts/cache.sh" 0.0.0
+#load_version "$dotfiles/scripts/error_handling.sh" 0.0.0
+#load_version "$dotfiles/scripts/git_utils.sh" 0.0.0
+#load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0
+#load_version "$dotfiles/scripts/setargs.sh" 0.0.0
+load_version "$dotfiles/scripts/string.sh" 0.0.0
 load_version "$dotfiles/scripts/termcap.sh" 0.0.0
 load_version "$dotfiles/scripts/utils.sh" 0.0.0
 
@@ -55,7 +56,7 @@ progress_sleep() {
   progress_push 0 "$duration" "$msg" "$len" "$box"
   while ((now < end)); do
     # Sleep 1/3 of time left
-    #    sleep "$(( (end - now + 2) / 3))";
+    #    sleep "$(( (end - now + 2) / 3))"
     sleep 1
     now="$(date +%s)"
     progress_update "$((now - start))" "$duration" "$msg" "$len" "$box"
@@ -84,7 +85,7 @@ progress_push() {
 
   if [[ "$box" == "true" ]]; then
     box_down="$(repeat_string "$((len + ${#msg} + 1))" "─")"
-    #  errchot "Len boxed string: ${#box_down}";
+    #  errchot "Len boxed string: ${#box_down}"
     box_up="╭${box_down}╮"
     box_down="╰${box_down}╯"
     str="│$str│"
@@ -134,7 +135,7 @@ progress_detached() {
 # ███████████▋   90%
 # ████████████▊  99%
 # █████████████ 100%
-# Use: printf "\r%s" "$(progress_bar_string $percent $len)";
+# Use: printf "\r%s" "$(progress_bar_string $percent $len)"
 progress_bar_string() {
   # Use pixels as length unit. Pixel = 1/8 character.
   declare -i percent="${1:?Missing percent}"

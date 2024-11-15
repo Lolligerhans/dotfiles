@@ -6,16 +6,16 @@
 # colour, as decribed in dotfiles/data/syntax.txt.
 
 # Ensuring version even if included already
-#load_version "$dotfiles/scripts/version.sh" 0.0.0;
-#load_version "$dotfiles/scripts/assert.sh" 0.0.0;
-#load_version "$dotfiles/scripts/boilerplate.sh" 0.0.0;
-#load_version "$dotfiles/scripts/cache.sh" 0.0.0;
-#load_version "$dotfiles/scripts/error_handling.sh" 0.0.0;
-#load_version "$dotfiles/scripts/git_utils.sh" 0.0.0;
-#load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0;
-#load_version "$dotfiles/scripts/setargs.sh" 0.0.0;
-#load_version "$dotfiles/scripts/termcap.sh" 0.0.0;
-#load_version "$dotfiles/scripts/utils.sh" 0.0.0;
+#load_version "$dotfiles/scripts/version.sh" 0.0.0
+#load_version "$dotfiles/scripts/assert.sh" 0.0.0
+#load_version "$dotfiles/scripts/boilerplate.sh" 0.0.0
+#load_version "$dotfiles/scripts/cache.sh" 0.0.0
+#load_version "$dotfiles/scripts/error_handling.sh" 0.0.0
+#load_version "$dotfiles/scripts/git_utils.sh" 0.0.0
+#load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0
+#load_version "$dotfiles/scripts/setargs.sh" 0.0.0
+#load_version "$dotfiles/scripts/termcap.sh" 0.0.0
+#load_version "$dotfiles/scripts/utils.sh" 0.0.0
 
 saturate_medium() {
   errchot "Implement"

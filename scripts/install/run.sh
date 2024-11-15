@@ -6,7 +6,7 @@
 
 declare -gr dotfiles="${DOTFILES:-"$HOME/dotfiles"}" # TOKEN_DOTFILES_GLOBAL
 declare -gA _sourced_files=(["runscript"]="")
-#declare -ga this_location="";
+#declare -ga this_location=""
 source "$dotfiles/scripts/boilerplate.sh" "${BASH_SOURCE[0]}" "$@"
 satisfy_version "$dotfiles/scripts/boilerplate.sh" "0.0.0"
 
@@ -29,20 +29,20 @@ _run_config["log_loads"]=0
 # └────────────────────────┘
 
 # FIXME ensure version without include
-#ensure_version "$dotfiles/run.sh" 0.0.0;
+#ensure_version "$dotfiles/run.sh" 0.0.0
 
 load_version workspace.sh 0.0.0 # Helpers for the setup of topic-based workspaces.
 load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0
 
 # Ensuring version even if included already
 load_version "$dotfiles/scripts/version.sh" 0.0.0
-#load_version "$dotfiles/scripts/assert.sh" 0.0.0;
+#load_version "$dotfiles/scripts/assert.sh" 0.0.0
 load_version "$dotfiles/scripts/bash_meta.sh" 0.0.0
-#load_version "$dotfiles/scripts/boilerplate.sh" 0.0.0;
+#load_version "$dotfiles/scripts/boilerplate.sh" 0.0.0
 load_version "$dotfiles/scripts/cache.sh" 0.0.0
-#load_version "$dotfiles/scripts/error_handling.sh" 0.0.0;
+#load_version "$dotfiles/scripts/error_handling.sh" 0.0.0
 load_version "$dotfiles/scripts/fileinteracts.sh" 0.0.0
-#load_version "$dotfiles/scripts/git_utils.sh" 0.0.0;
+#load_version "$dotfiles/scripts/git_utils.sh" 0.0.0
 load_version "$dotfiles/scripts/setargs.sh" 0.0.0
 load_version "$dotfiles/scripts/termcap.sh" 0.0.0
 load_version "$dotfiles/scripts/userinteracts.sh" "0.0.0"
@@ -64,7 +64,7 @@ declare -r logfile="log/install.log"
 # TODO Create global array with paths of dotfiles? Just for install runscript?
 declare -r completion_path="$dotfiles/dot/bash_completion"
 # Ansers HTTP 404
-#declare -r git_diff_hl_url="https://raw.githubusercontent.com/git/git/master/contrib/diff-highlight/diff-highlight";
+#declare -r git_diff_hl_url="https://raw.githubusercontent.com/git/git/master/contrib/diff-highlight/diff-highlight"
 declare -r default_workspace_name="example"
 
 # ┌────────────────────────┐
@@ -334,16 +334,16 @@ command_install_collected_apt() {
   echol "Installing collected apt packages..."
   # shellcheck disable=SC2015
   {
-    #declare ubuntu_version;
-    #ubuntu_version="$(lsb_release -rs)";
+    #declare ubuntu_version
+    #ubuntu_version="$(lsb_release -rs)"
     #{
     #  # Allow vim 9 on ubuntu
     #  sudo add-apt-repository -y ppa:jonathonf/vim &&
-    #  sudo apt install vim;
+    #  sudo apt install vim
     #} || {
-    #  echow "Installing vim-9 failed. Falling back to vim-gtk3";
-    #  sudo apt install vim-gtk3;
-    #} || echoe "Installing vim failed (apt)";
+    #  echow "Installing vim-9 failed. Falling back to vim-gtk3"
+    #  sudo apt install vim-gtk3
+    #} || echoe "Installing vim failed (apt)"
 
     sudo apt install \
       git \
@@ -381,8 +381,8 @@ command_install_cpan() {
 
 command_generate_ssh_keypairs() {
   # TOKEN_DOTFILES_USER_CREDENTIALS
-  #generate_single_ssh_keypair --silent -f=id_example -C="Example.Name@emal.com";
-  #generate_single_ssh_keypair --silent -f=id_alias -C="AnotherAlias";
+  #generate_single_ssh_keypair --silent -f=id_example -C="Example.Name@emal.com"
+  #generate_single_ssh_keypair --silent -f=id_alias -C="AnotherAlias"
   abort "Unavailable (add credentials or remove this line)"
   errchol "Done: Creating ssh key pairs"
 }

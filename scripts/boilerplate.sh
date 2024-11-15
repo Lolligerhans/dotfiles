@@ -23,8 +23,8 @@ _sourced_files["boilerplate"]=""
 
 # TODO Use "not -v" or "-z"?
 #if [[ ! -v "${BASH_SOURCE[0]}" ]]; then
-#  echo "run.sh: Bash required";
-#  exit 1;
+#  echo "run.sh: Bash required"
+#  exit 1
 #fi
 
 # Identical to set -euETo pipefail
@@ -44,7 +44,7 @@ shopt -s extquote
 # Warn about shifting too far
 shopt -s shift_verbose
 # Use GNU error format. Probably only use this when parsing with a script
-#shopt -s gnu_errfmt;
+#shopt -s gnu_errfmt
 # TODO consider shopt -s lastpipe
 # TODO consider shopt -s xpg_echo
 IFS=$'\n\t'
@@ -117,10 +117,10 @@ load_version "$dotfiles/scripts/run_help_strings.sh" 0.0.0 # TODO use source?
 load_version "$dotfiles/scripts/setargs.sh" 0.0.0
 
 # Ensuring version even if included already
-#load_version "$dotfiles/scripts/assert.sh" 0.0.0;
-#load_version "$dotfiles/scripts/cache.sh" 0.0.0;
-#load_version "$dotfiles/scripts/git_utils.sh" 0.0.0;
-#load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0;
+#load_version "$dotfiles/scripts/assert.sh" 0.0.0
+#load_version "$dotfiles/scripts/cache.sh" 0.0.0
+#load_version "$dotfiles/scripts/git_utils.sh" 0.0.0
+#load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0
 load_version "$dotfiles/scripts/termcap.sh" 0.0.0
 load_version "$dotfiles/scripts/utils.sh" 3.0.0
 
@@ -169,7 +169,7 @@ command_help() {
 
   # TODO This could accidentally trigger some commands
   #  if (( ${#command_array[@]} == 1 )); then
-  #    subcommand "${command_array[0]}" "--help";
+  #    subcommand "${command_array[0]}" "--help"
   #  else
   #  fi
 
@@ -184,11 +184,11 @@ command_help() {
       #      convincing canonical way to get it from set_args without being
       #      awkward. Additionally, that would require to call the commands
       #      which they might not be intended for.
-      #      usage="$(subcommand "$com" "--help")";
-      #      usage="$(head -n1 <<< "$usage")";
+      #      usage="$(subcommand "$com" "--help")"
+      #      usage="$(head -n1 <<< "$usage")"
     else
       str="$text_dim(no help available)$text_normal"
-      #      usage="";
+      #      usage=""
     fi
 
     # Reduce noise from predefined commands unless --all is given
@@ -224,14 +224,14 @@ command_link_this() {
 
   # Sanity checks for user
   #  if [[ -a "$dir/run.sh" ]]; then
-  #    errchow "Link target $dir/run.sh already exists!";
+  #    errchow "Link target $dir/run.sh already exists!"
   #  fi
   #  if [[ -a "$dir/commands.sh" ]]; then
-  #    errchow "Link target $dir/commands.sh already exists!";
+  #    errchow "Link target $dir/commands.sh already exists!"
   #  fi
 
   subcommand rundir "$dotfiles" deploy --yes --keep="$keep" "--file=$parent_path/run.sh" "--dir=$dir"
-  #subcommand rundir "$dotfiles" deploy --yes --keep="$keep" "--file=$parent_path/commands.sh" "--dir=$dir";
+  #subcommand rundir "$dotfiles" deploy --yes --keep="$keep" "--file=$parent_path/commands.sh" "--dir=$dir"
   echok "Linked {run.sh commands.sh} $text_bold$parent_path$text_normal ➜ $text_bold$dir$text_normal"
 }
 
@@ -246,7 +246,7 @@ command_interactive() {
   # TODO add additional "args" command to set args for next command
   errchot "No args command yet"
 
-  #declare -r command_list=($(subcommand print_commands));
+  #declare -r command_list=($(subcommand print_commands))
   declare -a command_list
   mapfile -t command_list < <(subcommand print_commands)
   declare chosen_command

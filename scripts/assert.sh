@@ -6,13 +6,13 @@
 
 # Ensuring version even if included already
 load_version "$dotfiles/scripts/version.sh" 0.0.0
-#load_version "$dotfiles/scripts/assert.sh" 0.0.0;
-#load_version "$dotfiles/scripts/boilerplate.sh" 0.0.0;
-#load_version "$dotfiles/scripts/cache.sh" 0.0.0;
-#load_version "$dotfiles/scripts/error_handling.sh" 0.0.0;
-#load_version "$dotfiles/scripts/git_utils.sh" 0.0.0;
-#load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0;
-#load_version "$dotfiles/scripts/setargs.sh" 0.0.0;
+#load_version "$dotfiles/scripts/assert.sh" 0.0.0
+#load_version "$dotfiles/scripts/boilerplate.sh" 0.0.0
+#load_version "$dotfiles/scripts/cache.sh" 0.0.0
+#load_version "$dotfiles/scripts/error_handling.sh" 0.0.0
+#load_version "$dotfiles/scripts/git_utils.sh" 0.0.0
+#load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0
+#load_version "$dotfiles/scripts/setargs.sh" 0.0.0
 load_version "$dotfiles/scripts/termcap.sh" 0.0.0
 load_version "$dotfiles/scripts/utils.sh" 0.0.0
 
@@ -29,24 +29,24 @@ if [[ "$-" != *e* ]]; then
 fi
 
 # log_assert() {
-#   declare -ri ret="${1:?}";
-#   declare -r func="${2:-"<func>"}";
-#   declare -r file="${3:-"<file>"}";
-#   declare -ri line="${4:-"<line>"}";
-#   declare -r msg="${@:5}";
-#   show_variable "ret";
-#   show_variable "func";
-#   show_variable "file";
-#   show_variable "line";
-#   show_variable "msg";
+#   declare -ri ret="${1:?}"
+#   declare -r func="${2:-"<func>"}"
+#   declare -r file="${3:-"<file>"}"
+#   declare -ri line="${4:-"<line>"}"
+#   declare -r msg="${@:5}"
+#   show_variable "ret"
+#   show_variable "func"
+#   show_variable "file"
+#   show_variable "line"
+#   show_variable "msg"
 #
-#   declare sym;
+#   declare sym
 #   case "$ret" in
 #     0) sym="${text_green}✔";;
 #     1) sym="${text_red}✖";;
 #     *) sym="${text_user}❓"
 #   esac
-#   echo "${sym} | ${file}:${line} | ${func} |" "$msg${text_normal}";
+#   echo "${sym} | ${file}:${line} | ${func} |" "$msg${text_normal}"
 # }
 
 log_success() { echo "${text_green}✔ | ${BASH_SOURCE[2]}:${BASH_LINENO[1]} | ${FUNCNAME[2]} |" "$@${text_normal}"; }

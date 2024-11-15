@@ -20,7 +20,7 @@ _sourced_files["$tag"]=""
 # │ 🗀 Dependencies       │
 # ╰──────────────────────╯
 load_version "$dotfiles/scripts/version.sh" 0.0.0
-#load_version "$dotfiles/scripts/setargs.sh" 0.0.0;
+#load_version "$dotfiles/scripts/setargs.sh" 0.0.0
 load_version "$dotfiles/scripts/termcap.sh" 0.0.0
 load_version "$dotfiles/scripts/utils.sh" 0.0.0
 # ╭──────────────────────╮
@@ -61,7 +61,7 @@ create_truncate_tmp() {
   else
     truncate -s 0 "$full_path"
   fi
-  # echoi "${FUNCNAME[0]}: full_path=$full_path";
+  # echoi "${FUNCNAME[0]}: full_path=$full_path"
   printf "%s" "$full_path"
   return 0
 }
@@ -77,7 +77,6 @@ parent_dir_of() {
   parent_dir="$(dirname -- "$(realpath -- "$1")")"
   show_variable
   dirname -- "$1"
-  izz
 }
 
 # Create randomly named directory somewhere below /tmp. No guarantee that it is
@@ -146,13 +145,13 @@ checksum_verify_sha256() {
     errchoe "${FUNCNAME[0]} needs set -e"
     abort "Need set -e to continue"
   fi
-  if ! sha256sum --version &>/dev/null; then
+  if ! command sha256sum --version &>/dev/null; then
     errchoe "${FUNCNAME[0]} requires sha256sum"
     abort "Need sha256sum to continue"
   fi
 
   declare -n _vcs_934712384_="${1}"
-  if sha256sum -c <<<"$2"; then
+  if command sha256sum -c <<<"$2"; then
     printf -v _vcs_934712384_ -- "true"
   else
     printf -v _vcs_934712384_ -- "false"

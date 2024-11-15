@@ -21,9 +21,9 @@ satisfy_version "$dotfiles/scripts/boilerplate.sh" 0.0.0
 # │ 🛠 Configuration     │
 # ╰──────────────────────╯
 
-#_run_config["log_loads"]=1;
-#_run_config[error_frames]=2;
-#_run_config["versioning"]=0;
+#_run_config["log_loads"]=1
+#_run_config[error_frames]=2
+#_run_config["versioning"]=0
 
 # ╭──────────────────────╮
 # │ 🗀 Dependencies       │
@@ -66,11 +66,11 @@ declare -r update_alternatives_default_link="/usr/bin"
 # Default command (when no arguments are given)
 # shellcheck disable=2317,2120 # unreachable, no args passed
 command_default() {
-  # set_args "--help" "$@";
-  # eval "$get_args";
+  # set_args "--help" "$@"
+  # eval "$get_args"
 
   subcommand run scripts/tests
-  # subcommand "help" "$@";
+  # subcommand "help" "$@"
 }
 
 command_test() {
@@ -183,9 +183,9 @@ command_update_alternatives() {
   set_args "--path= --name --link --priority --dry-run --yes --help" "$@"
   eval "$get_args"
 
-  #  echou "${FUNCNAME[0]}: testing is on";
-  #  echoi "$(print_values_decorate Args "" "" $@)";
-  #  declare dry_run="true";
+  #  echou "${FUNCNAME[0]}: testing is on"
+  #  echoi "$(print_values_decorate Args "" "" $@)"
+  #  declare dry_run="true"
 
   if [[ "${path:0:1}" != "/" ]]; then
     declare _before="${path}"
@@ -201,10 +201,10 @@ command_update_alternatives() {
     # shellcheck disable=2295
     declare -r no_version="${path%%$pattern}"
     declare -ir len_noversion="$((${#no_version} + 1))" # Hyphen-minus takes 1 character
-    #echoi "path=$path";
-    #echoi "#path=${#path}";
-    #echoi "no_version=$no_version";
-    #echoi "len_noversion=$len_noversion";
+    #echoi "path=$path"
+    #echoi "#path=${#path}"
+    #echoi "no_version=$no_version"
+    #echoi "len_noversion=$len_noversion"
     if ((len_noversion >= ${#path})); then
       abort "${FUNCNAME[0]}: Could not deduce name from $text_dim$path$text_normal"
     fi
@@ -332,12 +332,12 @@ command_restoration_tarball() {
   mkdir -vp "$toplevel_dir"
 
   #{
-  #echon "Trying first time with relative path";
-  #pushd "$destination";
+  #echon "Trying first time with relative path"
+  #pushd "$destination"
   #mkdir -vp "$name_timestamp_nodename" && # mkdir -vp does not work through /media/... so cd there first
   #popd; } ||
   #{
-  #  echoi "Trying with full path";
+  #  echoi "Trying with full path"
   #}
 
   tar --force-local -${tar_flag}cjSpf "${backup_path}" "${restoration_files[@]}"
@@ -413,7 +413,7 @@ command_shutdown_upgrade() {
   set_args "--timer=60 --help" "$@"
   eval "$get_args"
 
-  #may_fail -- subcommand update_dotfiles_branch;
+  #may_fail -- subcommand update_dotfiles_branch
 
   may_fail -- subcommand upgrade --daily
 
@@ -479,7 +479,7 @@ command_update_dotfiles_branch() {
   # Uncomment in non-master branches when rebasing is desired workflow.
   # This makes the 'update_dotfiles_branch' command (invoked also through
   # 'shutdown_upgrade') rebase on the master branch.
-  #rebase_on_master_helper --yes="true";
+  #rebase_on_master_helper --yes="true"
 }
 
 command_colours() {
@@ -584,19 +584,19 @@ command_export_dotfiles_scripts_standalone() {
   declare -r newline='declare -gr dotfiles="${DOTFILES:-"'"$copy_path"'"}"; # ${token@U}'
   declare rs=""
   for rs in "${new_runscripts[@]}"; do
-    #    errchof "Editing file $rs";
+    #    errchof "Editing file $rs"
     # shellcheck disable=SC1003
     1>&2 sed -i -e '/'"${token@U}"'/c \'"$newline"'' "$rs"
     # This test only makes sense when we replace the token, but then we cannot
     # double-test the standalone exported version.
     #    if ! 1>&2 grep -qe "${token@U}" "$rs"; then
-    #      abort "Something went wrong changing the dotfiles variable in $rs";
+    #      abort "Something went wrong changing the dotfiles variable in $rs"
     #    fi
   done
 
   # (!) We deploy as link to the copied run_script.sh
-  #  errchol "Remote deploying runscript as link-to-copy";
-  #  1>&2 subcommand deploy --yes --name=run.sh --file "$copy_path/scripts/run_script.sh" --dir "$copy_path";
+  #  errchol "Remote deploying runscript as link-to-copy"
+  #  1>&2 subcommand deploy --yes --name=run.sh --file "$copy_path/scripts/run_script.sh" --dir "$copy_path"
 
   # Output new dotfiles path (so caller must not know the default name)
   # TODO Maybe we should just require a name.
@@ -802,7 +802,7 @@ command_import() {
   show_variable source_name
   show_variable target_path
   show_variable target_path_full
-  # abort "Aborting fro testing";
+  # abort "Aborting fro testing"
 
   echol "Importing $from_colour ➜ $target_path_colour" \
     "$(if [[ "$copy" == "true" ]]; then { echo "as copy"; }; else { echo "as link"; }; fi)"

@@ -24,10 +24,10 @@ satisfy_version "$dotfiles/scripts/boilerplate.sh" 0.0.0
 # │ 🛠Configuration      │
 # ╰──────────────────────╯
 
-_run_config["versioning"]=0
-_run_config["log_loads"]=0
+_run_config["versioning"]=1
+_run_config["log_loads"]=1
 # Prevent lengthy error trace in logs
-_run_config["error_frames"]=1
+_run_config["error_frames"]=2
 
 # ╭──────────────────────╮
 # │ 🗀 Dependencies       │
@@ -60,14 +60,16 @@ command_default() {
   set_args "--help" "$@"
   eval "$get_args"
 
+  string_test
+  return
   subcommand test --automated
 
-  # test_string_to_array;
-  # utils_test;
-  # fileinteracts_test;
-  # subcommand test --fail;
-  # test_bash_at_AQ;
-  # boilerplate_test;
+  # test_string_to_array
+  # utils_test
+  # fileinteracts_test
+  # subcommand test --fail
+  # test_bash_at_AQ
+  # boilerplate_test
 }
 
 command_delete_logs() {
@@ -119,25 +121,6 @@ automated_tests() {
     abort "${FUNCNAME[0]}: expected _run_config to be set"
   fi
 
-  declare -ar auto_test_list=(
-    # Test these first because the rest use them heavily
-    assert_test
-    boilerplate_test
-
-    # Alphabetical order
-    bash_meta_test
-    deploy_test
-    fileinteracts_test
-    test_environment
-    test_init_standalone
-    test_may_fail
-    runscript_init_test
-    test_setargs
-    test_userinteractions
-    test_version
-    utils_test
-    # test_import
-  )
   declare t
   for t in "${auto_test_list[@]}"; do
     execute_test "${argv[@]}" -- "${t}"

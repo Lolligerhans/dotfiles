@@ -9,8 +9,8 @@
 install_diff_highlight() {
   errchol "${FUNCNAME[0]}"
   # Didnt work
-  #  errchoi "Downloading git diff-highlight from: $git_diff_hl_url";
-  #  wget "$git_diff_hl_url";
+  #  errchoi "Downloading git diff-highlight from: $git_diff_hl_url"
+  #  wget "$git_diff_hl_url"
 
   # Use local file
   errchot "Using hardcoded path to existing diff-highlight script"
@@ -55,7 +55,7 @@ install_difftastic() {
   ensure_directory /tmp/difftastic
   cd /tmp/difftastic
   wget -c https://github.com/Wilfred/difftastic/releases/download/0.52.0/difft-x86_64-unknown-linux-gnu.tar.gz
-  #  wget -c https://github.com/Wilfred/difftastic/releases/download/0.52.0/difft-aarch64-unknown-linux-gnu.tar.gz;
+  #  wget -c https://github.com/Wilfred/difftastic/releases/download/0.52.0/difft-aarch64-unknown-linux-gnu.tar.gz
   tar -xvzf difft-x86_64-unknown-linux-gnu.tar.gz
   sudo mv -v difft "$difft_path"
   # shellcheck disable=SC2010

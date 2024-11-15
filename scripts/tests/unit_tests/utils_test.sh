@@ -3,6 +3,7 @@
 # version 0.0.0
 
 utils_test() {
+  test_abort
   test_bash_source_foreign_idx
   test_common_prefix
   test_compare_string_lte_version
@@ -13,18 +14,26 @@ utils_test() {
   test_remove_ansi_escapes
 }
 
+test_abort_helper() {
+  printf -- "a"
+  abort "This always aborts"
+  printf -- "z"
+  return 0
+}
+
+test_abort() {
+  assert_returns 1 abort "Abort returns 1"
+  assert_returns 1 test_abort_helper "Functions calling abort return 1"
+  declare output abort_ret=4
+  output="$(may_fail -- test_abort_helper)"
+  assert_eq "$output" "a" "Functions should not continue after aborting"
+}
+
 test_bash_source_foreign_idx() {
   declare -i res
   bash_source_foreign_idx res
 
   assert_eq "$res" "2" "2 hops out of this file (here -> utils_test() -> out)"
-}
-
-test_common_prefix() {
-  declare -ar inputs=("123cd" "123" "123b" "123a")
-  declare res
-  res="$(common_prefix "${inputs[@]}")"
-  assert_eq "$res" "123" "Common prefix is correct"
 }
 
 test_compare_string_lte_version() {
@@ -50,19 +59,6 @@ test_date_nocolon() {
   declare -r example="2024-12-31T23-59-59+11-59"
   assert_match "$str" "$pattern" "Should produce date/times without colons"
   assert_eq "${#str}" "${#example}" "Should be same length as example"
-}
-
-test_repeat_string() {
-  declare -r input="' "
-  declare -i count=3
-
-  declare output
-
-  repeat_string "$count" "$input" output
-  assert_eq "$output" "' ' ' " "Input should be repeated 3 times"
-
-  repeat_string "0" "$input" output
-  assert_eq "$output" "" "Zero repetitions should be empty"
 }
 
 test_string_to_array() {
@@ -106,19 +102,4 @@ test_array_to_ascii() {
   show_variable output3
   assert_eq "${#output3[@]}" "0" "Output should be empty"
   assert_eq "${output3[@]@A}" "declare -a output3=()" "Exact match for generated output"
-}
-
-test_remove_ansi_escapes() {
-  echol "${FUNCNAME[0]}"
-  declare -r input2="$(
-    cat <<-EOF
-		[2m[38;2;255;144;192malias(B[m[2m…(B[mManage local alias(B[m
-		EOF
-  )"
-  show_variable input
-  declare output
-  remove_ansi_escapes "$input2"
-  echo
-  output="$(remove_ansi_escapes "$input2")"
-  assert_eq "$output" "alias…Manage local alias" "Escape sequences are removed"
 }

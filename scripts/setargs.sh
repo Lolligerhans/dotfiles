@@ -16,13 +16,13 @@ declare -rgi __setargs___already________implemented=1
 
 # Ensuring version even if included already
 load_version "$dotfiles/scripts/version.sh" 0.0.0
-#load_version "$dotfiles/scripts/assert.sh" 0.0.0;
-#load_version "$dotfiles/scripts/boilerplate.sh" 0.0.0;
-#load_version "$dotfiles/scripts/cache.sh" 0.0.0;
-#load_version "$dotfiles/scripts/error_handling.sh" 0.0.0;
-#load_version "$dotfiles/scripts/git_utils.sh" 0.0.0;
-#load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0;
-#load_version "$dotfiles/scripts/setargs.sh" 0.0.0;
+#load_version "$dotfiles/scripts/assert.sh" 0.0.0
+#load_version "$dotfiles/scripts/boilerplate.sh" 0.0.0
+#load_version "$dotfiles/scripts/cache.sh" 0.0.0
+#load_version "$dotfiles/scripts/error_handling.sh" 0.0.0
+#load_version "$dotfiles/scripts/git_utils.sh" 0.0.0
+#load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0
+#load_version "$dotfiles/scripts/setargs.sh" 0.0.0
 load_version "$dotfiles/scripts/termcap.sh" 0.0.0
 load_version "$dotfiles/scripts/utils.sh" 0.0.0
 
@@ -174,7 +174,7 @@ set_args() {
       else
         # Data not preceeded by a dashed --name.
         # These are matched with whatever names left afterwards
-        #        errchou "Adding positional data [$a]";
+        #        errchou "Adding positional data [$a]"
         positional_data+=("$a")
         continue
       fi
@@ -272,8 +272,8 @@ set_args() {
 
     declare _setargs_helpstr="${runscript_path_coloured} ${text_blg}${FUNCNAME[1]#command_}${text_normal}"
     declare sed_expression=""
-    #    errchof "_setargs_helpstr start: $_setargs_helpstr";
-    #    errchof "funanem here: [${FUNCNAME[@]}]";
+    #    errchof "_setargs_helpstr start: $_setargs_helpstr"
+    #    errchof "funanem here: [${FUNCNAME[@]}]"
     # Append all available parameters and their values, colourized
     for p in "${available[@]}"; do
       declare name_format=""
@@ -427,6 +427,6 @@ set_args() {
   printf -v get_args '%s' "$eval_string"
 
   # TODO use this instead:
-  #get_args="${eval_string}";
+  #get_args="${eval_string}"
 
 }

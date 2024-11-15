@@ -10,8 +10,8 @@ fi
 _sourced_files["termcap"]=""
 
 declare -r user_colour=$'\x1b[38;2;255;144;192m'
-#declare -r user_colour=$'\x1b[38;2;255;170;102m';
-#declare -r user_colour=$'\x1b[38;2;0;128;255m';
+#declare -r user_colour=$'\x1b[38;2;255;170;102m'
+#declare -r user_colour=$'\x1b[38;2;0;128;255m'
 
 # TODO test this:
 #   ESC[ ... 38;2;<r>;<g>;<b> ... m   Select RGB foreground color
@@ -40,8 +40,8 @@ readonly text_nosubscript="$(tput rsubm)"
 readonly text_nounderline="$(tput rmul)"
 
 # Foreground Color
-#declare text_user=$'\x1b[38;2;240;192;144m';
-#declare text_user=$'\x1b[38;2;102;153;255m';
+#declare text_user=$'\x1b[38;2;240;192;144m'
+#declare text_user=$'\x1b[38;2;102;153;255m'
 #rgb(240, 192, 144)
 readonly text_blue="$(tput setaf 4)"
 readonly text_brightblack="$(tput setaf 8)"

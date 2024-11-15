@@ -102,11 +102,11 @@ test_may_fail_exit() {
 
       #      # ❕ Assignments do not survive errors
       #      # ⇒ Assignments are safe in normal code.
-      #      retvar=3;
-      #      declare declared_output1;
-      #      declared_output1="$(may_fail_dummy 1 "${input}")";
-      #      ok="$?";
-      #      assert_eq "$ok" "0" "${FUNCNAME[0]}: assignment overwrites capture return value";
+      #      retvar=3
+      #      declare declared_output1
+      #      declared_output1="$(may_fail_dummy 1 "${input}")"
+      #      ok="$?"
+      #      assert_eq "$ok" "0" "${FUNCNAME[0]}: assignment overwrites capture return value"
 
       # TODO Split the tests into thos for may_fail and thise for declaration
       #      stuff.
@@ -198,11 +198,11 @@ test_may_fail_options() {
     assert_eq "${-//[^e]/}" "e" "may_fail must restore -e"
 
     # At the moment we do not allow unsetting -e before may_fail.
-    # set +e;
-    # may_fail -- _may_fail_dummy 0 "Options";
-    # assert_eq "${-//[^e]/}" "" "may_fail must restore +e";
-    # may_fail -- _may_fail_dummy 1 "Options";
-    # assert_eq "${-//[^e]/}" "" "may_fail must restore +e";
+    # set +e
+    # may_fail -- _may_fail_dummy 0 "Options"
+    # assert_eq "${-//[^e]/}" "" "may_fail must restore +e"
+    # may_fail -- _may_fail_dummy 1 "Options"
+    # assert_eq "${-//[^e]/}" "" "may_fail must restore +e"
   )
 }
 

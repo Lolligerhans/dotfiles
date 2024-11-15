@@ -59,7 +59,7 @@ satisfy_version() {
     return 0
   fi
 
-  #errchol "Satisfying $1 🅅 $2 from ${BASH_SOURCE[1]}";
+  #errchol "Satisfying $1 🅅 $2 from ${BASH_SOURCE[1]}"
 
   if [[ -z "$expected_string" ]]; then
     augment_version expected_string "$file"
@@ -77,7 +77,7 @@ load_version() {
   if (($# < 1 || 2 < $#)); then
     abort "Expected 1 or 2 arguments, got $#"
   fi
-  #errchol "Loading $1 🅅 $2 from ${BASH_SOURCE[1]}";
+  #errchol "Loading $1 🅅 $2 from ${BASH_SOURCE[1]}"
   if satisfy_version "$@"; then
     # shellcheck disable=SC1090
     source "$1"
@@ -280,7 +280,7 @@ version_compare() {
     # Special case: no prerelease for at least one of them
     if ((min_len == 0)); then
       # Prereleases are smaller than just normal versions
-      #      _res_tmp_buf="$len_decider";
+      #      _res_tmp_buf="$len_decider"
       if ((is_longer)); then
         ((_debug_version)) && errchod "${FUNCNAME[0]}: One is a normal version. Prerelease is smaller than normal version" || :
         _res_tmp_buf="true"
@@ -512,9 +512,9 @@ version_satisfied() {
     # FIXME I dont think this would be correct, even if pre-releases were
     # allowed, because a smaller pre-release is still usntablel along that
     # pre-release dimension. ❗
-    #((_debug_version)) && errchod "${FUNCNAME[0]}: major-minor didnt resolve. Checking predicate '$predicate'" || :;
-    #"$predicate" res "_expected_" "_provided_";
-    #((_debug_version)) && errchod "${FUNCNAME[0]}: Predicate result is $res" || :;
+    #((_debug_version)) && errchod "${FUNCNAME[0]}: major-minor didnt resolve. Checking predicate '$predicate'" || :
+    #"$predicate" res "_expected_" "_provided_"
+    #((_debug_version)) && errchod "${FUNCNAME[0]}: Predicate result is $res" || :
   fi
 
   ((_debug_version)) && errchod "${FUNCNAME[0]}: expected version $(version_print "_expected_") $([[ "$res" == "true" ]] && echo -n "satisfies ✔" || echo -n "violates ✖") provided version $(version_print "_provided_")" || :
@@ -627,7 +627,7 @@ function augment_version() {
     abort "Use a valid version string"
   fi
 
-  declare -r regex='^(load|satisfy)_version "([^"]*)";$'
+  declare -r regex='^(load|satisfy)_version "([^"]*)"$'
 
   # Add version to call using the sed program with appropriate substitution
   # command.
@@ -636,9 +636,11 @@ function augment_version() {
     errchow "${FUNCNAME[0]}: Failed to show relevant lines"
   errchou "Files should generally be versioned."
 
-  if [[ "$(ask_user "Add current version $version_string automatically?")" == "true" ]]; then
+  declare choice
+  ask_user "Add current version $version_string automatically?" choice
+  if [[ "${choice}" == "true" ]]; then
     # FIXME Verify replacement and initial format
-    if sed --follow-symlinks -i -Ee "$((source_line))"'s/^(load|satisfy)_version "([^"]*)";$/\1_version "\2" "'"$version_string"'";/' "$source_file"; then
+    if sed --follow-symlinks -i -Ee "$((source_line))"'s/^(load|satisfy)_version "([^"]*)"$/\1_version "\2" "'"$version_string"'";/' "$source_file"; then
       errchon "To $text_dim$source_file:$source_line ${FUNCNAME[file_idx]}()$text_normal added version string $text_user$version_string$text_normal for $text_user_soft$versioned_file$text_normal"
     else
       errchof "We have no backup for this operation"
@@ -668,7 +670,7 @@ show_file_lines() {
 
 #((_version_log_loads)) && {
 # Since this is is printed no matter the command we stick to stderr
-#  errchoi "Versioning available";
+#  errchoi "Versioning available"
 #}
 if ((_run_config["versioning"] == 0)); then
   errchow "Boilerplate: Versions not checked"

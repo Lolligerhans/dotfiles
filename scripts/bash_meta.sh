@@ -23,8 +23,8 @@ _sourced_files["$tag"]=""
 # │ 🗀 Dependencies       │
 # ╰──────────────────────╯
 load_version "$dotfiles/scripts/version.sh" "0.0.0"
-#load_version "$dotfiles/scripts/setargs.sh";
-#load_version "$dotfiles/scripts/termcap.sh";
+#load_version "$dotfiles/scripts/setargs.sh"
+#load_version "$dotfiles/scripts/termcap.sh"
 load_version "$dotfiles/scripts/userinteracts.sh" "0.0.0"
 load_version "$dotfiles/scripts/utils.sh" "0.0.0"
 # ╭──────────────────────╮
@@ -57,11 +57,11 @@ may_fail() {
   # disregard of the actual flag:
   #
   #     set -euETo pipefail; # nice try!
-  #     shopt -s inherit_errexit;
-  #     cd /;
+  #     shopt -s inherit_errexit
+  #     cd /
   #     install_program()
   #     {
-  #       mkdir a || true;
+  #       mkdir a || true
   #       set -e; ❔
   #       cd /temp; # ❕ typo, no cd happens. set -e is ignored within ||
   #       rm -rf *; # ⚠️
@@ -73,7 +73,7 @@ may_fail() {
   # interaction with the parent process.
   #
   # An alternative would be to use:
-  #     declare dummy="$( "$@" )";
+  #     declare dummy="$( "$@" )"
   # That way the return value is lost, but we must not worry about any flags:
   # The declaration counts as last command (so this line returns 0 regardless
   # failures of $@). However, we might not like storing stdout in a variable and
@@ -95,7 +95,7 @@ may_fail() {
   if [[ "$-" != *e* ]]; then
     abort "Expected 'set -e'"
   fi
-  # errchol "☐ $(print_values "${FUNCNAME[0]}" "$@")";
+  # errchol "☐ $(print_values "${FUNCNAME[0]}" "$@")"
   declare -i _mf_result_834u92834 # Avoid name collisions
 
   # Disable errexit and ERR trap before execution and re-enable afterwards
@@ -116,9 +116,9 @@ may_fail() {
   eval "$err_trap"
 
   # if (( _mf_result_834u92834 == 0 )); then
-  #   errchol "☑ $(print_values "${FUNCNAME[0]}" "$@")";
+  #   errchol "☑ $(print_values "${FUNCNAME[0]}" "$@")"
   # else
-  #   errchol "☒ $(print_values "${FUNCNAME[0]}" "$@")";
+  #   errchol "☒ $(print_values "${FUNCNAME[0]}" "$@")"
   # fi
   if [[ -n "$ret_name" ]]; then
     declare -n -- _mf_ret_777734234="${ret_name}"

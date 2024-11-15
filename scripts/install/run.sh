@@ -284,10 +284,10 @@ command_show_manual()
 command_install_nala_legacy()
 {
   errchof "I think nala legacy build was broken last time I tried";
-  if ! test_user "Continue?"; then abort "Aborted by user"; fi
+  if ! [[ "$(ask_user "Continue?")" == "true" ]]; then abort "Aborted by user"; fi
 
   declare -r base_dir=~"/github";
-  dealare -r nala_dir="$base_dir/nala";
+  declare -r nala_dir="$base_dir/nala";
   if [[ -d ~/github/nala ]]; then abort "Directory $nala_dir already exists"; fi
 
   # Install nala from source as legacy support for Ubuntu 20
@@ -320,7 +320,7 @@ command_install_missing_term_readkey()
   # Fix git warning missing term::readkey for interactive add
   errchol "${FUNCNAME[0]}: Trying to fix missing Term::ReadKey";
   apt-cache search term.*readkey;
-  if [[ "$confirm" == "true" ]] || test_user "Install libterm-readkey-perl?"; then
+  if [[ "$confirm" == "true" ]] || [[ "$(ask_user "Install libterm-readkey-perl?")" == "true" ]]; then
     sudo apt install libterm-readkey-perl;
   else
     errchol "${FUNCNAME[0]}: declined";

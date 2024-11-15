@@ -2,13 +2,8 @@
 
 # version 0.0.0
 
+# Copied stuff from online. DO not care to shellcheck until we write our own.
 # shellcheck disable=all
-
-declare -r tag="git_utils";
-if [[ -v _sourced_files["$tag"] ]]; then return 0; fi
-_sourced_files["$tag"]="";
-
-# Test implementation for terminal colours
 
 true_colour_test()
 {

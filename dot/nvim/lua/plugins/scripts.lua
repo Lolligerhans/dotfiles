@@ -102,7 +102,7 @@ return
     let l:oldPatternType = getregtype('/')
     call setreg('/', l:jumpPattern, 'v')
      exec 'normal! '.l:jumpcmd
-     normal! zz
+     normal! zt
     call setreg('/', l:oldPattern, l:oldPatternType)
   endfunction
 ]]),

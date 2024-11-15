@@ -39,33 +39,32 @@ ensure_directory()
 
 ensure_file()
 {
-  if [ "$#" -ne "1" ]; then
-    echo "Wrong usage";
-    return 1;
-  fi
-
-  if [ ! -f "$1" ]; then
-    echo "Creating file [$1]";
+  if [[ ! -f "${1:?Missing filename}" ]]; then
+    echo "Creating file $text_di$1";
     touch "$1";
-    return "$?";
   fi
 }
 
-# Create or truncate file $1 anywhere within /tmp/... Outputs full path.
+# Create or truncate file $1 at a fixed location below /tmp/
+# Outputs full path.
 create_truncate_tmp()
 {
+  declare -r dir="/tmp/dotfiles_tmp/";
   if (( $# != 1 )); then
     errcho "Expected 1 argument, got $#";
     abort "Wrong usage";
   fi
-  >/dev/null ensure_directory "/tmp/ctt";
-  declare -r full_path="/tmp/ctt/$1";
+  if [[ "${1:?Expected filename}" != +([[:word:]]) ]]; then
+    abort "Only simple characters allowed: $1";
+  fi
+  >/dev/null ensure_directory "$dir";
+  declare -r full_path="$dir/$1";
   if [[ ! -f "$full_path" ]]; then
     touch "$full_path";
   else
     truncate -s 0 "$full_path";
   fi
-#  echoi "$FUNCNAME: full_path=$full_path";
+  # echoi "${FUNCNAME[0]}: full_path=$full_path";
   printf "%s" "$full_path";
   return 0;
 }
@@ -76,7 +75,7 @@ create_truncate_tmp()
 parent_dir_of()
 {
   if (($# != 1)); then
-    abort "$FUNCNAME: Expected 1 argument, got $#";
+    abort "${FUNCNAME[0]}: Expected 1 argument, got $#";
   fi
   declare parent_dir;
   parent_dir="$(dirname -- "$(realpath -- "$1")")";
@@ -178,7 +177,7 @@ test_checksum()
   echou "Deprecated use of test_checksum. Use checksum_verify_sha256 instead. Use verify_checksum insteadd";
 
   if (("$#" != 2)); then
-    abort "$FUNCNAME: usage: 'checksum $file $checksum'";
+    abort "${FUNCNAME[0]}: usage: 'checksum $file $checksum'";
   fi
 
   # TODO For now, require set -e. if we have a good reason remove later.
@@ -195,5 +194,27 @@ test_checksum()
   else
     errchoe "Checksum failed for $text_dim$1$text_normal";
     return 1;
+  fi
+}
+
+# Print full path of file $1. Resolve symlinks.
+# Outputs path.
+canonicalize_path()
+{
+  realpath -e "${1:?Missing path}";
+}
+
+# Check if paths $1 and $2 describe the same location. Resolving symlinks and
+# relative links. Cannot understand matching hardlinks.
+# Output "true" or "false".
+is_same_location()
+{
+  declare p1 p2;
+  p1="$(canonicalize_path "${1:?Missing path}")";
+  p2="$(canonicalize_path "${2:?Missing path}")";
+  if [[ "${p1}" == "${p2}" ]]; then
+    printf -- "true";
+  else
+    printf -- "false";
   fi
 }

@@ -15,7 +15,7 @@ _sourced_files["dot_utils"]="";
 # TODO Remove the versioning from termcap.sh since we cant use is properly (?)
 source "$dotfiles/scripts/termcap.sh";
 
-# Outputs lowest (closes) BASH_SOURCE entry index NOT identical to the one of
+# Outputs lowest (closest) BASH_SOURCE entry index NOT identical to the one of
 # the caller to this function. If none is found, output -1.
 # ($1  (out)  If given, variable to write result to instead of stdout)
 bash_source_foreign_idx()
@@ -42,33 +42,38 @@ common_prefix()
   printf "%s\n" "$@" | sed -e '$!{N;s/^\(.*\).*\n\1.*$/\1\n\1/;D;}';
 }
 
+# Compares strings using by $(sort -Vs), sorting (version) numbers within
+# strings by their value ("less-than-or-equal").
 # $1:      should
 # $2:      is
+# Outputs "true" if $1 <= $2, else "false"
 # Return:  0 if 'should' <= 'is' using sort -V, else 1
-# TODO Currently not in use.
-# TODO Confusing name: smae name as another command + confused with verion.sh
-#      functions
-test_version()
+compare_string_lte_version()
 {
-  if (("$#" != 2)); then abort "$FUNCNAME: Wrong usage:" "$@"; fi
-#  set_args "--should= --is=" "$@";
-#  eval "$get_args;
+  if (("$#" != 2)); then abort "${FUNCNAME[0]}: Wrong usage:" "$@"; fi
   declare -r should="$1";
   declare -r is="$2";
   declare -r smallest="$(sort -Vs <<< "$is"$'\n'"$should" | head -1)";
   if [[ "$smallest" == "$should" ]]; then
-    return 0;
+    printf -- "true";
   else
-    errchoe "Version too small: should $text_dim$should$text_normal, is $text_dim$is$text_normal";
-    return 1;
+    printf -- "false";
   fi
 }
 
-# date -Isecodns with replace ":" with "-" to use in filenames.
-# Character : works in normal directories, but not in /media on my stick.
+# Outputs the date in a filename friendly format, replacing ":" with "-". The
+# colon is not available on some filesystems. The output pattern-matches with
+# a length of 25:
+#     +([[:digit:]T+-])
+# Example:
+#     2024-12-31T23-59-59+11-59
+# Interface:
+#   - stdout: output
 date_nocolon()
 {
-  printf "%s" "$(date -Iseconds | tr ':' '-')";
+  declare -r data_str;
+  date_str="$(command date -Iseconds)";
+  printf -- "%s" "${date_str//":"/"-"}";
 }
 
 # $1 Name
@@ -114,16 +119,54 @@ print_array()
   return 0;
 }
 
-# Remove ANSI escape sequences from $1
-remove_ansi_escape()
+# Remove color escape sequences from string
+# - $1: input string
+# - stdout: string with escape sequences removed
+remove_ansi_escapes()
 {
   if ! shopt -p extglob > /dev/null; then
     abort "extglob required";
   fi
-  printf "%s" "${1//$'\e['*([0-9;])m/}";
-  # Alternative:
-  #sed -e 's/\x1b\[[0-9;]*m//g' <<< "$1";
-  return 0;
+
+  if (( $# != 1 )); then
+    abort "Requires 1 argument";
+  fi
+
+  declare -r escape=$'\e';
+  # We regex for the general "escape sequence" format
+  #     ESC general_intermediateBytes general_finalByte
+  # - https://en.wikipedia.org/wiki/ISO/IEC_2022
+  # - https://www.ecma-international.org/wp-content/uploads/ECMA-35_6th_edition_december_1994.pdf
+  declare -r general_intermediateByte=$'[\x20-\x2f]';
+  declare -r general_intermediateBytes="*($general_intermediateByte)";
+  declare -r general_finalByte=$'[\x30-\x7e]';
+  # We further regex for the ANSI color code format:
+  #     CSI color_parameterBytes color_intermediateBytes color_finalByte
+  # where CSI follows the general format by choosing zero intermediate bytes:
+  #     ESC [
+  # - https://en.wikipedia.org/wiki/ANSI_escape_code#cite_note-ECMA-48-5
+  # - ISO 6429
+  declare -r controlSequenceIntroducer=$'\e'"\[";
+  declare -r color_parameterByte=$'[\x30-\x3f]'; # 0–9:;<=>?
+  declare -r color_parameterBytes="*($color_parameterByte)";
+  declare -r color_intermediateByte=$'[\x20-\x2f]'; # !"#$%&'()*+,-./
+  declare -r color_intermediateBytes="*($color_intermediateByte)";
+  declare -r color_finalByte=$'[\x40-\x7e]'; # @A–Z[\]^_`a–z{|}~
+
+  declare cleaned;
+
+  # HACK: Combined pattern removing ansi colors and other escape sequences.
+  #       Happends to work for some cases but do not rely on it.
+  # printf -- "%s" "${1//${escape}?(\[)${color_parameterBytes}${color_intermediateBytes}${color_finalByte}/}"
+
+  # Color
+  # ESC[ [param...] [intermediate...] final
+  printf -v cleaned -- "%s" "${1//${controlSequenceIntroducer}${color_parameterBytes}${color_intermediateBytes}${color_finalByte}/}"
+
+  # General
+  # ESC [intermadiate...] final
+  >&2 show_variable cleaned;
+  printf -- "%s" "${cleaned//${escape}${general_intermediateBytes}${general_finalByte}/}"
 }
 
 # Symlink a dotfile stored in the dotfiles directory to some location
@@ -196,6 +239,8 @@ errchot() { >&2 echot "$@"; };
 errchou() { >&2 echou "$@"; };
 errchow() { >&2 echow "$@"; };
 
+echoL() { echol "$text_brightblack$(date -Iseconds) $text_lightblue${FUNCNAME[1]} ${text_dim}${BASH_LINENO[0]}$text_normal" "$@"; }
+
 function print_and_execute()
 {
   if [ "$#" -lt 1 ]; then
@@ -230,4 +275,56 @@ repeat_string()
     printf -- "%s" "${res}";
   fi
   return 0;
+}
+
+# Convert string into array of characters
+# - $1: output array variable
+# - $2: input string
+# Example:
+#     "abc" → ("a" "b" "c")
+string_to_array()
+{
+  declare -n _out_starr_57482391="${1:?Missing poutput variable}";
+  declare -r string="${2:?}";
+
+  # echoi "${@@A}"
+  # show_variable string;
+
+  if (( ${#_out_starr_57482391[@]} != 0 )); then
+    abort "Expecting empty output array";
+  fi
+
+  declare -i i;
+  for ((i=0; i < ${#string}; i++)); do
+    _out_starr_57482391+=("${string:i:1}");
+  done
+  # show_variable _out_starr_57482391
+}
+
+# Convert array of 1-character strings to array of ASCII values (as decimal
+# string). The input array must contain only single-letter ascii strings. Use
+# with string_to_array to convert strings their ASCII values.
+# - $1: output array variable
+# - $2: input array variable
+# Example:
+#     ("A" "B" "C") → ("65" "66" "67")
+array_to_ascii() {
+  declare -n _out_stasc_57482391="${1:?Missing poutput variable}";
+  declare -n _in_stasc_457932480394="${2:?Missing input variable}";
+  declare -i in_len="${#_in_stasc_457932480394[@]}";
+
+  echoi "${@@A}";
+
+  if (( ${#_out_stasc_57482391[@]} != 0 )); then
+    abort "Expecting empty output array ${_out_stasc_57482391[*]@A}";
+  fi
+  if (( in_len == 0 )); then
+    # Our printf-mapfile construction cannot handle this case
+    return 0;
+  fi
+
+  declare serialized;
+  printf -v serialized -- "%d\t" "${_in_stasc_457932480394[@]/#/\"}"
+  # serialized=$'65\t66\t67\t'
+  read -ra _out_stasc_57482391 <<< "${serialized}";
 }

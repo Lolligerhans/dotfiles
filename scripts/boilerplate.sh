@@ -83,6 +83,10 @@ _run_config=(
   # desired. Setting to 1 turns off framing (only shows error message).
   ["error_frames"]=2 # [1,inf)
 
+  # In error handling, hide some boilerplate commands and functions.  Oneline is
+  # a compromise to not hide the fact that the calls exists.
+  ["error_skipnoise"]=2 # 0/1/2 for show/oneline/skip
+ 
   # Verify file versions when using 'load_version' and 'satisfy_version'. If
   # turned off, versions are assumed-ok always. Turn off to save on computation.
   ["versioning"]=0

@@ -211,7 +211,7 @@ git_rebase_ifneeded()
     errchok "Done: Rebasing $branch on master";
     git --no-pager s; echo; # Use our git aliases to display recent commits
     # FIXME Use boolean_prompt instead
-    if [[ "$yes" == "true" ]] || test_user "Force-push rebase?"; then
+    if [[ "$yes" == "true" ]] || [[ "$(ask_user "Force-push rebase?")" == "true" ]]; then
       git push --force;
       errchok "Force-pushed rebase";
     fi

@@ -50,7 +50,7 @@ test_may_fail_allow_success()
     )
     re=$?
     set -e
-    assert_eq "0" "$re" "${FUNCNAME}: Returning 0 must succeed in may_fail";
+    assert_eq "0" "$re" "${FUNCNAME[0]}: Returning 0 must succeed in may_fail";
   );
 }
 
@@ -68,7 +68,7 @@ test_may_fail_allow_failure()
     )
     re="$?";
     set -e;
-    assert_eq "0" "$re" "${FUNCNAME}: Returning 1 must succeed in may_fail";
+    assert_eq "0" "$re" "${FUNCNAME[0]}: Returning 1 must succeed in may_fail";
   );
 }
 
@@ -89,7 +89,7 @@ test_may_fail_exit()
       declare ok;
 
       output="$(may_fail retvar -- may_fail_dummy 0 "${input}")";
-      assert_eq "$output" "$input" "${FUNCNAME}: normal execution w/o failure";
+      assert_eq "$output" "$input" "${FUNCNAME[0]}: normal execution w/o failure";
 
       output="non_empty";
       output="$(may_fail retvar -- may_fail_dummy 1 "${input}")";
@@ -111,7 +111,7 @@ test_may_fail_exit()
 #      declare declared_output1;
 #      declared_output1="$(may_fail_dummy 1 "${input}")";
 #      ok="$?";
-#      assert_eq "$ok" "0" "${FUNCNAME}: assignment overwrites capture return value";
+#      assert_eq "$ok" "0" "${FUNCNAME[0]}: assignment overwrites capture return value";
 
       # TODO Split the tests into thos for may_fail and thise for declaration
       #      stuff.
@@ -127,16 +127,16 @@ test_may_fail_exit()
       assert_eq "$ok" "0" "declaration overshadows return value";
       assert_eq "${declared_output4}" "hi" "allows earlier output to be assigned";
 
-      assert_eq "20" "$_may_fail_test_skipper" "${FUNCNAME}: may_fail_dummy is in a subshell and cannot set variables";
+      assert_eq "20" "$_may_fail_test_skipper" "${FUNCNAME[0]}: may_fail_dummy is in a subshell and cannot set variables";
       _may_fail_test_skipper=21;
     );
     re="$?"
-    assert_eq "0" "$re" "${FUNCNAME}: may_fail must preserve -e";
-    assert_eq "41" "$_may_fail_test_skipper" "${FUNCNAME}: Subshells should preserve variables";
+    assert_eq "0" "$re" "${FUNCNAME[0]}: may_fail must preserve -e";
+    assert_eq "41" "$_may_fail_test_skipper" "${FUNCNAME[0]}: Subshells should preserve variables";
   );
 
   # Sanity check that the test is implementet correctly
-  assert_eq "42" "$_may_fail_test_skipper" "${FUNCNAME}: global variable should not change from subshell";
+  assert_eq "42" "$_may_fail_test_skipper" "${FUNCNAME[0]}: global variable should not change from subshell";
 }
 
 test_may_fail_normal_exit()
@@ -166,12 +166,12 @@ test_may_fail_normal_exit()
     ); # Should fail
     re="$?"
     set -e;
-    assert_eq "1" "$re" "${FUNCNAME}: lacking may_fail should NOT preserve -e";
-    assert_eq "41" "$_may_fail_test_skipper" "${FUNCNAME}: Subshells should preserve variables";
+    assert_eq "1" "$re" "${FUNCNAME[0]}: lacking may_fail should NOT preserve -e";
+    assert_eq "41" "$_may_fail_test_skipper" "${FUNCNAME[0]}: Subshells should preserve variables";
   );
 
   # Sanity check that the test is implementet correctly
-  assert_eq "42" "$_may_fail_test_skipper" "${FUNCNAME}: global variable should not change from subshell";
+  assert_eq "42" "$_may_fail_test_skipper" "${FUNCNAME[0]}: global variable should not change from subshell";
 }
 
 test_may_fail_return()
@@ -197,15 +197,28 @@ test_may_fail_options()
     trap - ERR;
     set -e;
 
-    &>/dev/null may_fail -- _may_fail_dummy 0 "Options";
+    may_fail -- _may_fail_dummy 0 "Options";
     assert_eq "${-//[^e]/}" "e" "may_fail must restore -e";
-    &>/dev/null may_fail -- _may_fail_dummy 1 "Options";
+    may_fail -- _may_fail_dummy 1 "Options";
     assert_eq "${-//[^e]/}" "e" "may_fail must restore -e";
 
-    set +e;
-    &>/dev/null may_fail -- _may_fail_dummy 0 "Options";
-    assert_eq "${-//[^e]/}" "" "may_fail must restore +e";
-    &>/dev/null may_fail -- _may_fail_dummy 1 "Options";
-    assert_eq "${-//[^e]/}" "" "may_fail must restore +e";
+    # At the moment we do not allow unsetting -e before may_fail.
+    # set +e;
+    # may_fail -- _may_fail_dummy 0 "Options";
+    # assert_eq "${-//[^e]/}" "" "may_fail must restore +e";
+    # may_fail -- _may_fail_dummy 1 "Options";
+    # assert_eq "${-//[^e]/}" "" "may_fail must restore +e";
   );
+}
+
+test_may_fail_errexit() {
+  (
+    declare -i ret;
+    trap - ERR;
+    set +e;
+    ( may_fail -- echo "hi";);
+    ret="$?";
+    set -e;
+    assert_eq "$ret" "1" "may_fail must not allow +e in the caller";
+  )
 }

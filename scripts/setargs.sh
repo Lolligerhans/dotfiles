@@ -63,16 +63,16 @@ set_args()
 
   # Augment special parameters:
   #   • --autocomplte   For bash completion
-  #   • --help          To echo the (augmented) parameter string for usage
-  #                     info
-  declare param_string="${1:?set_args: Missing parameter string} --autocomplete";
+  #   • --help          To echo the (augmented) parameter string for usage info
+  declare param_string="${1:?set_args: Missing parameter string}";
+  ((_setargs_debug)) && errchod "Setargs param_string: [$param_string]";
   declare IFS=" ";
   declare args="${*:2}";
   IFS=$'\n\t';
   ((_setargs_debug)) && errchod "IFS=[$IFS]";
   declare -a params;
   mapfile -t params <<< "${param_string//+( )/$'\n'}";
-  ((_setargs_debug)) && errchod "Setargs param_string: [$param_string]";
+  params+=("--autocomplete");
   declare -i allow_leftover_argv=0;
 
   # Categorization for all names (set by param and arg loop)
@@ -202,7 +202,7 @@ set_args()
         : || errchof "Sanity check: $name is optional";
       else
         ((_setargs_debug)) && errchod "$(print_values available "${available[@]}")" || :;
-        abort "Argument $text_user${name}$text_normal is unavailable";
+        abort "Argument $text_user${name}$text_normal is unavailable in ${FUNCNAME[1]}";
       fi
 
       if [[ ! "$a" =~ "=" ]]; then
@@ -274,8 +274,8 @@ set_args()
 
     declare _setargs_helpstr="${runscript_path_coloured} ${text_blg}${FUNCNAME[1]#command_}${text_normal}";
     declare sed_expression="";
-#    errchof "_setargs_helpstr start: $_setargs_helpstr";
-#    errchof "funanem here: [${FUNCNAME[@]}]";
+    #    errchof "_setargs_helpstr start: $_setargs_helpstr";
+    #    errchof "funanem here: [${FUNCNAME[@]}]";
     # Append all available parameters and their values, colourized
     for p in "${available[@]}"; do
       declare name_format="";
@@ -339,7 +339,10 @@ set_args()
     declare -r command_name="${FUNCNAME[1]#command_}";
     sed_expression+=";s/\\([^-]\\)\\(\\b${command_name}\\b\\)/\1${text_blg}\\2${text_normal}/g"; # Make command name green
 
-    sed_expression+=";s/^\\(\\s*\\)\\([_A-Z]\\{2,\\}\\)/\\1${text_underline}\\2${text_nounderline}/g"; # Underline SECTION TITLES at start of line
+    # Underline SECTION TITLES at start of line
+    sed_expression+=";s/^\\(\\s*\\)\\([_A-Z]\\{2,\\}\\)/\\1${text_underline}\\2${text_nounderline}/g";
+    # Treat the last # per line as starting comments
+    sed_expression+=";s/\\(#[^#]*\\)\$/${text_comment}\\1${text_normal}/g";
     # TODO The help info line is output separately from the help_string
     #      variable, so we cannot page them together. But we want to.
     echoi "$_setargs_helpstr"; # TODO is it better to print this on stdout? Currently that would interfere with eval mode
@@ -356,11 +359,11 @@ set_args()
   if [[ -v provided["--autocomplete"] ]]; then
     errchoe "set_args: --autocomplete is meant only for autocompletion script use";
     ((_setargs_debug)) && errchod "set_args: Exit to provide --autocomplete: $(print_values available "${available[@]}")" || :;
-    printf "%s" "${available[*]}";
+    # show_variable available
+    # We inserted --autocomplete as last parameter, so we hide it here
+    printf "%s" "${available[*]::${#available[@]}-1}";
+    # TODO: Alternatively set get_args to "return 0;" and continue normally.
     exit 0;
-    # FIXME Using exit here is sorf of iffy if this ever triggers from
-    # not-top-level calls: It might break out of multipel nested subcommands.
-    # It is fine for the intended use in autocompelte.
   fi
 
   # When --help is provided, print message instead of aborting after some mistakes

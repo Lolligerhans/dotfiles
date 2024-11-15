@@ -3,90 +3,65 @@
 # │ 🅅 ersion             │
 # ╰──────────────────────╯
 # version 0.0.0
+
 # ╭──────────────────────╮
 # │ 🛈 Info               │
 # ╰──────────────────────╯
-# TODO rename to test_functions.sh
-# These commands belong to scripts/tests/run.sh. Do not source this file
-# anywhere else - there are no include guards. The same goes for the other files
-#     ./*_test.sh
 
-# Functions that wrap easy functional tests are named test_*.
-# Those that are not as easily automated are named command_*, to be called
-# manually by the user of the test runscript.
+# This file belong to scripts/tests/run.sh. Do not source this file anywhere
+# else - there are no include guards. The same goes for the files
+#     ./unit_tests/*_test.sh
+
+# Naming convention:
+#   - Test files: ${name}_test.sh
+#   - Test collector functions: ${name}_test
+#   - Unit tests functions: test_${any}
+# Examples:
+#     setargs_test.sh   # Test file matching the name of setargs.sh
+#     setargs_test()    # "Exported" test function with matching name the name
+#     test_setargs_1()  # Local helper with any name
+
 # ╭──────────────────────╮
 # │ 🗀 Dependencies       │
 # ╰──────────────────────╯
+
 load_version "$dotfiles/scripts/assert.sh" 0.0.0;
 
-# Sourcing unit test routines that are too long to fit here
-load_version setargs_test.sh 0.0.0;
-load_version colour_test.sh 0.0.0;
-load_version version_test.sh 0.0.0;
-load_version userinteracts_test.sh 0.0.0;
-load_version may_fail_test.sh 0.0.0;
-
-# Ensuring version even if included already
+# Load all our scripts to ensure they are working together
 load_version "$dotfiles/scripts/version.sh" 0.0.0;
 load_version "$dotfiles/scripts/bash_meta.sh" "0.0.0";
-#load_version "$dotfiles/scripts/boilerplate.sh" 0.0.0;
-#load_version "$dotfiles/scripts/cache.sh" 0.0.0;
-#load_version "$dotfiles/scripts/error_handling.sh" 0.0.0;
+load_version "$dotfiles/scripts/boilerplate.sh" 0.0.0;
+load_version "$dotfiles/scripts/cache.sh" 0.0.0;
+load_version "$dotfiles/scripts/error_handling.sh" 0.0.0;
 load_version "$dotfiles/scripts/fileinteracts.sh" 0.0.0;
-#load_version "$dotfiles/scripts/git_utils.sh" 0.0.0;
-#load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0;
+load_version "$dotfiles/scripts/git_utils.sh" 0.0.0;
+load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0;
 load_version "$dotfiles/scripts/setargs.sh" 0.0.0;
 load_version "$dotfiles/scripts/termcap.sh" 0.0.0;
 load_version "$dotfiles/scripts/utils.sh" 0.0.0;
 
+# Define functions *_test()
+load_version "$parent_path/unit_tests/assert_test.sh" 0.0.0;
+load_version "$parent_path/unit_tests/bash_meta_test.sh" 0.0.0;
+load_version "$parent_path/unit_tests/boilerplate_test.sh" 0.0.0;
+load_version "$parent_path/unit_tests/colour_test.sh" 0.0.0;
+load_version "$parent_path/unit_tests/fail_test.sh" 0.0.0;
+load_version "$parent_path/unit_tests/fileinteracts_test.sh" 0.0.0;
+load_version "$parent_path/unit_tests/may_fail_test.sh" 0.0.0;
+load_version "$parent_path/unit_tests/setargs_test.sh" 0.0.0;
+load_version "$parent_path/unit_tests/userinteracts_test.sh" 0.0.0;
+load_version "$parent_path/unit_tests/utils_test.sh" 0.0.0;
+load_version "$parent_path/unit_tests/version_test.sh" 0.0.0;
+
 # TODO Does not have much effect
-# TODO Helper function that can silence and un-silence things.
-# TODO Wrapper that calls tests silently, then echos ok, or repeats loudly if
+# TODO Helper function that can silence and un-mute things.
+# TODO Wrapper that calls tests silently, then echos OK, or repeats loudly if
 #      they fail.
 declare -gri loud_tests=0;
 
 # ┌────────────────────────┐
 # │ Commands               │
 # └────────────────────────┘
-
-#shellcheck disable=2116
-test_bash_meta()
-{
-  declare out="";
-  out="$(run_silent 1 'echo' 'hello silence')";
-  assert_eq "$out" "" "No stdout when silenced";
-
-  # shellcheck disable=SC2317
-  _ctbm_out_err() { 1>&2 echo "hello silence"; }
-  out="";
-  out="$(2>&1 run_silent 1 '_ctbm_out_err')";
-  assert_eq "$out" "hello silence" "Allowing stderr despite silence";
-  unset _ctbm_out_err;
-
-  out="";
-  out="$(echo "still working")";
-  assert_eq "$out" "still working" "fd unchanged";
-  out="$( 2>&1 echo "hello silence"; )";
-  assert_eq "$out" "hello silence" "fd unchanged";
-
-  if [[ "$-" != *e* ]]; then
-    errchow "$FUNANAME: We need errexit";
-  fi
-}
-
-test_boilerplate()
-{
-  # We cannot test whether all files keep these settings intact. But we can
-  # verify that they come out of boilerplate.sh correctly.
-  declare opt;
-  for opt in e u E T; do # -h is not crucial
-    assert_match "$-" "*${opt}*" "We need option ${opt}";
-  done
-  # shellcheck disable=SC2043
-  for opt in "inherit_errexit"; do
-    assert_eq "$(shopt -p "${opt}")" "shopt -s ${opt}" "We need shopt ${opt}";
-  done
-}
 
 # Tests the availability (not function) of expected binaries etc.
 test_environment()
@@ -110,11 +85,11 @@ test_init_standalone()
   declare -r show=0;
   rm -fr "$fake_project_dir";
   >/dev/null ensure_directory "$fake_project_dir";
-  &>/dev/null subcommand rundir "$dotfiles" init_runscript --standalone --path="$fake_project_dir";
+  &>/dev/null subcommand rundir "$dotfiles" init_runscript --standalone --path="$fake_project_dir" --yes;
   ((show)) && tree "$fake_project_dir";
   # Test if initialized can be used. We answer yes/no to augmenting missing
   # versions so both cases are tested. If we need more input add accordingl.y
-  if ((! loud_tests)) || test_user "Test instantiated standalone dotfiles?"; then
+  if ((! loud_tests)) || [[ "$(ask_user "Test instantiated standalone dotfiles?")" == "true" ]]; then
     &>/dev/null DOTFILES="$fake_project_dir/dotfiles_copy" "$fake_project_dir/run.sh" help <<< "ynynynynynynynynyn";
   else
     errchos "Not testing standalone export";
@@ -130,6 +105,7 @@ test_may_fail()
   test_may_fail_normal_exit;
   test_may_fail_return;
   test_may_fail_options;
+  test_may_fail_errexit;
 }
 
 test_version()
@@ -145,7 +121,7 @@ test_version()
 # shellcheck disable=SC2178
 # TODO Move the shel check to a separate bash script and just invoke it from the
 # runscript.
-command_shell_check()
+shell_check_test()
 {
   set_args "--no-pager --help --" "$@";
   eval "$get_args";
@@ -159,7 +135,7 @@ command_shell_check()
   fi
   ls --color=auto -FhA -- "${files[@]}";
   declare -i ret errors;
-  if ! shellcheck -e SC2128,2154,2034 \
+  if ! shellcheck \
       --color=always \
       -x "${files[@]}" > shellcheck.txt 2>&1; then
     ret=0;
@@ -174,7 +150,7 @@ command_shell_check()
     if [[ "$no_pager" == "false" ]]; then batcat shellcheck.txt || :; fi
   fi
   if (( ret == 0 )); then
-    errchow "ShellCheck ⛔ ${errors} problem(s)";
+    echow "ShellCheck ⛔ ${errors} problem(s)";
   else
     echok "ShellCheck ✅ ${#files[@]} file(s)";
   fi
@@ -184,38 +160,6 @@ command_shell_check()
 test_userinteractions()
 {
   test_user_prompts;
-}
-
-test_setargs_all()
-{
-#  echol "$FUNCNAME";
-  if [[ ! -v _run_config["declare_optionals"] ]]; then
-    abort "${FUNCNAME[0]}: expected _run_config[\"declare_optionals\"] to be set";
-  fi
-  # We wrote most tests when the declare_optionals config didnt exist.
-  # Temporarily disable the feature.
-  declare -r old_optionals="${_run_config["declare_optionals"]}";
-  _run_config["declare_optionals"]=0;
-
-  # TODO Increase when adding new tests
-  # TODO Determine automatically
-  declare -i max=27
-  declare -i t
-  declare f;
-
-  #"test_setargs_$max"
-#  exit $?
-
-  # GO backwards so we can more easily test the newest test when adding some
-  for (( t=max; t >= 1; --t )); do
-  #for (( t=1; t <= $max; ++t )); do
-    f="test_setargs_${t}"
-    "$f"
-#    1>/dev/null "$f"
-  done
-  _run_config["declare_optionals"]="$old_optionals";
-
-  echok "${FUNCNAME[0]}";
 }
 
 runscript_init_test()
@@ -282,7 +226,7 @@ deploy_test()
 # Terminal capabilities
 # http://www.linuxcommand.org/lc3_adv_tput.php
 # shellcheck disable=all
-command_colour_test()
+colour_test()
 {
   #for (( i = 0; i < 256; i++ )); do echo -n "$(tput setaf $i)This is ($i) $(tput sgr0)	"; done
 

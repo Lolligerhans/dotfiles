@@ -19,7 +19,7 @@ o.laststatus = 3
 o.number = true
 o.relativenumber = true;
 
-o.showbreak = "↪ ";
+o.showbreak = "↪";
 o.wrap = true;                               -- wrap long lines
 o.breakindent = true;                        -- indent wrapped lines
 o.breakindentopt = "min:20,shift:8,list:-1"; -- default ""
@@ -72,7 +72,7 @@ o.makeprg = "./run.sh build"
 
 -- vim.opt.foldmethid = "indent" -- not sure we want this
 o.foldenable = true
-o.foldlevelstart = 0
+o.foldlevelstart = 99
 
 o.splitright = true
 o.splitbelow = true

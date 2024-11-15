@@ -35,7 +35,7 @@ test_version_sensitivity()
   declare -a out;
   for inp in "${legal_versions[@]}"; do
     version_read "$inp" out;
-    >/dev/null assert_not_eq "$out" "false" "Version $inp is valid";
+    >/dev/null assert_not_eq "${out[0]}" "false" "Version $inp is valid";
     >/dev/null assert_eq "${#out[@]}" "5"; # "Version groups have 5 elements always";
   done
   echok "$FUNCNAME";
@@ -75,7 +75,7 @@ test_version_specificity()
   for inp in "${illegal_versions[@]}"; do
 #    echoi "Testing $inp with length ${#inp}";
     version_read "$inp" out;
-    >/dev/null assert_eq "$out" "false" "Version '$inp' is invalid";
+    >/dev/null assert_eq "${out[0]}" "false" "Version '$inp' is invalid";
   done
   echok "$FUNCNAME";
 }
@@ -111,11 +111,11 @@ test_version_compare()
     version_read "${inp%%" ? "*}" _a;
     version_read "${inp##*" ? "}" _b;
     #errchod "Comparing versions $(version_print "_a") < $(version_print "_b")";
-    >/dev/null assert_not_eq "$_a" "false";
-    >/dev/null assert_not_eq "$_b" "false";
+    run_silent 1 assert_not_eq "${_a[0]}" "false" "Version must be read correctly";
+    run_silent 1 assert_not_eq "${_b[0]}" "false" "Version must be read correctly";
     #echoi "Comparing: $(version_print "_a") < $(version_print "_b")";
     version_compare out "_a" "_b";
-    >/dev/null assert_eq "$out" "true" "Versions $inp compare less-than at '?'";
+    assert_eq "$out" "true" "${inp/"?"/<}";
   done
   echok "$FUNCNAME";
 }
@@ -148,8 +148,8 @@ test_version_satisfied()
   for inp in "${satisfies_true[@]}"; do
     version_read "${inp%%" ~ "*}" _expect;
     version_read "${inp##*" ~ "}" _provide;
-    >/dev/null assert_not_eq "$_expect" "false";
-    >/dev/null assert_not_eq "$_provide" "false";
+    >/dev/null assert_not_eq "${_expect[0]}" "false";
+    >/dev/null assert_not_eq "${_provide[0]}" "false";
     ((_debug_version)) && errchod "Testing $inp";
     ((_debug_version)) && errchod "Expect: $(version_print "_expect")";
     ((_debug_version)) && errchod "Provide: $(version_print "_provide")";

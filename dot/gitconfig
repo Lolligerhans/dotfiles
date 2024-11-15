@@ -267,7 +267,7 @@
 	navigate = true
 	# Permanently enable side-by-side diff for git-delta. We configure with
 	# environment variables instead. If we were to set it here, we could not
-	# disable it usign environment variables.
+	# disable it using environment variables.
 	; side-by-side = true
 
 [diff]

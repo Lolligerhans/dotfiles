@@ -47,12 +47,11 @@ bash_caller()
 }
 
 # This function executes "$@" IN A SUBSHELL, allowing failure, but keeping set
-# -e intact. Meaning the first error of "$@" will "abort" execution, with
-# may_fail() returning 0.
+# -e intact. The first error of "$@" will "abort" execution, with may_fail()
+# returning 0.
 # Synopsis:
 #     may_fail -- command [arg1] [arg2]
 #     may_fail return_var -- command [arg1] [arg2]
-# Keeps stdout intact, adding logs to stderr (for now).
 may_fail()
 {
   # Contrary to popular demand, Bash's set -e, set -u and pipefail can be
@@ -98,30 +97,27 @@ may_fail()
   if [[ "$-" != *e* ]]; then
     abort "Expected 'set -e'";
   fi
-  #errchol "☐ $(print_values "$FUNCNAME" "$@")";
+  # errchol "☐ $(print_values "${FUNCNAME[0]}" "$@")";
   declare -i _mf_result_834u92834; # Avoid name collisions
 
-#  declare -r _subshell_assign="$("$@")";
-#  _mf_result_834u92834="$?";
-#  if (( _mf_result_834u92834 == 0 )); then
-#    errchol "☑ $(print_values "$FUNCNAME" "$@")";
-#  else
-#    errchol "☒ $(print_values "$FUNCNAME" "$@")";
-#  fi
-
+  # Disable errexit and ERR trap before execution and re-enable afterwards
+  declare err_trap;
+  err_trap="$(trap -p ERR)";
   declare -r flags="$-";
+  trap - ERR;
   set +e;
-  ( set -e; "$@" );
+  ( eval "$err_trap"; set -e; "$@" );
   _mf_result_834u92834="$?";
   if [[ "$flags" == *e* ]]; then
     set -e;
   fi
+  eval "$err_trap";
 
-  #if (( _mf_result_834u92834 == 0 )); then
-  #  errchol "☑ $(print_values "$FUNCNAME" "$@")";
-  #else
-  #  errchol "☒ $(print_values "$FUNCNAME" "$@")";
-  #fi
+  # if (( _mf_result_834u92834 == 0 )); then
+  #   errchol "☑ $(print_values "${FUNCNAME[0]}" "$@")";
+  # else
+  #   errchol "☒ $(print_values "${FUNCNAME[0]}" "$@")";
+  # fi
   if [[ -n "$ret_name" ]]; then
     declare -n -- _mf_ret_777734234="${ret_name}";
     _mf_ret_777734234="$_mf_result_834u92834";
@@ -129,18 +125,23 @@ may_fail()
   return 0;
 }
 
-# Run $@ hiding file descriptot $1
+# Run $@ hiding
+#   - ${1} == 0: nothing
+#   - ${1} == 1: file descriptor 1
+#   - ${1} == 2: file descriptor 2
+#   - ${1} == 3: file descriptor 1 and 2
 run_silent()
 {
   declare silenter;
   case "$1" in
+    0) silenter="";;
     1) silenter="run_silent_stdout";;
     2) silenter="run_silent_stderr";;
     3) silenter="run_silent_both";;
     *) errchoe "${FUNCNAME[0]}: param 1 must be 1, 2 or 3";
        return 1;;
   esac
-  "${silenter}" "${@:2}";
+  ${silenter} "${@:2}";
   return "$?";
 }
 
@@ -156,38 +157,14 @@ run_silent_stderr()
 
 run_silent_both()
 {
-  "${@}" >/dev/null 2>/dev/null;
+  "${@}" >&/dev/null;
 }
 
-# A function that first runs its arguments silently, then, as they error, with
-# increasingly verbose outputs. Return with error if $@ did not finished
-# successfully.
-# # TODO Add nother level with silent stderr?
-run_verbosity_ladder()
-{
-  if (($# < 1)); then
-    errchoe "${FUNCNAME[0]}: Missing arguments";
-    return 1;
-  fi
-
-  declare -i ret;
-  may_fail ret -- "${@}";
-  if (( ret == 0 )); then
-    return 0;
-  fi
-  declare choice="";
-  errchoe "${FUNCNAME[0]}: Failed silently: $ret ← $(print_values "$@")";
-  declare choice="";
-  ask_user "Try more verbosely?" choice;
-  if [[ "$choice" != "true" ]]; then
-    return "$ret";
-  fi
-
-  "$@";
-}
-
+# Show content of a variable in unambiguous way. For testing.
 show_variable()
 {
   declare -n _ref_sv_348u928374="${1:?Missing variable name}";
-  echoi "${_ref_sv_348u928374@A}";
+  # HACK: We use the array/dictionary notation array_name[@]. This happens to
+  #       work for string variables as well.
+  echoi "${_ref_sv_348u928374[@]@A}";
 }

@@ -69,8 +69,9 @@ command_default()
 {
   # set_args "--help" "$@";
   # eval "$get_args";
-  #
-  subcommand "help" "$@";
+
+  subcommand run scripts/tests;
+  # subcommand "help" "$@";
 }
 
 command_test()
@@ -79,9 +80,7 @@ command_test()
   eval "$get_args";
 
   # Order so that we need not scroll output much
-  subcommand rundir scripts/tests colour_test;
-  subcommand rundir scripts/tests;
-  subcommand rundir scripts/tests shell_check;
+  subcommand rundir scripts/tests test --all;
 }
 
 command_unun() {
@@ -263,7 +262,7 @@ command_update_alternatives()
   # Pass to update-alternat
   # TODO When we feel comfortable with the command we can add a --yes parameter
   #      to skip the confirmation.
-  if [[ "$yes" == "true" ]] || test_user " Parameters ok?"; then
+  if [[ "$yes" == "true" ]] || [[ "$(ask_user " Parameters ok?")" == "true" ]]; then
     set -x;
     sudo update-alternatives --install "${params[@]}";
     set +x;
@@ -309,7 +308,7 @@ command_restoration_tarball()
   else
     if [[ ! -d "$destination" ]]; then
       echon "Destination $text_dim$destination$text_normal does not exist yet";
-      if test_user "Create now?"; then
+      if [[ "$(ask_user "Create now?")" == "true" ]]; then
         ensure_directory "$destination";
       else
         abort "Directory $text_bold$destination$text_normal not found";
@@ -500,7 +499,7 @@ command_colours()
   eval "$get_args";
 
   # Access the useful colour tests from /scripts/tests from within dotfiles/
-  subcommand rundir scripts/tests/ colour_test;
+  subcommand rundir scripts/tests/ test --colour;
 }
 
 command_termcaps_manpage()
@@ -522,7 +521,7 @@ command_install()
 # Output: Path of new dotfiles (input --path + "/" + name)
 command_export_dotfiles_scripts_standalone()
 {
-  set_args "--path= --name=dotfiles_copy --help" "$@";
+  set_args "--path= --name=dotfiles_copy --yes --help" "$@";
   eval "$get_args";
 
   # If we export anything but the msater branch, give a warning
@@ -536,7 +535,11 @@ command_export_dotfiles_scripts_standalone()
     errcho
     if [[ "$git_br" != "master" ]]; then
       declare choice="n";
-      >&2 boolean_prompt "Export non-master branch?" choice;
+      if [[ "$yes" == "true" ]]; then
+        choice="y";
+      else
+        >&2 boolean_prompt "Export non-master branch?" choice;
+      fi
       if [[ "$choice" == "n" ]]; then
         abort "Aborted by user";
       fi
@@ -620,7 +623,7 @@ command_export_dotfiles_scripts_standalone()
 command_init_runscript()
 {
   # Use caller working directory when called without path argument
-  set_args "--path=$caller_path --extended=false --standalone --confirm=false --help" "$@";
+  set_args "--path=$caller_path --extended=false --standalone --confirm=false --yes --help" "$@";
   eval "$get_args";
 
   declare -r init_path="$path";
@@ -635,13 +638,13 @@ command_init_runscript()
   # Generate standalone dotfiles copy and delegate the task to the copy
   if [[ "$standalone" == "true" ]]; then
     declare new_dotfiles_dir;
-    new_dotfiles_dir="$(subcommand export_dotfiles_scripts_standalone "$init_path")";
+    new_dotfiles_dir="$(subcommand export_dotfiles_scripts_standalone "$init_path" --yes="$yes")";
     declare -r new_dotfiles_dir;
     subcommand rundir "${new_dotfiles_dir}" init_runscript --path="$path" --confirm="$confirm" --extended="$extended";
     return 0;
   fi
 
-  if [[ "$confirm" != "false" ]] && ! test_user "Initialize runscript at $text_italic$init_path$text_normal?"; then
+  if [[ "$confirm" != "false" ]] && ! [[ "$(ask_user "Initialize runscript at $text_italic$init_path$text_normal?")" == "true" ]]; then
     errchon "Not initializing at $init_path";
     return 0;
   fi
@@ -837,7 +840,7 @@ command_import()
 }
 
 # Print some basic system information
-function command_info()
+command_info()
 {
   set_args "--disk --inet --system --help" "$@";
   eval "$get_args";
@@ -1215,7 +1218,8 @@ OPTIONS
   --extended=false: Initialize from extended template. Default false.
   --standalone: Create self-contained system by copying all dependenies into
     PATH/. See: export_dotfiles_scripts_standalone --help.
-  --confirm: Confirm PATH before continuing.";
+  --confirm: Confirm PATH before continuing.
+  --yes: Passed to export_dotfiles_standalone when --standalone is used.";
 
 declare -r export_dotfiles_scripts_standalone_help_string="Export standalone copy of dotfiles scripts
 SYNOPSIS
@@ -1240,7 +1244,8 @@ DESCRIPTION
 OPTIONS
   --path: Parent path to place the dotfiles in. This could just be the project
     directory, so the dotfiles copy is placed next to the runscript.
-  --name: Name of the copy of the dotfiles directory. Defaults to dotfiles_copy.";
+  --name: Name of the copy of the dotfiles directory. Defaults to dotfiles_copy.
+  --yes: Do not prompt when exporting non-master branch. For testing.";
 
 declare -r deploy_help_string="Copy or symlink dotfile to a specified location
 SYNOPSIS

@@ -63,18 +63,3 @@ boolean_prompt()
     printf -- "%s" "$_bp_res_1402420156";
   fi
 }
-
-# ❗ The problem with this is that you cannot tell if the answer was no or the
-#    call just failed (i.e., when the function is not even available!).
-# Use boolean_prompt instead.
-test_user()
-{
-  if (($# != 1)); then abort "Wrong usage"; fi
-  declare confirm;
-  read -n1 -rep "$1 [y/N]: " confirm;
-  if [[ "${confirm^}" == "Y" ]]; then
-    return 0;
-  else
-    return 1;
-  fi
-}

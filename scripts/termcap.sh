@@ -10,7 +10,7 @@ fi
 _sourced_files["termcap"]="";
 
 declare -r user_colour=$'\x1b[38;2;255;144;192m';
-# declare -r user_colour=$'\x1b[38;2;255;170;102m';
+#declare -r user_colour=$'\x1b[38;2;255;170;102m';
 #declare -r user_colour=$'\x1b[38;2;0;128;255m';
 
 # TODO test this:
@@ -124,3 +124,6 @@ readonly term_erase_forward="$(tput ed)";
 
 readonly text_left2="$text_left1$text_left1";
 readonly term_previous="${term_up}$term_front";
+
+# ── Semantic ──────────────────────────────────────────────────
+declare -r text_comment="$text_brightblack$text_italic";

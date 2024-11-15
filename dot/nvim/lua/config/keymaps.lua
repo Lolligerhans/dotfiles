@@ -28,7 +28,7 @@ m.set("n", "<leader>ß:", "<cmd>Telescope command_history<cr>",
   { remap = false, desc = "Command History" })
 
 -- Replaced with our own (remains at <leader>ff)
-m.del("n", "<space><space>")
+m.del("n", "<leader><leader>")
 
 -- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Global/Generic                                                            │
@@ -64,16 +64,16 @@ m.set("n", "<leader>qw", "<cmd>xa<cr>", { remap = false, desc = "Write & Quit" }
 -- TODO F1: build, f2: run
 -- TDOo <c-F12> reload vimrc/config?
 
--- Remove annoying default <f1> mapping
-m.set("i", "<f1>", "<nop>", { remap = false })
-m.set("n", "<f1>", "<cmd>make<cr>", { remap = false })
-m.set("n", "<f2>", "<cmd>!./run.sh<cr>", { remap = false })
+m.set("i", "<F1>", "<nop>", { remap = false }) -- Remove nvim default mapping
+m.set("n", "<F1>", "<cmd>make<cr>", { remap = false })
+m.set("n", "<F2>", "<cmd>split term://./run.sh<cr>", { remap = false })
 
 -- Delete errors for Shellcheck error code under cursor
 m.set("n", "<leader>ces", "m`*<cmd>g//-2,+2d<cr>``", { remap = false, desc = "Code edit [s]hellcheck" })
 
 -- Git add using bash alias 'a' in the LazyVim terminal popup
 m.set("n", "<F5>", "<c-/>a<cr>", { remap = true, desc = "Git add" })
+m.set("t", "<esc><esc>", "<c-/><c-n>", { remap = false })
 
 -- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Windows, tabs and viewiing                                                │
@@ -138,7 +138,7 @@ m.set("n", "<leader>bmt", "<cmd>fin %:t:r.test<cr>", { remap = false, desc = ".t
 
 -- For now we will be using the default terminal mode maps for mocing etc.
 m.set("n", "<leader>wt",
-  "<cmd>-tab terminal<cr>i",
+  "<cmd>-tab terminal<cr>",
   { remap = false, desc = "Terminal" })
 
 -- TODO: How to define whichkey group?
@@ -160,18 +160,23 @@ m.set("n", "<A-k>", "zk", { remap = true, desc = "Jump to previous fold" })
 -- ╰───────────────────────────────────────────────────────────────────────────╯
 
 -- ── Sorting ────────────────────────────────────────────────
--- Highlight the desired lines in visual mode before moving to step 2.
--- Mnemonic: "insert sort".
-m.set("n", "<leader>iss", "<cmd>SortMark<cr>",
-  { remap = false, desc = "1. Mark for sorting" })
-m.set("n", "<leader>isc", "<cmd>SortCollapse<cr>",
-  { remap = false, desc = "2. Collapse except sort marks" })
-m.set("n", "<leader>iso", "<cmd>SortSort<cr>",
-  { remap = false, desc = "3. Order sort marks" })
-m.set("n", "<leader>ise", "<cmd>SortExpand<cr>",
-  { remap = false, desc = "4. Expand sort around marks" })
-m.set("n", "<leader>ist", "<cmd>SortTrim<cr>",
-  { remap = false, desc = "5. Trim sort marks" })
+-- TODO: How to do visual mode commands in lua?
+m.set(
+  "v", "<leader>is", "cẞstart<cr>ẞend<esc>P<esc>",
+  { remap = false, desc = "(1) Sort range" }
+)
+m.set(
+  "n", "<leader>isp", function() require("sort").mark_paragraph() end,
+  { remap = false, desc = "(2-1) Mark as sorting paragraph" }
+)
+m.set(
+  "n", "<leader>iss", function() require("sort").mark_sort() end,
+  { remap = false, desc = "(2-2) Mark as sorting location" }
+)
+m.set(
+  "n", "<leader>isS", function() require("sort").sort() end,
+  { remap = false, desc = "(3) Process markers" }
+)
 
 m.set("n", "<leader>d<space>", "gElcw<space><esc>",
   { remap = false, desc = "Shrink leading whitespace" })
@@ -242,9 +247,9 @@ m.set("n", "<F9>", "[czz", { remap = false, desc = "hunk previous" })
 m.set("n", "<F10>", "]czz", { remap = false, desc = "hunk next" })
 m.set("n", "<S-F9>", "<F21>", { remap = true, desc = "conflict previous" })
 m.set("n", "<S-F10>", "<F22>", { remap = true, desc = "conflict next" })
-m.set("n", "<F21>", "<cmd>call JumpToString('<<<<<<<', 'N')<cr>",
+m.set("n", "<F21>", "<cmd>call JumpToString('^<<<<'..'<<<', 'N')<cr>",
   { remap = false, desc = "conflict previous" })
-m.set("n", "<F22>", "<cmd>call JumpToString('>>>>>>>', 'n')<cr>",
+m.set("n", "<F22>", "<cmd>call JumpToString('^<<<<'..'<<<', 'n')<cr>",
   { remap = false, desc = "conflict next" })
 
 -- LazyVim setting something similar enough
@@ -278,7 +283,7 @@ m.set("n", "gM", "M", { remap = false, desc = "To Middle line of window" })
 --   endif
 -- endfunction
 -- ]])
-m.set("n", "dO", "<cmd>call DiffToggle()<cr>", { remap = false, desc = "Diff toggle" })
+m.set("n", "dO", function() DiffToggle() end, { remap = false, desc = "Diff toggle" })
 
 -- if vim.opt.diff:get() then
 --   -- Wont trigger if we manually set diff mode, but ok for now.
@@ -353,14 +358,13 @@ end
 -- Recover digraph overwritten by LazyVim
 m.set("i", "<c-l>", "<c-k>", { remap = false, desc = "digraph" })
 
----Map any text in input mode after double <c-l>
--- TODO: Can we map <C-ß> somehow?
+---Map any text in input mode after double <C-l>
 local inputMap = function(input, output)
   m.set({ "i" }, "<C-l><C-l>" .. input, output,
     { remap = false })
 end
 
--- Space symbol for vertical space (not the space character). Use <sp><sp> for
+-- Symbol representing vertical (non-breaking) space. Use <sp><sp> or NS for the
 -- non-breaking space character.
 asDigraph("sp", "9251", "␣")
 -- Heavy Round-Tipped Rightwards Arrow. Use AltGr-i ( → ) for normal arrow.

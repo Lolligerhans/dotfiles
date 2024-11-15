@@ -9,13 +9,6 @@ if [[ -v _sourced_files["version"] ]]; then
 fi
 _sourced_files["version"]="";
 
-# TODO this is just Fallback while things are unstable.
-if [[ -v _version_is_already_sourced_thanks ]]; then
-  echo "WWWWWWWWWWWWWWWWTF";
-  exit 32;
-fi
-declare -gri _version_is_already_sourced_thanks=1;
-
 # ❗ We need to source some files to enable versioning in the first place.
 #    These (and their recursive dependencies) are veryfied here, at the end of
 #    this file.
@@ -372,7 +365,7 @@ version_str_compare()
   version_read "$provided_string" provided;
   echoi "Expected $(version_print "expected")";
   echoi "Provided $(version_print "provided")";
-  if [[ "$expected" == "false" || "$provided" == "false" ]]; then
+  if [[ "${expected[0]}" == "false" || "${provided[0]}" == "false" ]]; then
     abort "Could not parse for verification: expected=$text_dim$expected_string$text_normal, provided=$text_dim$provided_string$text_normal";
   fi;
 
@@ -626,7 +619,7 @@ function augment_version()
       errchow "${FUNCNAME[0]}: Failed to show relevant lines";
   errchou "Files should generally be versioned.";
 
-  if test_user "Add current version $version_string automatically?"; then
+  if [[ "$(ask_user "Add current version $version_string automatically?")" == "true" ]]; then
     # FIXME Verify replacement and initial format
     if sed --follow-symlinks -i -Ee "$((source_line))"'s/^(load|satisfy)_version "([^"]*)";$/\1_version "\2" "'"$version_string"'";/' "$source_file"; then
       errchon "To $text_dim$source_file:$source_line ${FUNCNAME[file_idx]}()$text_normal added version string $text_user$version_string$text_normal for $text_user_soft$versioned_file$text_normal";
@@ -676,4 +669,4 @@ fi
 satisfy_version "$dotfiles/scripts/version.sh" 0.0.0; # Now we eating our own tail a bit
 satisfy_version "$dotfiles/scripts/termcap.sh" 0.0.0;
 satisfy_version "$dotfiles/scripts/userinteracts.sh" 0.0.0;
-satisfy_version "$dotfiles/scripts/utils.sh" 3.0.0;
+satisfy_version "$dotfiles/scripts/utils.sh" 0.0.0;

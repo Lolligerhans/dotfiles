@@ -22,7 +22,7 @@ _sourced_files["boilerplate"]="";
 ################################################################################
 
 # TODO Use "not -v" or "-z"?
-#if [[ ! -v "$BASH_SOURCE" ]]; then
+#if [[ ! -v "${BASH_SOURCE[0]}" ]]; then
 #  echo "run.sh: Bash required";
 #  exit 1;
 #fi
@@ -62,7 +62,7 @@ if [[ -z "${dotfiles}" ]] || (( ${#dotfiles} < 5 )); then
 # working directory.
 declare -g caller_path parent_path;
 caller_path="$(pwd -P)"
-cd "$(dirname -- "${1:?boilerplate.sh: missing BASH_SOURCE}")"; # $1 must be set to $BASH_SOURCE of run.sh
+cd "$(dirname -- "${1:?boilerplate.sh: missing BASH_SOURCE}")"; # $1 must be set to ${BASH_SOURCE[0]} of run.sh
 parent_path="$(pwd -P)"
 declare -r caller_path parent_path;
 shift; # Recover 'actual' args from the user of the runscript
@@ -77,6 +77,7 @@ _run_config=(
   # Use the declare_optionals config for setargs. Since there are predefined
   # commands, this option cannot be changed (unless those commadns are removed
   # or adjusted).
+  # TODO: Deprecated. Remove this eventually
   ["declare_optionals"]=1 # {0,1} (1 is also the "default" value in setargs.sh)
 
   # Change number of frames printed in error handling. Can be be changed as
@@ -98,7 +99,7 @@ source "$dotfiles/scripts/version.sh";
 satisfy_version "$dotfiles/scripts/version.sh" 0.0.0;
 
 # Add our error trap as early as possible
-trap 'report_error "${?}" "${LINENO}" "${BASH_SOURCE}" "${BASH_COMMAND}"'\
+trap 'report_error "${?}" "${LINENO}" "${BASH_SOURCE[0]}" "${BASH_COMMAND}"'\
   ERR ABRT TERM HUP;
 
 # Script info
@@ -293,12 +294,12 @@ command_run()
 }
 command_rundir()
 {
-  subcommand runscript "${1:?"$FUNCNAME: Missing input parameter 1"}/run.sh" "${@:2}";
+  subcommand runscript "${1:?"${FUNCNAME[0]}: Missing input parameter 1"}/run.sh" "${@:2}";
 }
 command_runscript()
 {
   if (($# < 1)); then abort "Usage: $text_bi$0$text_normal runscript ${text_italic}path/script.sh$text_normal"; fi
-  if [[ ! -e "$1" ]]; then abort "$FUNCNAME: No such file: $1"; fi
+  if [[ ! -e "$1" ]]; then abort "${FUNCNAME[0]}: No such file: $1"; fi
 
   command "$1" "${@:2}";
 }
@@ -394,13 +395,13 @@ function subcommand()
 # TODO Print commands into array to make it faster
 declare -g predefined_commands;
 predefined_commands="$(subcommand print_commands)";
-declare -r print_commands;
+declare -r predefined_commands;
 
 # Enfore execution in directory "$this_location"
 if [[ -v this_location ]] && [[ -n "$this_location" ]] && [[ ! "$this_location" -ef "$parent_path" ]]; then
   echou "This runscript wants to be in location $this_location, is at $parent_path";
   echon "Determined by setting 'this_location' in commands.sh";
-  if [[ ! -d "$this_location/run.sh" ]]; then
+  if [[ ! -f "$this_location/run.sh" ]]; then
     subcommand link_this --keep;
   fi
   errchow "Continuing at $text_italic$this_location$text_noitalic!";

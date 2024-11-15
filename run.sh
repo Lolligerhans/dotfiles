@@ -189,7 +189,7 @@ command_update_alternatives()
   set_args "--path= --name --link --priority --dry-run --yes --help" "$@";
   eval "$get_args";
 
-#  echou "$FUNCNAME: testing is on";
+#  echou "${FUNCNAME[0]}: testing is on";
 #  echoi "$(print_values_decorate Args "" "" $@)";
 #  declare dry_run="true";
 

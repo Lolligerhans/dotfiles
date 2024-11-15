@@ -30,7 +30,7 @@ load_version "$dotfiles/scripts/utils.sh" 0.0.0;
 ensure_directory()
 {
   if (($# != 1)); then
-    abort "$FUNCNAME: Expected 1 argument, got $#";
+    abort "${FUNCNAME[0]}: Expected 1 argument, got $#";
   fi
   if [[ ! -d "$1" ]]; then
     mkdir -vp "$1";

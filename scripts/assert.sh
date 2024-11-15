@@ -25,7 +25,7 @@ _sourced_files["$tag"]="";
 
 # Test this once. If the user changes if before calling this, their loss.
 if [[ "$-" != *e* ]]; then
-  abort "$BASH_SOURCE: Insisting on 'set -e'";
+  abort "${BASH_SOURCE[0]}: Insisting on 'set -e'";
 fi
 
 # log_assert() {

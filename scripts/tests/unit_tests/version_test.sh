@@ -38,12 +38,12 @@ test_version_sensitivity()
     >/dev/null assert_not_eq "${out[0]}" "false" "Version $inp is valid";
     >/dev/null assert_eq "${#out[@]}" "5"; # "Version groups have 5 elements always";
   done
-  echok "$FUNCNAME";
+  echok "${FUNCNAME[0]}";
 }
 
 test_version_specificity()
 {
-#  echol "$FUNCNAME";
+#  echol "${FUNCNAME[0]}";
   declare -r illegal_versions=(
     "0.0.01"
     "1.2"
@@ -77,12 +77,12 @@ test_version_specificity()
     version_read "$inp" out;
     >/dev/null assert_eq "${out[0]}" "false" "Version '$inp' is invalid";
   done
-  echok "$FUNCNAME";
+  echok "${FUNCNAME[0]}";
 }
 
 test_version_compare()
 {
-#  echol "$FUNCNAME";
+#  echol "${FUNCNAME[0]}";
   declare -ra compares_true=(
     "0.0.0 ? 0.0.1"
     "1.2.3 ? 1.2.4"
@@ -117,7 +117,7 @@ test_version_compare()
     version_compare out "_a" "_b";
     assert_eq "$out" "true" "${inp/"?"/<}";
   done
-  echok "$FUNCNAME";
+  echok "${FUNCNAME[0]}";
 }
 
 # Test rejection of comparison function
@@ -129,7 +129,7 @@ test_version_compare_not()
 
 test_version_satisfied()
 {
-#  echol "$FUNCNAME";
+#  echol "${FUNCNAME[0]}";
   declare -ra satisfies_true=(
       # exp    prov
       "1.2.3 ~ 1.2.3"
@@ -156,12 +156,12 @@ test_version_satisfied()
     version_satisfied out "_expect" "_provide";
     >/dev/null assert_eq "$out" "true" "Version satisfied by: $inp";
   done
-  echok "$FUNCNAME";
+  echok "${FUNCNAME[0]}";
 }
 
 # Test rejection of comparison function
 test_version_satisfies_not()
 {
   # TODO
-  echot "$FUNCNAME: Not implemented";
+  echot "${FUNCNAME[0]}: Not implemented";
 }

@@ -98,7 +98,7 @@ git_clone_repo()
   eval "$get_args";
 
   # Abort if path ends on "/" to avoid confusion.
-  if [[ "${path: -1}" == "/" ]]; then abort "$FUNCNAME: Path must not end with /"; fi
+  if [[ "${path: -1}" == "/" ]]; then abort "${FUNCNAME[0]}: Path must not end with /"; fi
 
   # If --name is missing, assume --path includes the name and extract it
   if [[ "$name" == "/" ]]; then

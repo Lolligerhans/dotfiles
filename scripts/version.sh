@@ -39,7 +39,7 @@ declare -gra version_colour=(
 
 # Test while sourcing. If you change it later it's on you.
 if [[ "$(shopt -p extglob )" != "shopt -s extglob" ]]; then
-  errchoe "$BASH_SOURCE requires extglob to tell numeric from alphanum identifiers";
+  errchoe "${BASH_SOURCE[0]} requires extglob to tell numeric from alphanum identifiers";
   abort "Insisting on 'shopt -s extglob'";
 fi
 
@@ -52,7 +52,7 @@ fi
 satisfy_version()
 {
   ((_debug_version)) && errchod "$(print_values "${FUNCNAME[0]}" "$@")" || :;
-  declare -r file="${1:?"$FUNCNAME: missing file as first argument"}";
+  declare -r file="${1:?"${FUNCNAME[0]}: missing file as first argument"}";
   declare expected_string="${2:-}";
 
   # 🎲 For now we leave versioning always on, but with surprise factor.
@@ -100,17 +100,17 @@ version_check()
     declare -ir log_loads="${_run_config["log_loads"]}";
   else
     declare -ir log_loads="$_version_log_loads";
-    abort "$FUNCNAME: Defaults disabled (allow if you actually want them)";
+    abort "${FUNCNAME[0]}: Defaults disabled (allow if you actually want them)";
   fi
-  declare -r file="${1:?"$FUNCNAME: missing file as first argument"}";
-  declare -r expected_string="${2:?"$FUNCNAME: missing version string as second argument"}";
+  declare -r file="${1:?"${FUNCNAME[0]}: missing file as first argument"}";
+  declare -r expected_string="${2:?"${FUNCNAME[0]}: missing version string as second argument"}";
 
   if [[ ! -v _run_config["versioning"] ]]; then
     # Use by default when wanting to use without config
-    abort "$FUNCNAME: Insisting on availability of _run_config['versioning']";
+    abort "${FUNCNAME[0]}: Insisting on availability of _run_config['versioning']";
   else
     if (( _run_config["versioning"] == 0 )); then
-      ((log_loads)) && errchos "$FUNCNAME: Versioning disabled for $text_dim$file$text_normal";
+      ((log_loads)) && errchos "${FUNCNAME[0]}: Versioning disabled for $text_dim$file$text_normal";
       return 0;
     fi
   fi
@@ -177,9 +177,9 @@ version_check()
 # Test out != "false" to determine validity. Do NOT test out == "true".
 version_read()
 {
-  ((_debug_version)) && errchod "$FUNCNAME ←" "$@" || :;
+  ((_debug_version)) && errchod "${FUNCNAME[0]} ←" "$@" || :;
   if (($# < 2)); then
-    abort "$FUNCNAME: expected 2 arguments, got $#";
+    abort "${FUNCNAME[0]}: expected 2 arguments, got $#";
   fi
   declare -r version_string="${1}";
 
@@ -190,16 +190,16 @@ version_read()
       perl -ne '(m/'"${semver_regex}"'/ && print "$1,$2,$3,$4,$5,") || exit 1;exit 0' <<< "$version_string";
   )" && ret=0 || ret=1;
 
-  ((_debug_version)) && errchod "$FUNCNAME: Perl return value: $ret" || :;
-  ((_debug_version)) && errchod "$FUNCNAME: versioning_groups_string=${versioning_groups_string//+($'\n')/ • }" || :;
+  ((_debug_version)) && errchod "${FUNCNAME[0]}: Perl return value: $ret" || :;
+  ((_debug_version)) && errchod "${FUNCNAME[0]}: versioning_groups_string=${versioning_groups_string//+($'\n')/ • }" || :;
 
-  declare -n _groups="${2:?"$FUNCNAME: missing group array"}";
+  declare -n _groups="${2:?"${FUNCNAME[0]}: missing group array"}";
   if ((ret == 0)); then
     IFS=',' read -ra _groups <<< "$versioning_groups_string";
   else
     _groups[0]="false"; # Special format
   fi
-  ((_debug_version)) && errchod "$FUNCNAME ➜ $(print_values "_groups" "${_groups[@]}")" || :;
+  ((_debug_version)) && errchod "${FUNCNAME[0]} ➜ $(print_values "_groups" "${_groups[@]}")" || :;
 }
 
 # $1  (out)  Nameref set to "true" if expected == provided, else  "false"
@@ -209,22 +209,22 @@ version_read()
 # TODO This function is kinda useless since its faster to just implement ad-hoc
 version_equal()
 {
-  ((_debug_version)) && errchod "$FUNCNAME ←" "$@" || :;
+  ((_debug_version)) && errchod "${FUNCNAME[0]} ←" "$@" || :;
   if (($# < 2)); then
-    abort "$FUNCNAME: expected 2 arguments, got $#";
+    abort "${FUNCNAME[0]}: expected 2 arguments, got $#";
   fi
 
-  declare -n _put_res="${1:?"$FUNCNAME: missing result variable"}";
-  declare -rn _expected="${2:?"$FUNCNAME: missing expected version groups"}";
-  declare -rn _provided="${3:?"$FUNCNAME: missing provided version groups"}";
+  declare -n _put_res="${1:?"${FUNCNAME[0]}: missing result variable"}";
+  declare -rn _expected="${2:?"${FUNCNAME[0]}: missing expected version groups"}";
+  declare -rn _provided="${3:?"${FUNCNAME[0]}: missing provided version groups"}";
 
   # Test whether all elements in both arrays are identical
   # TODO Better use {0:4} ?
   if [[ "${_expected[*]}" == "${_provided[*]}" ]]; then
-    ((_debug_version)) && errchod "$FUNCNAME: ==" || :;
+    ((_debug_version)) && errchod "${FUNCNAME[0]}: ==" || :;
     _put_res="true";
   else
-    ((_debug_version)) && errchod "$FUNCNAME: !=" || :;
+    ((_debug_version)) && errchod "${FUNCNAME[0]}: !=" || :;
     _put_res="false";
   fi
 }
@@ -237,13 +237,13 @@ version_equal()
 # $3  (in)  provided version groups
 version_compare()
 {
-  ((_debug_version)) && errchod "$FUNCNAME" "$@" || :;
-  declare -n _put_res="${1:?"$FUNCNAME: missing result variable"}";
-  declare -rn _expected="${2:?"$FUNCNAME: missing expected version groups"}";
-  declare -rn _provided="${3:?"$FUNCNAME: missing provided version groups"}";
+  ((_debug_version)) && errchod "${FUNCNAME[0]}" "$@" || :;
+  declare -n _put_res="${1:?"${FUNCNAME[0]}: missing result variable"}";
+  declare -rn _expected="${2:?"${FUNCNAME[0]}: missing expected version groups"}";
+  declare -rn _provided="${3:?"${FUNCNAME[0]}: missing provided version groups"}";
   declare _res_tmp_buf="";
-  ((_debug_version)) && errchod "$FUNCNAME: _expected=$(version_print "_expected")" || :;
-  ((_debug_version)) && errchod "$FUNCNAME: _provided=$(version_print "_provided")" || :;
+  ((_debug_version)) && errchod "${FUNCNAME[0]}: _expected=$(version_print "_expected")" || :;
+  ((_debug_version)) && errchod "${FUNCNAME[0]}: _provided=$(version_print "_provided")" || :;
   declare -ri major_le="$(( ${_expected[0]} <= ${_provided[0]} ))";
   declare -ri major_lt="$(( ${_expected[0]} <  ${_provided[0]} ))";
   declare -ri minor_le="$(( ${_expected[1]} <= ${_provided[1]} ))";
@@ -251,15 +251,15 @@ version_compare()
   declare -ri patch_le="$(( ${_expected[2]} <= ${_provided[2]} ))";
   declare -ri patch_lt="$(( ${_expected[2]} <  ${_provided[2]} ))";
 
-  ((_debug_version)) && errchod "$FUNCNAME mmajor_le=$major_le" || :;
+  ((_debug_version)) && errchod "${FUNCNAME[0]} mmajor_le=$major_le" || :;
 
                                           # Exp    Prov
-  if   (( ! major_le)); then _res_tmp_buf="false"; ((_debug_version)) && errchod "$FUNCNAME: [test1]" || :; # 1.x.x  0.x.x  ✖
-  elif ((   major_lt)); then _res_tmp_buf="true";  ((_debug_version)) && errchod "$FUNCNAME: [test2]" || :; # 1.x.x  2.x.x  ✔
-  elif (( ! minor_le)); then _res_tmp_buf="false"; ((_debug_version)) && errchod "$FUNCNAME: [test3]" || :; # 1.2.x  1.1.x  ✖
-  elif ((   minor_lt)); then _res_tmp_buf="true";  ((_debug_version)) && errchod "$FUNCNAME: [test4]" || :; # 1.2.x  1.3.x  ✔
-  elif (( ! patch_le)); then _res_tmp_buf="false"; ((_debug_version)) && errchod "$FUNCNAME: [test5]" || :; # 1.2.3  1.2.2  ✖
-  elif ((   patch_lt)); then _res_tmp_buf="true";  ((_debug_version)) && errchod "$FUNCNAME: [test6]" || :; # 1.2.3  1.2.4  ✔
+  if   (( ! major_le)); then _res_tmp_buf="false"; ((_debug_version)) && errchod "${FUNCNAME[0]}: [test1]" || :; # 1.x.x  0.x.x  ✖
+  elif ((   major_lt)); then _res_tmp_buf="true";  ((_debug_version)) && errchod "${FUNCNAME[0]}: [test2]" || :; # 1.x.x  2.x.x  ✔
+  elif (( ! minor_le)); then _res_tmp_buf="false"; ((_debug_version)) && errchod "${FUNCNAME[0]}: [test3]" || :; # 1.2.x  1.1.x  ✖
+  elif ((   minor_lt)); then _res_tmp_buf="true";  ((_debug_version)) && errchod "${FUNCNAME[0]}: [test4]" || :; # 1.2.x  1.3.x  ✔
+  elif (( ! patch_le)); then _res_tmp_buf="false"; ((_debug_version)) && errchod "${FUNCNAME[0]}: [test5]" || :; # 1.2.3  1.2.2  ✖
+  elif ((   patch_lt)); then _res_tmp_buf="true";  ((_debug_version)) && errchod "${FUNCNAME[0]}: [test6]" || :; # 1.2.3  1.2.4  ✔
   else                                    # 1.2.3  1.2.3
     # Compare prerelease dot.separated.identifiers
     declare -a e_dsi p_dsi;
@@ -274,10 +274,10 @@ version_compare()
       # Prereleases are smaller than just normal versions
 #      _res_tmp_buf="$len_decider";
       if (( is_longer )); then
-        ((_debug_version)) && errchod "$FUNCNAME: One is a normal version. Prerelease is smaller than normal version" || :;
+        ((_debug_version)) && errchod "${FUNCNAME[0]}: One is a normal version. Prerelease is smaller than normal version" || :;
         _res_tmp_buf="true";
       else
-        ((_debug_version)) && errchod "$FUNCNAME: One is a normal version. Normal release is not smaller than prerelease/normal version" || :;
+        ((_debug_version)) && errchod "${FUNCNAME[0]}: One is a normal version. Normal release is not smaller than prerelease/normal version" || :;
         _res_tmp_buf="false"; # ❕ Includes equality when both are 'normal' versions
       fi
 
@@ -297,10 +297,10 @@ version_compare()
       if (( i == min_len )); then
         # Special case: No difference in existing identifiers
         if (( ${#e_dsi[@]} < ${#p_dsi[@]} )); then
-          ((_debug_version)) && errchod "$FUNCNAME: When all previous match (>=1), Shorter prerelease is smaller" || :;
+          ((_debug_version)) && errchod "${FUNCNAME[0]}: When all previous match (>=1), Shorter prerelease is smaller" || :;
           _res_tmp_buf="true";
         else
-          ((_debug_version)) && errchod "$FUNCNAME: When all previous match (>=1), Equal length or longer prerelease is not smaller." || :;
+          ((_debug_version)) && errchod "${FUNCNAME[0]}: When all previous match (>=1), Equal length or longer prerelease is not smaller." || :;
           _res_tmp_buf="false"; # ❕ Includes equality when both prerelease versions are identical
         fi
 
@@ -314,14 +314,14 @@ version_compare()
         # Lexicographic
         if ((e_alpha && p_alpha)); then
           if [[ "${e_dsi[i]}" < "${p_dsi[i]}" ]];
-          then _res_tmp_buf="true"; ((_debug_version)) && errchod "$FUNCNAME: Alphanum prerelease is smaller" || :;
-          else _res_tmp_buf="false"; ((_debug_version)) && errchod "$FUNCNAME: Alphanum prerelease is not smaller" || :; fi
+          then _res_tmp_buf="true"; ((_debug_version)) && errchod "${FUNCNAME[0]}: Alphanum prerelease is smaller" || :;
+          else _res_tmp_buf="false"; ((_debug_version)) && errchod "${FUNCNAME[0]}: Alphanum prerelease is not smaller" || :; fi
 
         # Numeric
         elif ((!e_alpha && !p_alpha)); then
           if (( ${e_dsi[i]} < ${p_dsi[i]} ));
-          then _res_tmp_buf="true"; ((_debug_version)) && errchod "$FUNCNAME: Numeric prerelease is smaller" || :;
-          else _res_tmp_buf="false"; ((_debug_version)) && errchod "$FUNCNAME: Numeric prerelease is not smaller" || :; fi
+          then _res_tmp_buf="true"; ((_debug_version)) && errchod "${FUNCNAME[0]}: Numeric prerelease is smaller" || :;
+          else _res_tmp_buf="false"; ((_debug_version)) && errchod "${FUNCNAME[0]}: Numeric prerelease is not smaller" || :; fi
 
         # Numeric < alphanum
         elif ((e_num)); then
@@ -338,9 +338,9 @@ version_compare()
 
   # Sanity check: make sure only true and false are outputted
   if [[ "$_res_tmp_buf" != "true" && "$_res_tmp_buf" != "false" ]]; then
-    abort "$FUNCNAME: Result should be either true or false";
+    abort "${FUNCNAME[0]}: Result should be either true or false";
   fi
-  ((_debug_version)) && errchod "$FUNCNAME ➜ $_res_tmp_buf" || :;
+  ((_debug_version)) && errchod "${FUNCNAME[0]} ➜ $_res_tmp_buf" || :;
   _put_res="$_res_tmp_buf";
 }
 
@@ -349,9 +349,9 @@ version_compare()
 # $3  (out) result ("true"/"false")
 version_str_compare()
 {
-  declare -r expected="${1:?"$FUNCNAME: missing expected string"}";
-  declare -r provided="${2:?"$FUNCNAME: missing provided string"}";
-  declare -nr result="${3:?"$FUNCNAME: missing result variable"}";
+  declare -r expected="${1:?"${FUNCNAME[0]}: missing expected string"}";
+  declare -r provided="${2:?"${FUNCNAME[0]}: missing provided string"}";
+  declare -nr result="${3:?"${FUNCNAME[0]}: missing result variable"}";
 
   # Special case: string equality is easy
   if [[ "$provided" == "$expected" ]]; then
@@ -373,7 +373,7 @@ version_str_compare()
   declare res="";
   version_compare res "expected" "provided";
   result="$res";
-  ((_debug_version)) && errchod "$FUNCNAME: Comparison result is $res" || :;
+  ((_debug_version)) && errchod "${FUNCNAME[0]}: Comparison result is $res" || :;
 }
 
 # $1  (out) result ("true"/"false")
@@ -381,21 +381,21 @@ version_str_compare()
 # $3  (in)  provided version string
 version_string_satisfied()
 {
-  declare -n _vss_res="${1:?"$FUNCNAME: missing result variable"}";
-  declare -r s_expected="${2:?"$FUNCNAME: missing expected version string"}";
-  declare -r s_provided="${3:?"$FUNCNAME: missing provided version string"}";
+  declare -n _vss_res="${1:?"${FUNCNAME[0]}: missing result variable"}";
+  declare -r s_expected="${2:?"${FUNCNAME[0]}: missing expected version string"}";
+  declare -r s_provided="${3:?"${FUNCNAME[0]}: missing provided version string"}";
 
   # Trivial case of equal strings
   if [[ "$s_expected" == "$s_provided" ]]; then
     _vss_res="true";
   else
-    ((_debug_version)) && errchod "$FUNCNAME: not identical. doing full satisfaction check" || :;
+    ((_debug_version)) && errchod "${FUNCNAME[0]}: not identical. doing full satisfaction check" || :;
     declare -a _vss_e _vss_p;
     version_read "$s_expected" _vss_e;
     version_read "$s_provided" _vss_p;
     version_satisfied _vss_res _vss_e _vss_p;
   fi
-  ((_debug_version)) && errchod "$FUNCNAME ➜ $_vss_res" || :;
+  ((_debug_version)) && errchod "${FUNCNAME[0]} ➜ $_vss_res" || :;
 }
 
 # Compute whether provided version setisfies expected version.
@@ -414,22 +414,22 @@ version_string_satisfied()
 # arbitration.
 version_satisfied()
 {
-  ((_debug_version)) && errchod "$FUNCNAME" "$@" || :;
-  declare -n _output_="${1:?"$FUNCNAME: missing output variable"}";
-  declare -rn _expected_="${2:?"$FUNCNAME: missing expected version groups"}";
-  declare -rn _provided_="${3:?"$FUNCNAME: missing provided version groups"}";
+  ((_debug_version)) && errchod "${FUNCNAME[0]}" "$@" || :;
+  declare -n _output_="${1:?"${FUNCNAME[0]}: missing output variable"}";
+  declare -rn _expected_="${2:?"${FUNCNAME[0]}: missing expected version groups"}";
+  declare -rn _provided_="${3:?"${FUNCNAME[0]}: missing provided version groups"}";
   declare -r predicate="${4:-"version_compare"}";
   declare res="";
-  ((_debug_version)) && errchod "$FUNCNAME: _expected_=$(version_print "_expected_")" || :;
-  ((_debug_version)) && errchod "$FUNCNAME: _provided_=$(version_print "_provided_")" || :;
+  ((_debug_version)) && errchod "${FUNCNAME[0]}: _expected_=$(version_print "_expected_")" || :;
+  ((_debug_version)) && errchod "${FUNCNAME[0]}: _provided_=$(version_print "_provided_")" || :;
 
   # Sanity check: expected versions should be normal versions with no
   # pre-release.
   # ❗ When you want to remove this you must add that 1.2.3-alpha does not
   # satisfy 1.2.3.
   if [[ "${_expected_[3]}" != "" ]]; then
-    errchon "$FUNCNAME: For development versions, use 'version_compare' instead.";
-    abort "$FUNCNAME: Expected version should not have pre-release";
+    errchon "${FUNCNAME[0]}: For development versions, use 'version_compare' instead.";
+    abort "${FUNCNAME[0]}: Expected version should not have pre-release";
   fi
 
   # Special case: equal versions are always satisfied
@@ -437,7 +437,7 @@ version_satisfied()
   version_equal equal _expected_ _provided_;
   if [[ "$equal" == "true" ]]; then
     _output_="true";
-    ((_debug_version)) && errchod "$FUNCNAME: Equal version always satisfy" || :;
+    ((_debug_version)) && errchod "${FUNCNAME[0]}: Equal version always satisfy" || :;
     return 0;
   fi
 
@@ -480,26 +480,26 @@ version_satisfied()
   else                                    # 1.2.3  1.2.3
     if (( ${_provided_[2]} == 0 )); then # equal to expected[2] at this point
       if [[ -z "${_provided_[3]}" ]]; then
-        ((_debug_version)) && errchod "$FUNCNAME ➜ ✔ patch version == 0. No pre-release, so we satisfy. expected should not be pre-release either." || :;
+        ((_debug_version)) && errchod "${FUNCNAME[0]} ➜ ✔ patch version == 0. No pre-release, so we satisfy. expected should not be pre-release either." || :;
         res="true"; # Same version except build possibly
       else
-        ((_debug_version)) && errchod "$FUNCNAME ➜ ✖ patch version == 0. Pre-release does not satisfy equal normal version!" || :;
+        ((_debug_version)) && errchod "${FUNCNAME[0]} ➜ ✖ patch version == 0. Pre-release does not satisfy equal normal version!" || :;
         res="false"; # Same patch but provided pre-release
       fi
     else # > 0 implicitly by previous if-elses
-      ((_debug_version)) && errchod "$FUNCNAME ➜ ✔ patch version > 0 implied. Should be safe regardless of patch and pre-release" || :;
+      ((_debug_version)) && errchod "${FUNCNAME[0]} ➜ ✔ patch version > 0 implied. Should be safe regardless of patch and pre-release" || :;
       res="true";
     fi
 
     # FIXME I dont think this would be correct, even if pre-releases were
     # allowed, because a smaller pre-release is still usntablel along that
     # pre-release dimension. ❗
-    #((_debug_version)) && errchod "$FUNCNAME: major-minor didnt resolve. Checking predicate '$predicate'" || :;
+    #((_debug_version)) && errchod "${FUNCNAME[0]}: major-minor didnt resolve. Checking predicate '$predicate'" || :;
     #"$predicate" res "_expected_" "_provided_";
-    #((_debug_version)) && errchod "$FUNCNAME: Predicate result is $res" || :;
+    #((_debug_version)) && errchod "${FUNCNAME[0]}: Predicate result is $res" || :;
   fi
 
-  ((_debug_version)) && errchod "$FUNCNAME: expected version $(version_print "_expected_") $( [[ "$res" == "true" ]] && echo -n "satisfies ✔" || echo -n "violates ✖" ) provided version $(version_print "_provided_")" || :;
+  ((_debug_version)) && errchod "${FUNCNAME[0]}: expected version $(version_print "_expected_") $( [[ "$res" == "true" ]] && echo -n "satisfies ✔" || echo -n "violates ✖" ) provided version $(version_print "_provided_")" || :;
 
   _output_="$res";
 }
@@ -508,7 +508,7 @@ version_satisfied()
 # $1  (in)  semvar group array
 version_print()
 {
-  declare -nr _pr1ntgrp_="${1:?"$FUNCNAME: missing group array"}";
+  declare -nr _pr1ntgrp_="${1:?"${FUNCNAME[0]}: missing group array"}";
   declare -r a="$text_blc";
   declare -r b="$text_normal";
   if ((${#_pr1ntgrp_[3]} != 0));
@@ -539,18 +539,18 @@ declare -gA _version_string_cache;
 # $3  (in)   filename
 get_file_version_string()
 {
-  declare -n _gfvs_res="${1:?"$FUNCNAME: missing result variable"}";
-  declare -n _gfvs_res_loaded="${2:?"$FUNCNAME: missing loaded variable"}";
-  declare -r file="${3:?"$FUNCNAME: missing file"}";
+  declare -n _gfvs_res="${1:?"${FUNCNAME[0]}: missing result variable"}";
+  declare -n _gfvs_res_loaded="${2:?"${FUNCNAME[0]}: missing loaded variable"}";
+  declare -r file="${3:?"${FUNCNAME[0]}: missing file"}";
   if [[ -v _version_string_cache["$file"] ]]; then
     _gfvs_res="${_version_string_cache["$file"]}";
     _gfvs_res_loaded=0;
-    ((_debug_version)) && errchod "$text_green$FUNCNAME: Loaded cached version string ${_gfvs_res} for $text_dim$file$text_normal" || :;
+    ((_debug_version)) && errchod "$text_green${FUNCNAME[0]}: Loaded cached version string ${_gfvs_res} for $text_dim$file$text_normal" || :;
   else
     read_file_version_string "_gfvs_res" "$file";
     _gfvs_res_loaded=1;
     _version_string_cache["$file"]="${_gfvs_res}";
-    ((_debug_version)) && errchod "$text_red$FUNCNAME: Cached version string ${_gfvs_res} for $text_dim$file$text_normal" || :;
+    ((_debug_version)) && errchod "$text_red${FUNCNAME[0]}: Cached version string ${_gfvs_res} for $text_dim$file$text_normal" || :;
   fi
 }
 
@@ -561,8 +561,8 @@ get_file_version_string()
 # $1  (out)  result (version string)
 read_file_version_string()
 {
-  declare -n _rfvs_res="${1:?"$FUNCNAME: missing result variable"}";
-  declare -r file="${2:?"$FUNCNAME: missing file"}";
+  declare -n _rfvs_res="${1:?"${FUNCNAME[0]}: missing result variable"}";
+  declare -r file="${2:?"${FUNCNAME[0]}: missing file"}";
   _rfvs_res="$(sed -nE -e '1,5s/'"${version_line_regex}"'/\1/p' "$file")";
   if [[ -z "$_gfvs_res" ]]; then
     errchoe "Could not find version line in $text_dim$file$text_normal";
@@ -577,8 +577,8 @@ read_file_version_string()
 # $4  (in)  source_line
 function augment_version()
 {
-  declare -n _av__res="${1:?"$FUNCNAME: missing result variable"}";
-  declare -r versioned_file="${2:?"$FUNCNAME: missing versioned file"}";
+  declare -n _av__res="${1:?"${FUNCNAME[0]}: missing result variable"}";
+  declare -r versioned_file="${2:?"${FUNCNAME[0]}: missing versioned file"}";
 
   # Find first source outside of version.sh
   declare -i file_idx=0;
@@ -594,7 +594,7 @@ function augment_version()
   fi
 
   if ((file_idx == ${#BASH_SOURCE[@]})); then
-    echow "$FUNCNAME: Failed to identify version augmentation target";
+    echow "${FUNCNAME[0]}: Failed to identify version augmentation target";
     # TODO return 0 and leave it at warning?
     return 1;
   fi
@@ -636,8 +636,8 @@ function augment_version()
 
 show_file_lines()
 {
-  declare -r file="${1:?"$FUNCNAME: missing file"}";
-  declare -r line="${2:?"$FUNCNAME: missing line"}";
+  declare -r file="${1:?"${FUNCNAME[0]}: missing file"}";
+  declare -r line="${2:?"${FUNCNAME[0]}: missing line"}";
   batcat -l bash --highlight-line="$((line))" --line-range "$((line-3 < 0 ? 0 : line-3)):$((line+3))" "$file" ||
     { sed -ne "$((line-3 < 0 ? 0 : line-3)),$((line+3))p" "$file"; } ||
     { errchoe "${FUNCNAME[0]}: Failed to show $file:$line"; return 1; };

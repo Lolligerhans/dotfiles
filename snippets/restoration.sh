@@ -40,7 +40,7 @@ set -o errexit -o nounset -o errtrace -o functrace -o pipefail;
 declare -g caller_path;
 caller_path="$(pwd -P)";
 declare -r caller_path;
-cd "$(dirname "${BASH_SOURCE}")";
+cd "$(dirname "${BASH_SOURCE[0]}")";
 declare -g parent_path;
 parent_path="$(pwd -P)";
 declare -r parent_path;

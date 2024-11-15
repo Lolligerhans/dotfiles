@@ -61,7 +61,7 @@ load_version "$dotfiles/scripts/utils.sh";
 command_default()
 {
   echon "• Usage: $text_bi$0$text_noitalic [COMMAND [args]]$text_normal.";
-  echon "• Define your own commands in ${text_bi}$BASH_SOURCE$text_normal";
+  echon "• Define your own commands in ${text_bi}${BASH_SOURCE[0]}$text_normal";
   echon "• Delegate to subcommands: ${text_bold}subcommand [COMMAND [args]]${text_normal}.";
   echon
   echon "Examples (${text_bold}subcommand${text_normal} does not produce [LOG]):"
@@ -72,7 +72,7 @@ command_default()
 
   echo
   echon "The example command will teach you about set_args.";
-  echon "(Open ${text_bi}$BASH_SOURCE${text_normal} to see how the example command itself uses set_args.)";
+  echon "(Open ${text_bi}${BASH_SOURCE[0]}${text_normal} to see how the example command itself uses set_args.)";
   set -x;
   "$0" example --help;
   set +x;
@@ -156,7 +156,7 @@ ${text_underline}ARGUMENTS${text_normal}
                       the behaviour by passing --help (see above).
                       ${text_italic}Here:${text_normal} same as --required=value1 --defaulted=value2.
 
-${text_bc}${text_invert}TODO${text_normal}${text_cyan} Remove ${text_normal}--help${text_cyan} when calling $text_normal ${text_bi}"\$0"$text_noitalic example$text_normal ${text_cyan}from the default command in$text_normal $text_bi$BASH_SOURCE$text_normal ${text_cyan}Fix the error.$text_normal
+${text_bc}${text_invert}TODO${text_normal}${text_cyan} Remove ${text_normal}--help${text_cyan} when calling $text_normal ${text_bi}"\$0"$text_noitalic example$text_normal ${text_cyan}from the default command in$text_normal $text_bi${BASH_SOURCE[0]}$text_normal ${text_cyan}Fix the error.$text_normal
 ${text_dim}${text_cyan}Hint: The parameter string of the example command defines expected parameters${text_normal}
 EOF
   )";

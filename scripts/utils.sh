@@ -24,7 +24,7 @@ bash_source_foreign_idx()
   declare -n _bsfi_asdoaojasjd_="${1:-"bsfi_index"}"; # Avoid name collisions
   _bsfi_asdoaojasjd_=-1;
   for (( bsfi_index=2; bsfi_index < ${#BASH_SOURCE[@]}; ++bsfi_index )); do
-#    errchod "$FUNCNAME ➜ ${BASH_SOURCE[bsfi_index]} <=> ${BASH_SOURCE[bsfi_index - 1]}";
+#    errchod "${FUNCNAME[0]} ➜ ${BASH_SOURCE[bsfi_index]} <=> ${BASH_SOURCE[bsfi_index - 1]}";
     # TODO Possible -ef is better but possibly also slower
     if [[ "${BASH_SOURCE[bsfi_index]}" != "${BASH_SOURCE[bsfi_index - 1]}" ]]; then
       _bsfi_asdoaojasjd_="$((bsfi_index - 1))"; # From caller perspective it's 1 less
@@ -182,8 +182,8 @@ function abort()
     exit "$code"; # Exit to fail semi silently
   else
     if [[ "$-" != *e* ]]; then
-      errchoe "$FUNCNAME: Requires errexit";
-      errchow "$FUNCNAME: Replacing return with exit";
+      errchoe "${FUNCNAME[0]}: Requires errexit";
+      errchow "${FUNCNAME[0]}: Replacing return with exit";
       exit "$code";
     fi
     return "$code"; # Return nonzero code to trigger error trace

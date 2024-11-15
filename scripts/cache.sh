@@ -65,7 +65,7 @@ cache_daily()
     fi
     # Sanity check linear time
     if [[ "$file_content" > "$current_day" ]]; then
-      errchow "$FUNCNAME: File $cache_file from future date $file_content";
+      errchow "${FUNCNAME[0]}: File $cache_file from future date $file_content";
     fi
   fi
   printf "%s" "$should_repeat"; # Only output of this function

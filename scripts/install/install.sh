@@ -8,7 +8,7 @@
 
 install_diff_highlight()
 {
-  errchol "$FUNCNAME";
+  errchol "${FUNCNAME[0]}";
   # Didnt work
 #  errchoi "Downloading git diff-highlight from: $git_diff_hl_url";
 #  wget "$git_diff_hl_url";

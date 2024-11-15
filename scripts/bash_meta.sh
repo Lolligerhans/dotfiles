@@ -16,17 +16,17 @@
 # │ ⚙ Boilerplate        │
 # ╰──────────────────────╯
 # ❗ FIXME: Unique ID must be set
-declare -r tag="bash_meta";
+declare -r tag="bash_meta"
 if [[ -v _sourced_files["$tag"] ]]; then return 0; fi
-_sourced_files["$tag"]="";
+_sourced_files["$tag"]=""
 # ╭──────────────────────╮
 # │ 🗀 Dependencies       │
 # ╰──────────────────────╯
-load_version "$dotfiles/scripts/version.sh" "0.0.0";
+load_version "$dotfiles/scripts/version.sh" "0.0.0"
 #load_version "$dotfiles/scripts/setargs.sh";
 #load_version "$dotfiles/scripts/termcap.sh";
-load_version "$dotfiles/scripts/userinteracts.sh" "0.0.0";
-load_version "$dotfiles/scripts/utils.sh" "0.0.0";
+load_version "$dotfiles/scripts/userinteracts.sh" "0.0.0"
+load_version "$dotfiles/scripts/utils.sh" "0.0.0"
 # ╭──────────────────────╮
 # │ 🖩 Utils              │
 # ╰──────────────────────╯
@@ -34,15 +34,14 @@ load_version "$dotfiles/scripts/utils.sh" "0.0.0";
 # │ 𝑓 Functional         │
 # ╰──────────────────────╯
 
-bash_caller()
-{
-  errchof "I think its not working yet";
-  abort "Not implemented yet";
-  echoi "${@@A}";
-  declare -i index="$1";
-  while (( index > 0 )); do
-    caller "$i";
-    (( index-- ));
+bash_caller() {
+  errchof "I think its not working yet"
+  abort "Not implemented yet"
+  echoi "${@@A}"
+  declare -i index="$1"
+  while ((index > 0)); do
+    caller "$i"
+    ((index--))
   done
 }
 
@@ -52,8 +51,7 @@ bash_caller()
 # Synopsis:
 #     may_fail -- command [arg1] [arg2]
 #     may_fail return_var -- command [arg1] [arg2]
-may_fail()
-{
+may_fail() {
   # Contrary to popular demand, Bash's set -e, set -u and pipefail can be
   # permanently disabled by if, ||, &&, while, until, !, recursively with
   # disregard of the actual flag:
@@ -80,38 +78,42 @@ may_fail()
   # The declaration counts as last command (so this line returns 0 regardless
   # failures of $@). However, we might not like storing stdout in a variable and
   # we may need a return value.
-  if (( $# < 2 )); then
-    abort "Expected at least 2 arguments";
+  if (($# < 2)); then
+    abort "Expected at least 2 arguments"
   fi
-  declare ret_name;
+  declare ret_name
   if [[ "$1" == "--" ]]; then
-    ret_name="";
-    shift;
+    ret_name=""
+    shift
   else
-    ret_name="$1";
+    ret_name="$1"
     if [[ "$2" != "--" ]]; then
-      abort "Expected '--' as second argument";
+      abort "Expected '--' as second argument"
     fi
-    shift 2;
+    shift 2
   fi
   if [[ "$-" != *e* ]]; then
-    abort "Expected 'set -e'";
+    abort "Expected 'set -e'"
   fi
   # errchol "☐ $(print_values "${FUNCNAME[0]}" "$@")";
-  declare -i _mf_result_834u92834; # Avoid name collisions
+  declare -i _mf_result_834u92834 # Avoid name collisions
 
   # Disable errexit and ERR trap before execution and re-enable afterwards
-  declare err_trap;
-  err_trap="$(trap -p ERR)";
-  declare -r flags="$-";
-  trap - ERR;
-  set +e;
-  ( eval "$err_trap"; set -e; "$@" );
-  _mf_result_834u92834="$?";
+  declare err_trap
+  err_trap="$(trap -p ERR)"
+  declare -r flags="$-"
+  trap - ERR
+  set +e
+  (
+    eval "$err_trap"
+    set -e
+    "$@"
+  )
+  _mf_result_834u92834="$?"
   if [[ "$flags" == *e* ]]; then
-    set -e;
+    set -e
   fi
-  eval "$err_trap";
+  eval "$err_trap"
 
   # if (( _mf_result_834u92834 == 0 )); then
   #   errchol "☑ $(print_values "${FUNCNAME[0]}" "$@")";
@@ -119,10 +121,10 @@ may_fail()
   #   errchol "☒ $(print_values "${FUNCNAME[0]}" "$@")";
   # fi
   if [[ -n "$ret_name" ]]; then
-    declare -n -- _mf_ret_777734234="${ret_name}";
-    _mf_ret_777734234="$_mf_result_834u92834";
+    declare -n -- _mf_ret_777734234="${ret_name}"
+    _mf_ret_777734234="$_mf_result_834u92834"
   fi
-  return 0;
+  return 0
 }
 
 # Run $@ hiding
@@ -130,41 +132,38 @@ may_fail()
 #   - ${1} == 1: file descriptor 1
 #   - ${1} == 2: file descriptor 2
 #   - ${1} == 3: file descriptor 1 and 2
-run_silent()
-{
-  declare silenter;
+run_silent() {
+  declare silenter
   case "$1" in
-    0) silenter="";;
-    1) silenter="run_silent_stdout";;
-    2) silenter="run_silent_stderr";;
-    3) silenter="run_silent_both";;
-    *) errchoe "${FUNCNAME[0]}: param 1 must be 1, 2 or 3";
-       return 1;;
+  0) silenter="" ;;
+  1) silenter="run_silent_stdout" ;;
+  2) silenter="run_silent_stderr" ;;
+  3) silenter="run_silent_both" ;;
+  *)
+    errchoe "${FUNCNAME[0]}: param 1 must be 1, 2 or 3"
+    return 1
+    ;;
   esac
-  ${silenter} "${@:2}";
-  return "$?";
+  ${silenter} "${@:2}"
+  return "$?"
 }
 
-run_silent_stdout()
-{
-  "${@}" >/dev/null;
+run_silent_stdout() {
+  "${@}" >/dev/null
 }
 
-run_silent_stderr()
-{
-  "${@}" 2>/dev/null;
+run_silent_stderr() {
+  "${@}" 2>/dev/null
 }
 
-run_silent_both()
-{
-  "${@}" >&/dev/null;
+run_silent_both() {
+  "${@}" >&/dev/null
 }
 
 # Show content of a variable in unambiguous way. For testing.
-show_variable()
-{
-  declare -n _ref_sv_348u928374="${1:?Missing variable name}";
+show_variable() {
+  declare -n _ref_sv_348u928374="${1:?Missing variable name}"
   # HACK: We use the array/dictionary notation array_name[@]. This happens to
   #       work for string variables as well.
-  echoi "${_ref_sv_348u928374[@]@A}";
+  echoi "${_ref_sv_348u928374[@]@A}"
 }

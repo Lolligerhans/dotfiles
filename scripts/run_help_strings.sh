@@ -2,11 +2,11 @@
 
 # version 0.0.0
 
-declare -r tag="runscript_help";
+declare -r tag="runscript_help"
 if [[ -v _sourced_files["$tag"] ]]; then
-  return 0;
+  return 0
 fi
-_sourced_files["$tag"]="";
+_sourced_files["$tag"]=""
 
 # TODO Version at all? check versions?
 # TODO load_version to source them?
@@ -37,36 +37,35 @@ _sourced_files["$tag"]="";
 #         set_args "--variables=val --help" "$@";
 #         eval "$get_args";                             # Calls provide_help
 #     }
-provide_help()
-{
-  declare caller_func="${FUNCNAME[1]}";
+provide_help() {
+  declare caller_func="${FUNCNAME[1]}"
 
   # Sanity check. Remove check if this is intended in the future.
   if [[ "$caller_func" != command_* ]]; then
-    errchow "Help is meant only for runscript commands at the moment";
-    errchou "But we are making an exception now because we want to use it anyway";
+    errchow "Help is meant only for runscript commands at the moment"
+    errchou "But we are making an exception now because we want to use it anyway"
   fi
 
   # Combine help-string from predefined help command with the --help expresion
   # from set_args.
-  declare var="${caller_func#command_}_help_string";
+  declare var="${caller_func#command_}_help_string"
   if [[ -v "$var" ]]; then
-    declare -n str="$var";
+    declare -n str="$var"
   else
-    declare str="${text_dim}(missing help string)${text_normal}";
+    declare str="${text_dim}(missing help string)${text_normal}"
   fi
 
   # TODO When help info line is output together with the helpstring variable,
   # we can page them together. Currently that is not possible.
-#  if >/dev/null 2>&1 batcat --version; then
-#    sed -e "$help" <<< "$str" | batcat --plain --paging=auto;
-#  else
-#    sed -e "$help" <<< "$str";
-#  fi
+  #  if >/dev/null 2>&1 batcat --version; then
+  #    sed -e "$help" <<< "$str" | batcat --plain --paging=auto;
+  #  else
+  #    sed -e "$help" <<< "$str";
+  #  fi
 
-  sed -e "$help" <<< "$str";
+  sed -e "$help" <<<"$str"
 
-  return 0;
+  return 0
 }
 
 # ┌────────────────────────┐
@@ -78,7 +77,8 @@ provide_help()
 # nice though.
 # FIXME Yeah they should DEFINITELY not fucking hang around here.
 declare -g help_help_string link_this_help_string quit_help_string interactive_help_string run_help_string rundir_help_string runscript_help_string function_help_string debug_help_string print_commands_help_string
-help_help_string="$(cat <<- EOF
+help_help_string="$(
+  cat <<-EOF
 	Print help strings from comands.
 
 	Lists commands at the same time, so could be seen as a more porcelain version
@@ -99,7 +99,7 @@ help_help_string="$(cat <<- EOF
 	    --help
 	        Show this help.
 	EOF
-  )";
+)"
 
 link_this_help_string="Links a responsible runscript to a selected location
 
@@ -119,25 +119,25 @@ OPTIONS
   --dir=DIR: Link to DIR instead of working directory.
     Default: this_location=\$this_location (set by commands.sh).
   --keep: Pass --keep to the deploy command. Always keep existing files without
-    prompt.";
+    prompt."
 
 quit_help_string=$'[TODO] Exit runscript
 \nThis command is intended for interactive mode (which you cannot leave
 otherwise). It is not clear if this is implemented well since the "exit" command
 does not go well with error tracing.
-\nDefinitely do not use outside of interactive mode at the moment.';
+\nDefinitely do not use outside of interactive mode at the moment.'
 
 interactive_help_string=$'[TODO] Start script in interactive mode
-\nShows available commands and prompts for a selection. Command arguments can be specified separately for each command';
+\nShows available commands and prompts for a selection. Command arguments can be specified separately for each command'
 
 run_help_string=$'Delegate remaining arguments to different runscript
-\nProvide path to another (directory containing a) runscript to be executed.';
+\nProvide path to another (directory containing a) runscript to be executed.'
 
 rundir_help_string=$'Delegate remaining arguments to different runscript (directory only)
-\nProvide path to another directory containing a runscript to be executed.';
+\nProvide path to another directory containing a runscript to be executed.'
 
 runscript_help_string=$'Delegate remaining arguments to different runscript (file only)
-\nProvide path to another runscript to be executed.';
+\nProvide path to another runscript to be executed.'
 
 function_help_string="Run bash function
 SYNOPSIS
@@ -156,10 +156,10 @@ OPTIONS
   --git:      Source git helpers script.
   --progress: Source progress helpers script.
   --cache:    Source cache helpers script.
-  --system:   Source system helpers script.";
+  --system:   Source system helpers script."
 
 debug_help_string=$'Run arguments as command + args with set -vx
-\nProbably not very helpful now that the runscript is quite busy with code.';
+\nProbably not very helpful now that the runscript is quite busy with code.'
 
 print_commands_help_string=$'Print list of available commands
 \nThis command is also used by bash autocompletion to obtain the list of available
@@ -167,5 +167,5 @@ commands.
 \nUsage:
   print_commands [EXPR]
     If EXPR is given, filter command list with grep -e EXPR.
-    Else print all available commands.';
+    Else print all available commands.'
 declare -r help_help_string link_this_help_string quit_help_string interactive_help_string run_help_string rundir_help_string runscript_help_string function_help_string debug_help_string print_commands_help_string

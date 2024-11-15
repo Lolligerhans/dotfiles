@@ -5,8 +5,7 @@
 # Copied stuff from online. DO not care to shellcheck until we write our own.
 # shellcheck disable=all
 
-true_colour_test()
-{
+true_colour_test() {
   #!/bin/bash
   #
   # https://gist.github.com/kariya-mitsuru/6338e61f2fb000bedd6d653aed4eec6e/revisions
@@ -18,13 +17,11 @@ true_colour_test()
   #   <r> <g> <b> range from 0 to 255 inclusive.
   #   The escape sequence ^[0m returns output to default
 
-  setBackgroundColor()
-  {
+  setBackgroundColor() {
     echo -en "\x1b[48;2;$1;$2;$3m "
   }
 
-  resetOutput()
-  {
+  resetOutput() {
     echo -e '\x1b[0m'
   }
 
@@ -33,22 +30,22 @@ true_colour_test()
   # setBackgroundColor $red $green $blue where
   # $red $green and $blue are integers
   # ranging between 0 and 255 inclusive
-  rainbowColor()
-  {
+  rainbowColor() {
     # Dodge errexit and ERR traps with ||:
-    (( t = $1 % 43 * 255 / 43 )) || :
-    (( q = 255 - t ))
+    ((t = $1 % 43 * 255 / 43)) || :
+    ((q = 255 - t))
 
-    case "$(( $1 / 43 ))" in
-      0) setBackgroundColor 255 $t 0 ;;
-      1) setBackgroundColor $q 255 0 ;;
-      2) setBackgroundColor 0 255 $t ;;
-      3) setBackgroundColor 0 $q 255 ;;
-      4) setBackgroundColor $t 0 255 ;;
-      5) setBackgroundColor 255 0 $q ;;
-      *)
-        abort "Unreachable";
-        setBackgroundColor 0 0 0
+    case "$(($1 / 43))" in
+    0) setBackgroundColor 255 $t 0 ;;
+    1) setBackgroundColor $q 255 0 ;;
+    2) setBackgroundColor 0 255 $t ;;
+    3) setBackgroundColor 0 $q 255 ;;
+    4) setBackgroundColor $t 0 255 ;;
+    5) setBackgroundColor 255 0 $q ;;
+    *)
+      abort "Unreachable"
+      setBackgroundColor 0 0 0
+      ;;
     esac
   }
 

@@ -20,16 +20,16 @@
 #source "$dotfiles"/scripts/cache.sh;
 
 # Ensuring version even if included already
-load_version "$dotfiles/scripts/version.sh" 0.0.0;
+load_version "$dotfiles/scripts/version.sh" 0.0.0
 #load_version "$dotfiles/scripts/assert.sh" 0.0.0;
 #load_version "$dotfiles/scripts/boilerplate.sh" 0.0.0;
 #load_version "$dotfiles/scripts/cache.sh" 0.0.0;
 #load_version "$dotfiles/scripts/error_handling.sh" 0.0.0;
-load_version "$dotfiles/scripts/git_utils.sh" "0.0.0";
+load_version "$dotfiles/scripts/git_utils.sh" "0.0.0"
 #load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0;
-load_version "$dotfiles/scripts/setargs.sh" 0.0.0;
-load_version "$dotfiles/scripts/termcap.sh" 0.0.0;
-load_version "$dotfiles/scripts/utils.sh" 0.0.0;
+load_version "$dotfiles/scripts/setargs.sh" 0.0.0
+load_version "$dotfiles/scripts/termcap.sh" 0.0.0
+load_version "$dotfiles/scripts/utils.sh" 0.0.0
 
 # +----------------------+
 # | Constants            |
@@ -39,18 +39,17 @@ load_version "$dotfiles/scripts/utils.sh" 0.0.0;
 # | Commands             |
 # +----------------------+
 
-workspace_list()
-{
-  echon "Available workspaces:";
+workspace_list() {
+  echon "Available workspaces:"
 
-  declare -a funcs;
-  mapfile -t funcs < <(declare -F | command sed -n 's/.*prepare_\([a-zA-Z]\+\)_workspace.*/\1/p');
-#  declare -F;
-#  declare -F | command sed -n 's/.*prepare_\([a-zA-Z]\+\)_workspace.*/\1/p';
-#  errchof "funcs: [${funcs[@]}]";
-  declare w;
+  declare -a funcs
+  mapfile -t funcs < <(declare -F | command sed -n 's/.*prepare_\([a-zA-Z]\+\)_workspace.*/\1/p')
+  #  declare -F;
+  #  declare -F | command sed -n 's/.*prepare_\([a-zA-Z]\+\)_workspace.*/\1/p';
+  #  errchof "funcs: [${funcs[@]}]";
+  declare w
   for w in "${funcs[@]}"; do
-    echo "  • $w";
+    echo "  • $w"
   done
 }
 
@@ -65,17 +64,15 @@ workspace_list()
 #   :; # ...
 # }
 
-prepare_example_workspace()
-{
-  abort "This is a dummy workspace";
-  declare -r src="https://github.com/example/example.git";
-  git_clone_repo --source="${src}" --path="$HOME/github/example";
+prepare_example_workspace() {
+  abort "This is a dummy workspace"
+  declare -r src="https://github.com/example/example.git"
+  git_clone_repo --source="${src}" --path="$HOME/github/example"
 }
 
-prepare_dotfiles_workspace()
-{
-  echof "This does nothing at the moment (testing only)";
-  echof "What is that supposed to do?";
+prepare_dotfiles_workspace() {
+  echof "This does nothing at the moment (testing only)"
+  echof "What is that supposed to do?"
 }
 
 # +----------------------+

@@ -11,16 +11,16 @@
 # │ ⚙ Boilerplate        │
 # ╰──────────────────────╯
 # ❗ FIXME: Unique ID must be set when using this template
-declare -r tag="unique_id";
+declare -r tag="unique_id"
 if [[ -v _sourced_files["$tag"] ]]; then return 0; fi
-_sourced_files["$tag"]="";
+_sourced_files["$tag"]=""
 # ╭──────────────────────╮
 # │ 🗀 Dependencies       │
 # ╰──────────────────────╯
 # ✔ Ensure versions with satisfy_version
-satisfy_version "$dotfiles/scripts/boilerplate.sh";
+satisfy_version "$dotfiles/scripts/boilerplate.sh"
 # ✔ Source versioned dependencies with load_version
-load_version "$dotfiles/scripts/version.sh";
+load_version "$dotfiles/scripts/version.sh"
 #load_version "$dotfiles/scripts/assert.sh";
 #load_version "$dotfiles/scripts/bash_meta.sh";
 #load_version "$dotfiles/scripts/cache.sh";

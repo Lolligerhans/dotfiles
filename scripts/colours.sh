@@ -17,44 +17,37 @@
 #load_version "$dotfiles/scripts/termcap.sh" 0.0.0;
 #load_version "$dotfiles/scripts/utils.sh" 0.0.0;
 
-saturate_medium()
-{
-  errchot "Implement";
+saturate_medium() {
+  errchot "Implement"
 
   # Transform to 75% Saturation
-  declare r="${1:?Missing red}";
-  declare g="${2:?Missing green}";
-  declare b="${3:?Missing blue}";
+  declare r="${1:?Missing red}"
+  declare g="${2:?Missing green}"
+  declare b="${3:?Missing blue}"
 }
 
-saturate_light()
-{
-  errchot "Implement";
+saturate_light() {
+  errchot "Implement"
 }
 
-saturate_dark()
-{
-  errchot "Implement";
+saturate_dark() {
+  errchot "Implement"
 }
 
-saturate_colour()
-{
-  errchot "Implement";
+saturate_colour() {
+  errchot "Implement"
 }
 
 #######################################
 # Helpers
 #######################################
 
-saturate_75()
-{
+saturate_75() {
   # Desaturate by 25%
-  printf '%d' "$(( (128 + 3 * $1) / 4 ))";
+  printf '%d' "$(((128 + 3 * $1) / 4))"
 }
 
-saturate_50()
-{
+saturate_50() {
   # Desaturate by 25%
-  printf '%d' "$(( (128 + $1) / 2 ))";
+  printf '%d' "$(((128 + $1) / 2))"
 }
-

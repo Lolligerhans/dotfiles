@@ -10,12 +10,12 @@
 # │ ⚙ Boilerplate        │
 # ╰──────────────────────╯
 
-declare -gr dotfiles="${DOTFILES:-"$HOME/dotfiles"}"; # TOKEN_DOTFILES_GLOBAL
-declare -gA _sourced_files=( ["runscript"]="" );
-declare -gr this_location="";
+declare -gr dotfiles="${DOTFILES:-"$HOME/dotfiles"}" # TOKEN_DOTFILES_GLOBAL
+declare -gA _sourced_files=(["runscript"]="")
+declare -gr this_location=""
 # shellcheck source-path=./scripts/boilerplate.sh
-source "$dotfiles/scripts/boilerplate.sh" "${BASH_SOURCE[0]}" "$@";
-satisfy_version "$dotfiles/scripts/boilerplate.sh" 0.0.0;
+source "$dotfiles/scripts/boilerplate.sh" "${BASH_SOURCE[0]}" "$@"
+satisfy_version "$dotfiles/scripts/boilerplate.sh" 0.0.0
 
 # ╭──────────────────────╮
 # │ 🛠 Configuration     │
@@ -29,35 +29,35 @@ satisfy_version "$dotfiles/scripts/boilerplate.sh" 0.0.0;
 # │ 🗀 Dependencies       │
 # ╰──────────────────────╯
 
-load_version "$dotfiles/scripts/version.sh" 0.0.0;
-load_version "$dotfiles/scripts/bash_meta.sh" 0.0.0;
-load_version "$dotfiles/scripts/cache.sh" 0.0.0;
-load_version "$dotfiles/scripts/fileinteracts.sh" 0.0.0;
-load_version "$dotfiles/scripts/git_utils.sh" 0.0.0;
-load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0;
-load_version "$dotfiles/scripts/setargs.sh" 0.0.0;
-load_version "$dotfiles/scripts/termcap.sh" 0.0.0;
-load_version "$dotfiles/scripts/userinteracts.sh" 0.0.0;
-load_version "$dotfiles/scripts/utils.sh" 0.0.0;
+load_version "$dotfiles/scripts/version.sh" 0.0.0
+load_version "$dotfiles/scripts/bash_meta.sh" 0.0.0
+load_version "$dotfiles/scripts/cache.sh" 0.0.0
+load_version "$dotfiles/scripts/fileinteracts.sh" 0.0.0
+load_version "$dotfiles/scripts/git_utils.sh" 0.0.0
+load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0
+load_version "$dotfiles/scripts/setargs.sh" 0.0.0
+load_version "$dotfiles/scripts/termcap.sh" 0.0.0
+load_version "$dotfiles/scripts/userinteracts.sh" 0.0.0
+load_version "$dotfiles/scripts/utils.sh" 0.0.0
 
 # ╭──────────────────────╮
 # │ 🗺 Globals           │
 # ╰──────────────────────╯
 
-declare -r restoration_script="$dotfiles/snippets/restoration.sh";
-declare -r restoration_default_destination="$HOME/Backups/";
-declare -r stick_name="UBUNTU_STIC";
-declare -r restoration_tmp_path="/tmp/restoration_tmp";
-declare -r restoration_stick_path="/media/${USER}/${stick_name}/MY_BACKUP/";
+declare -r restoration_script="$dotfiles/snippets/restoration.sh"
+declare -r restoration_default_destination="$HOME/Backups/"
+declare -r stick_name="UBUNTU_STIC"
+declare -r restoration_tmp_path="/tmp/restoration_tmp"
+declare -r restoration_stick_path="/media/${USER}/${stick_name}/MY_BACKUP/"
 declare -ar restoration_files=(
-    "${dotfiles}"
-    "${HOME}/.ssh"/id*
-    "${HOME}/.ssh/known_hosts"
-    # TODO: Once we only have machines with snap remove the other
-    "${HOME}/.mozilla/firefox/"
-    "${HOME}/snap/firefox/common/.mozilla/firefox/"
-    );
-declare -r update_alternatives_default_link="/usr/bin";
+  "${dotfiles}"
+  "${HOME}/.ssh"/id*
+  "${HOME}/.ssh/known_hosts"
+  # TODO: Once we only have machines with snap remove the other
+  "${HOME}/.mozilla/firefox/"
+  "${HOME}/snap/firefox/common/.mozilla/firefox/"
+)
+declare -r update_alternatives_default_link="/usr/bin"
 
 # ╭──────────────────────╮
 # │ ⌨  Commands          │
@@ -65,229 +65,222 @@ declare -r update_alternatives_default_link="/usr/bin";
 
 # Default command (when no arguments are given)
 # shellcheck disable=2317,2120 # unreachable, no args passed
-command_default()
-{
+command_default() {
   # set_args "--help" "$@";
   # eval "$get_args";
 
-  subcommand run scripts/tests;
+  subcommand run scripts/tests
   # subcommand "help" "$@";
 }
 
-command_test()
-{
-  set_args "--help" "$@";
-  eval "$get_args";
+command_test() {
+  set_args "--help" "$@"
+  eval "$get_args"
 
   # Order so that we need not scroll output much
-  subcommand rundir scripts/tests test --all;
+  subcommand rundir scripts/tests test --all
 }
 
 command_unun() {
-  set_args "--help" "$@";
-  eval "$get_args";
+  set_args "--help" "$@"
+  eval "$get_args"
 
   # Glob for .filename.un~
   if command rm -v "$caller_path"/.*.un~; then
-    echok "Removed undofiles";
+    echok "Removed undofiles"
   else
-    echow "Failed to remove undofiles";
+    echow "Failed to remove undofiles"
   fi
 }
 
 command_alias() {
-  set_args "--name=? --value=? --delete --help" "$@";
-  eval "$get_args";
+  set_args "--name=? --value=? --delete --help" "$@"
+  eval "$get_args"
 
-  declare -r aliases_file="${HOME}/.bash_aliases_local";
-  show_variable aliases_file;
+  declare -r aliases_file="${HOME}/.bash_aliases_local"
+  show_variable aliases_file
 
   # Disallow --value and --delete at the same time
   if [[ "$value" != "?" && "$delete" != "false" ]]; then
-    show_variable value;
-    show_variable delete;
-    abort "Options --value and --delete cannot be used at the same time";
+    show_variable value
+    show_variable delete
+    abort "Options --value and --delete cannot be used at the same time"
   fi
 
-  command touch "$aliases_file";
+  command touch "$aliases_file"
 
   # Show all aliases when no name is provided
   if [[ "$name" == "?" ]]; then
-    command batcat "$aliases_file";
-    return 0;
+    command batcat "$aliases_file"
+    return 0
   fi
 
   # Makes valid alias and allows using $name in regex patterns
-  declare -r valid_name='+([_.[:alnum:]-])';
+  declare -r valid_name='+([_.[:alnum:]-])'
   # shellcheck disable=SC2053
   if [[ "$name" != $valid_name ]]; then
-    show_variable name;
-    show_variable valid_name;
-    abort "Name invalid";
+    show_variable name
+    show_variable valid_name
+    abort "Name invalid"
   fi
 
   if [[ "$delete" == "true" ]]; then
-    subcommand alias "$name"; # Show existing one
-    command sed -ie "/^alias ${name}=/d" "$aliases_file";
-    echok "Removed alias $name";
-    return 0;
+    subcommand alias "$name" # Show existing one
+    command sed -ie "/^alias ${name}=/d" "$aliases_file"
+    echok "Removed alias $name"
+    return 0
   fi
 
   # HACK: Show current entry when value is "false" (i.e., not provided to
   #       set_args).
   if [[ "$value" == "?" ]]; then
     if command grep -e "^alias ${name}=" "$aliases_file"; then
-      echon "✅ Alias $text_user_soft$name$text_normal found";
+      echon "✅ Alias $text_user_soft$name$text_normal found"
     else
-      echon "❎ Alias $text_user_soft$name$text_normal not found";
+      echon "❎ Alias $text_user_soft$name$text_normal not found"
     fi
-    return 0;
+    return 0
   fi
 
-  subcommand alias --delete "$name"; # Delete existing one
+  subcommand alias --delete "$name" # Delete existing one
 
   # Add new alias
-  echo "alias $name=${value@Q}" >> "$aliases_file";
-  echok "Added alias $text_user_soft$name$text_normal";
+  echo "alias $name=${value@Q}" >>"$aliases_file"
+  echok "Added alias $text_user_soft$name$text_normal"
 }
 
-command_clear_cache()
-{
-  set_args "--help" "$@";
-  eval "$get_args";
+command_clear_cache() {
+  set_args "--help" "$@"
+  eval "$get_args"
 
-  cache_clear;
+  cache_clear
 }
 
-command_timer()
-{
-  set_args "--minutes= --message=timer --console --help" "$@";
-  eval "$get_args";
+command_timer() {
+  set_args "--minutes= --message=timer --console --help" "$@"
+  eval "$get_args"
 
   # Sanity check
   if ! >/dev/null 2>&1 notify-send --version; then
-    abort "${FUNCNAME[0]}: notify-send not installed";
+    abort "${FUNCNAME[0]}: notify-send not installed"
   fi
 
   # Start tiemr in background
   {
-    sleep "$((minutes * 60))";
+    sleep "$((minutes * 60))"
     # This is the predefined 'alert' alias in Ubuntu 20
-    notify-send --urgency=low "$message: $minutes minutes";
+    notify-send --urgency=low "$message: $minutes minutes"
     if [[ "$console" == "true" ]]; then
-      echou "${FUNCNAME[0]}: $message: $minutes minutes";
+      echou "${FUNCNAME[0]}: $message: $minutes minutes"
     fi
 
   } &
 
-
-  echok "Started timer for $minutes minutes";
+  echok "Started timer for $minutes minutes"
 }
 
-command_update_alternatives()
-{
-  set_args "--path= --name --link --priority --dry-run --yes --help" "$@";
-  eval "$get_args";
+command_update_alternatives() {
+  set_args "--path= --name --link --priority --dry-run --yes --help" "$@"
+  eval "$get_args"
 
-#  echou "${FUNCNAME[0]}: testing is on";
-#  echoi "$(print_values_decorate Args "" "" $@)";
-#  declare dry_run="true";
+  #  echou "${FUNCNAME[0]}: testing is on";
+  #  echoi "$(print_values_decorate Args "" "" $@)";
+  #  declare dry_run="true";
 
   if [[ "${path:0:1}" != "/" ]]; then
-    declare _before="${path}";
-    path="$(which "$path")" || abort "${FUNCNAME[0]}: --path (${text_dim}$_before${text_normal}) inaccessible for 'which'";
-    echon "Which'd relative path $text_dim${_before}$text_normal ➜ $text_dim$path$text_normal";
+    declare _before="${path}"
+    path="$(which "$path")" || abort "${FUNCNAME[0]}: --path (${text_dim}$_before${text_normal}) inaccessible for 'which'"
+    echon "Which'd relative path $text_dim${_before}$text_normal ➜ $text_dim$path$text_normal"
   fi
 
   # Split version string to get --name
   if [[ "$name" == "false" ]]; then # We cannot name a program "false"
     # Need shopt extglob
     # TODO Use regex to extract all trailing digits, dashes and periods (?)
-    declare -r pattern="-+([[:digit:]])";
+    declare -r pattern="-+([[:digit:]])"
     # shellcheck disable=2295
-    declare -r no_version="${path%%$pattern}";
-    declare -ir len_noversion="$((${#no_version} + 1))"; # Hyphen-minus takes 1 character
+    declare -r no_version="${path%%$pattern}"
+    declare -ir len_noversion="$((${#no_version} + 1))" # Hyphen-minus takes 1 character
     #echoi "path=$path";
     #echoi "#path=${#path}";
     #echoi "no_version=$no_version";
     #echoi "len_noversion=$len_noversion";
     if ((len_noversion >= ${#path})); then
-      abort "${FUNCNAME[0]}: Could not deduce name from $text_dim$path$text_normal";
+      abort "${FUNCNAME[0]}: Could not deduce name from $text_dim$path$text_normal"
     fi
-    declare -r ua_name="$(basename "$no_version")";
+    declare -r ua_name="$(basename "$no_version")"
   else
-    declare -r ua_name="$name";
+    declare -r ua_name="$name"
   fi
 
   # Deduce link
   if [[ "$link" == "false" ]]; then
-    declare -r ua_link="${update_alternatives_default_link}/${ua_name}";
+    declare -r ua_link="${update_alternatives_default_link}/${ua_name}"
   else
-    declare -r ua_link="$link";
+    declare -r ua_link="$link"
   fi
 
   # Deduce version/priority
   if [[ "$priority" == "false" ]]; then
     if [[ "$ua_name" == *[[:digit:]]* ]]; then
-      abort "${FUNCNAME[0]}: Not deducing priority with more digits contained in $text_dim$ua_name$text_normal";
+      abort "${FUNCNAME[0]}: Not deducing priority with more digits contained in $text_dim$ua_name$text_normal"
     fi
-    declare -r ua_priority="${path:$len_noversion}";
+    declare -r ua_priority="${path:$len_noversion}"
     if [[ "${ua_priority:0:1}" == "0" ]]; then # start:len
-      abort "${FUNCNAME[0]}: Deduced priority starts with '0' in $text_dim$ua_priority$text_normal";
+      abort "${FUNCNAME[0]}: Deduced priority starts with '0' in $text_dim$ua_priority$text_normal"
     fi
   else
-    declare -r ua_priority="$priority";
+    declare -r ua_priority="$priority"
   fi
 
   # Sanity check
-  if [[ ! -a "$path" ]]; then
-    echoe "Binary $text_dim$path$text_normal not found";
+  if [[ ! -e "$path" ]]; then
+    echoe "Binary $text_dim$path$text_normal not found"
     if [[ "$dry_run" == "true" ]]; then
-      echon "continuing despite missing binary (--dry-run)";
+      echon "continuing despite missing binary (--dry-run)"
     else
-      abort "Binary not found";
+      abort "Binary not found"
     fi
   fi
 
-  echoi "ua_link: $text_dim$ua_link$text_normal";
-  echoi "ua_name: $text_dim$ua_name$text_normal";
-  echoi "ua_path: $text_dim$path$text_normal";
-  echoi "ua_prio: $text_dim$ua_priority$text_normal";
-  declare -ra params=("$ua_link" "$ua_name" "$path" "$ua_priority");
-  echon "Command: 'update-alternatives --install \"\$@\": $(print_values_decorate "ARGS" "" "" "${params[@]}")'";
+  echoi "ua_link: $text_dim$ua_link$text_normal"
+  echoi "ua_name: $text_dim$ua_name$text_normal"
+  echoi "ua_path: $text_dim$path$text_normal"
+  echoi "ua_prio: $text_dim$ua_priority$text_normal"
+  declare -ra params=("$ua_link" "$ua_name" "$path" "$ua_priority")
+  echon "Command: 'update-alternatives --install \"\$@\": $(print_values_decorate "ARGS" "" "" "${params[@]}")'"
   if [[ "$dry_run" == "true" ]]; then
-    return 0;
+    return 0
   fi
 
   # Pass to update-alternat
   # TODO When we feel comfortable with the command we can add a --yes parameter
   #      to skip the confirmation.
   if [[ "$yes" == "true" ]] || [[ "$(ask_user " Parameters ok?")" == "true" ]]; then
-    set -x;
-    sudo update-alternatives --install "${params[@]}";
-    set +x;
-    echok "update-alternative for $text_dim$ua_name$text_normal installed: $text_dim$path$text_normal";
+    set -x
+    sudo update-alternatives --install "${params[@]}"
+    set +x
+    echok "update-alternative for $text_dim$ua_name$text_normal installed: $text_dim$path$text_normal"
   else
-    echos "Update-alternatives not run";
+    echos "Update-alternatives not run"
   fi
-  set -x;
-  update-alternatives --list "$ua_name";
-  set +x;
+  set -x
+  update-alternatives --list "$ua_name"
+  set +x
 }
 
-command_restoration_tarball()
-{
-  set_args "--name=backup --destination=$restoration_default_destination --move --stick --test_unpacking --verbose --help" "$@";
-  eval "$get_args";
+command_restoration_tarball() {
+  set_args "--name=backup --destination=$restoration_default_destination --move --stick --test_unpacking --verbose --help" "$@"
+  eval "$get_args"
 
   # Special case: --stick overwrites destination/move
   if [[ "$stick" == "true" ]]; then
     # When --move is active, overwrite that and leave --destination alone. When
     # only --destination is used, overwrite that.
     if [[ "$move" != "false" ]]; then
-      move="$restoration_stick_path";
+      move="$restoration_stick_path"
     else
-      destination="$restoration_stick_path";
+      destination="$restoration_stick_path"
     fi
   fi
 
@@ -296,47 +289,47 @@ command_restoration_tarball()
   if [[ "$move" == "true" ]]; then
     # Set but no argument passed. Canno use default path for destination since
     # --move might get it.
-    move="$destination";
-    rm -rf -- "$restoration_tmp_path";
-    ensure_directory "$restoration_tmp_path";
-    destination="$restoration_tmp_path";
+    move="$destination"
+    rm -rf -- "$restoration_tmp_path"
+    ensure_directory "$restoration_tmp_path"
+    destination="$restoration_tmp_path"
   fi
 
   # Sanity check destination
   if [[ "$destination" == "$restoration_default_destination" ]]; then
-    ensure_directory "$destination";
+    ensure_directory "$destination"
   else
     if [[ ! -d "$destination" ]]; then
-      echon "Destination $text_dim$destination$text_normal does not exist yet";
+      echon "Destination $text_dim$destination$text_normal does not exist yet"
       if [[ "$(ask_user "Create now?")" == "true" ]]; then
-        ensure_directory "$destination";
+        ensure_directory "$destination"
       else
-        abort "Directory $text_bold$destination$text_normal not found";
+        abort "Directory $text_bold$destination$text_normal not found"
       fi
     fi
   fi
 
-  declare tar_flag="";
-  [[ "$verbose" == "true" ]] && tar_flag="v";
+  declare tar_flag=""
+  [[ "$verbose" == "true" ]] && tar_flag="v"
 
-  declare -r timestamp="$(date_nocolon)";
-  declare -r nodename="$(uname -n)";
-  declare -r name_timestamp_nodename="${name}_${timestamp}_${nodename}";
-  declare -r toplevel_dir="$destination/$name_timestamp_nodename";
-  declare -r filename="$name_timestamp_nodename.tar.bz2";
-  declare -r backup_path="$toplevel_dir/$filename";
+  declare -r timestamp="$(date_nocolon)"
+  declare -r nodename="$(uname -n)"
+  declare -r name_timestamp_nodename="${name}_${timestamp}_${nodename}"
+  declare -r toplevel_dir="$destination/$name_timestamp_nodename"
+  declare -r filename="$name_timestamp_nodename.tar.bz2"
+  declare -r backup_path="$toplevel_dir/$filename"
 
   # Create backup tarball
-  echoi "Backing up:";
-  declare file;
+  echoi "Backing up:"
+  declare file
   for file in "${restoration_files[@]}"; do
-    echon "  • $text_dim$file$text_normal";
+    echon "  • $text_dim$file$text_normal"
   done
-  echoi "Backup destination: $text_dim$destination$text_normal";
-  echoi "Name: $text_dim$filename$text_normal";
-  echoi "Backup directory: $text_dim$name_timestamp_nodename$text_normal";
-  echoi "Creating backup $text_dim$toplevel_dir$text_normal";
-  mkdir -vp "$toplevel_dir";
+  echoi "Backup destination: $text_dim$destination$text_normal"
+  echoi "Name: $text_dim$filename$text_normal"
+  echoi "Backup directory: $text_dim$name_timestamp_nodename$text_normal"
+  echoi "Creating backup $text_dim$toplevel_dir$text_normal"
+  mkdir -vp "$toplevel_dir"
 
   #{
   #echon "Trying first time with relative path";
@@ -347,142 +340,138 @@ command_restoration_tarball()
   #  echoi "Trying with full path";
   #}
 
-  tar --force-local -${tar_flag}cjSpf "${backup_path}" "${restoration_files[@]}";
+  tar --force-local -${tar_flag}cjSpf "${backup_path}" "${restoration_files[@]}"
   # -p: Preserve permissions
-  echok "Created backup tarball";
+  echok "Created backup tarball"
 
   # Add restoration script
-  declare -r restoration_target="$toplevel_dir/restoration-$name_timestamp_nodename.sh";
-  cp -v "$restoration_script" "$restoration_target";
-  declare -r token_value="TOKEN_backup_name";
-  declare -r replacement_line="declare -r backup_name=\"$filename\"; # TOKEN_name_was_given";
+  declare -r restoration_target="$toplevel_dir/restoration-$name_timestamp_nodename.sh"
+  cp -v "$restoration_script" "$restoration_target"
+  declare -r token_value="TOKEN_backup_name"
+  declare -r replacement_line="declare -r backup_name=\"$filename\"; # TOKEN_name_was_given"
   # shellcheck disable=SC1003
-  sed -i -e '/'"$token_value"'/c \'"$replacement_line"'' "$restoration_target";
-  chmod +x "$restoration_target";
-  echok "Created restoration script";
+  sed -i -e '/'"$token_value"'/c \'"$replacement_line"'' "$restoration_target"
+  chmod +x "$restoration_target"
+  echok "Created restoration script"
 
   # Unpack tarball again. You can remove this eventually when if it works.
   if [[ "$test_unpacking" == "true" ]]; then
-    echon "Unpacking backup for testing: $text_dim$backup_path$text_normal";
-    tar -C "$toplevel_dir" -xjpf "${backup_path}";
-    pushd "$toplevel_dir";
-    tree -aDL 3;
-    popd;
-    echok "Unpacked backup";
+    echon "Unpacking backup for testing: $text_dim$backup_path$text_normal"
+    tar -C "$toplevel_dir" -xjpf "${backup_path}"
+    pushd "$toplevel_dir"
+    tree -aDL 3
+    popd
+    echok "Unpacked backup"
   fi
 
   # Move backup (if needed)
   # NOTE: We use the new declare-optionals setargs config ☺
   if [[ "$move" != "false" ]]; then
-    echol "Moving finished backup to move destination $text_dim$move$text_normal";
-    mv -v "$toplevel_dir" "$move";
-    echok "Moved backup to $text_dim$move$text_normal";
+    echol "Moving finished backup to move destination $text_dim$move$text_normal"
+    mv -v "$toplevel_dir" "$move"
+    echok "Moved backup to $text_dim$move$text_normal"
   fi
 }
 
-command_wipe_cache()
-{
-  set_args "--help" "$@";
-  eval "$get_args";
-  rm -vr ~/dotfiles/scripts/.cache/;
+command_wipe_cache() {
+  set_args "--help" "$@"
+  eval "$get_args"
+  rm -vr ~/dotfiles/scripts/.cache/
 }
 
-command_upgrade()
-{
-  set_args "--daily --with-new-pkgs --help" "$@";
-  eval "$get_args";
+command_upgrade() {
+  set_args "--daily --with-new-pkgs --help" "$@"
+  eval "$get_args"
 
   # (!) Force upgrade resets the daily cache on error. Dont use in scripts.
-  declare update_needed;
-  update_needed="$(cache_daily "upgrade" "get")";
+  declare update_needed
+  update_needed="$(cache_daily "upgrade" "get")"
   if [[ "$daily" != "true" ]] || [[ "$update_needed" == "true" ]]; then
-  # TODO More readable version
-  {
-    echol "Upgrading apt packages" &&
-    sudo apt-get update && sudo apt-get upgrade -y &&
-    echok "apt upgrade";
-    if [[ "$with_new_pkgs" == "true" ]]; then
-      sudo apt --with-new-pkgs upgrade;
-    fi
-    echol "Upgrading snap packages" &&
-    sudo snap refresh &&
-    echok "snap refresh";
-    cache_daily "upgrade" "set" >/dev/null;
-  } ||
-  {
-    cache_daily "upgrade" "reset";
-    errchoe "Failed to upgrade apt/snap packages. Will try again next time";
-  }
+    # TODO More readable version
+    {
+      echol "Upgrading apt packages" &&
+        sudo apt-get update && sudo apt-get upgrade -y &&
+        echok "apt upgrade"
+      if [[ "$with_new_pkgs" == "true" ]]; then
+        sudo apt --with-new-pkgs upgrade
+      fi
+      echol "Upgrading snap packages" &&
+        sudo snap refresh &&
+        echok "snap refresh"
+      cache_daily "upgrade" "set" >/dev/null
+    } ||
+      {
+        cache_daily "upgrade" "reset"
+        errchoe "Failed to upgrade apt/snap packages. Will try again next time"
+      }
   else
-    echos "(daily) apt/snap upgrades";
+    echos "(daily) apt/snap upgrades"
   fi
 }
 
-command_shutdown_upgrade()
-{
-  set_args "--timer=60 --help" "$@";
-  eval "$get_args";
+command_shutdown_upgrade() {
+  set_args "--timer=60 --help" "$@"
+  eval "$get_args"
 
   #may_fail -- subcommand update_dotfiles_branch;
 
-  may_fail -- subcommand upgrade --daily;
+  may_fail -- subcommand upgrade --daily
 
-  shutdown_timer "$timer";
+  shutdown_timer "$timer"
 }
 
 # This command updates the current dotfiles branch. Every branch should specify
 # its own version (for example, to auto-rebase on master).
 # TODO: I think this function and everything below could be removed?
-command_update_dotfiles_branch()
-{
-  set_args "--help" "$@";
-  eval "$get_args";
+command_update_dotfiles_branch() {
+  set_args "--help" "$@"
+  eval "$get_args"
 
   # Sanity check
-  declare work_tree;
-  work_tree="$(git_is_worktree)";
+  declare work_tree
+  work_tree="$(git_is_worktree)"
   if [[ "$work_tree" != "true" ]]; then abort "dotfiles should be a git repo"; fi
   if ! git_test_clean; then abort "Clean repository before updating"; fi
-  declare branch remote_branch;
-  branch="$(git_current_branch)";
+  declare branch remote_branch
+  branch="$(git_current_branch)"
   if [[ "$branch" == "HEAD" ]]; then
-    abort "update_dotfiles_branch: HEAD detached";
+    abort "update_dotfiles_branch: HEAD detached"
   fi
-  remote_branch="$(git rev-parse --abbrev-ref --symbolic-full-name "@{upstream}")";
+  remote_branch="$(git rev-parse --abbrev-ref --symbolic-full-name "@{upstream}")"
 
   # FIXME How to read remote name from script reliably?
   if [[ "$remote_branch" != "origin/$branch" ]]; then
-    errchof "How to read name of remote fromscript??";
-    abort "This only works for remote origin currently";
+    errchof "How to read name of remote fromscript??"
+    abort "This only works for remote origin currently"
   fi
 
   # Fetch remote branch (must be set up)
-  git fetch origin "$branch"; # FIXME Hard-coded remote "origin" cause I dont know how else
-  declare -i ahead behind;
-  ahead="$(git_ahead_count)"; # TODO Ahead-behind function returning both?
-  behind="$(git_behind_count)";
+  git fetch origin "$branch" # FIXME Hard-coded remote "origin" cause I dont know how else
+  declare -i ahead behind
+  ahead="$(git_ahead_count)" # TODO Ahead-behind function returning both?
+  behind="$(git_behind_count)"
 
   # Special case: out of sync
   if ((ahead && behind)); then
-    abort "Local branch $branch out-of-sync with ${remote_branch}";
+    abort "Local branch $branch out-of-sync with ${remote_branch}"
   fi
 
   # Special case: up to date
   if ! ((ahead || behind)); then
-    errchos "[up-to-date] Snyc remote-tracking-branch ${remote_branch}";
+    errchos "[up-to-date] Snyc remote-tracking-branch ${remote_branch}"
     # Do big if instead of return because other branches add things below
   else
     # Sync local branch with remote branch
-    if (( ahead != 0)); then
+    if ((ahead != 0)); then
       # behind == 0
-      git push;
-      errchok "Pushed $branch ➜ $remote_branch";
-    elif (( behind != 0)); then
+      git push
+      errchok "Pushed $branch ➜ $remote_branch"
+    elif ((behind != 0)); then
       # Fast-forward merge
-      git merge --ff-only "$remote_branch";
-      errchok "Fast-forward merge remote-tracking branch ${remote_branch} ➜ ${branch}";
+      git merge --ff-only "$remote_branch"
+      errchok "Fast-forward merge remote-tracking branch ${remote_branch} ➜ ${branch}"
     else
-      abort "Unreachable" "return";
+      abort "Unreachable" "return"
     fi
   fi
 
@@ -493,183 +482,181 @@ command_update_dotfiles_branch()
   #rebase_on_master_helper --yes="true";
 }
 
-command_colours()
-{
-  set_args "--help" "$@";
-  eval "$get_args";
+command_colours() {
+  set_args "--help" "$@"
+  eval "$get_args"
 
   # Access the useful colour tests from /scripts/tests from within dotfiles/
-  subcommand rundir scripts/tests/ test --colour;
+  subcommand rundir scripts/tests/ test --colour
 }
 
-command_termcaps_manpage()
-{
-  set_args "--help" "$@";
-  eval "$get_args";
-  print_and_execute "man" "terminfo";
+command_termcaps_manpage() {
+  set_args "--help" "$@"
+  eval "$get_args"
+  print_and_execute "man" "terminfo"
 }
 
-command_install()
-{
+command_install() {
   # Invoke default command to install dotfiles
-  subcommand rundir scripts/install "$@";
+  subcommand rundir scripts/install "$@"
 }
 
 # Copy dotfiles directory to another location, but only files that are relevant
 # from scripting. As a current snapshot of the dotfiles.
 #
 # Output: Path of new dotfiles (input --path + "/" + name)
-command_export_dotfiles_scripts_standalone()
-{
-  set_args "--path= --name=dotfiles_copy --yes --help" "$@";
-  eval "$get_args";
+command_export_dotfiles_scripts_standalone() {
+  set_args "--path= --name=dotfiles_copy --yes --help" "$@"
+  eval "$get_args"
 
   # If we export anything but the msater branch, give a warning
   {
-    declare git_br;
-    git_br="$(git_current_branch)";
+    declare git_br
+    git_br="$(git_current_branch)"
     errcho
-    errchow "=======================================";
-    errchow "Exporting branch ${text_user_hard}${git_br}${text_normal}";
-    errchow "=======================================";
+    errchow "======================================="
+    errchow "Exporting branch ${text_user_hard}${git_br}${text_normal}"
+    errchow "======================================="
     errcho
     if [[ "$git_br" != "master" ]]; then
-      declare choice="n";
+      declare choice="n"
       if [[ "$yes" == "true" ]]; then
-        choice="y";
+        choice="y"
       else
-        >&2 boolean_prompt "Export non-master branch?" choice;
+        >&2 boolean_prompt "Export non-master branch?" choice
       fi
       if [[ "$choice" == "n" ]]; then
-        abort "Aborted by user";
+        abort "Aborted by user"
       fi
     fi
-  };
+  }
 
   # Sanitize (optional - remove if needed)
-  errchon "Sanitizing export dotfiles arguments. Remove if needed.";
+  errchon "Sanitizing export dotfiles arguments. Remove if needed."
   if [[ "$path" != /tmp/* ]]; then
-    errchon "path=$path";
-    abort "export_dotfiles_scripts_standalone: aborted (safe mode): $path";
+    errchon "path=$path"
+    abort "export_dotfiles_scripts_standalone: aborted (safe mode): $path"
   fi
   if [[ "${path:0:1}" != "/" ]]; then
-    errchon "path=$path";
-    abort "export_dotfiles_scripts_standalone: You probabl want to export to a full path only";
+    errchon "path=$path"
+    abort "export_dotfiles_scripts_standalone: You probabl want to export to a full path only"
   fi
 
   # Sanitize (required)
-  declare -r glob_dotf=~/dotfiles/; # Use ~ expansion
+  declare -r glob_dotf=~/dotfiles/ # Use ~ expansion
   if [[ ! "$dotfiles" -ef "$glob_dotf" ]] ||
-     [[ ! "$parent_path" -ef "$glob_dotf" ]]; then
-    errchow "You probably only want to export the original dotfiles/ directory from the original runscript";
-    errchon "path=$path dotfiles=$dotfiles parent_path=$parent_path";
+    [[ ! "$parent_path" -ef "$glob_dotf" ]]; then
+    errchow "You probably only want to export the original dotfiles/ directory from the original runscript"
+    errchon "path=$path dotfiles=$dotfiles parent_path=$parent_path"
   fi
-  declare -r copy_path="$path/$name";
+  declare -r copy_path="$path/$name"
   if [[ -d "$copy_path" ]]; then
-    abort "export_dotfiles_scripts_standalone: Directory '$copy_path' exists already";
+    abort "export_dotfiles_scripts_standalone: Directory '$copy_path' exists already"
   fi
   if [[ ! -d "$path" ]]; then
-    abort "export_dotfiles_scripts_standalone: Directory '$path' not found. Did you want to export there? Then create it first.";
+    abort "export_dotfiles_scripts_standalone: Directory '$path' not found. Did you want to export there? Then create it first."
   fi
 
   # Copy files
-  1>&2 ensure_directory "$copy_path"; # Keep stdout free for $copy_path
-  errchol "Copying dotfiles scripts to $text_dim$copy_path$text_normal";
-  declare -a files;
+  1>&2 ensure_directory "$copy_path" # Keep stdout free for $copy_path
+  errchol "Copying dotfiles scripts to $text_dim$copy_path$text_normal"
+  declare -a files
   # Find with relative path means we must be at correct location.
-  [[ "$dotfiles/" -ef "./" ]];
-  mapfile -t files < <(command find . -name "*.sh"); # TODO Does this work?
-  declare file;
+  [[ "$dotfiles/" -ef "./" ]]
+  mapfile -t files < <(command find . -name "*.sh") # TODO Does this work?
+  declare file
   for file in "${files[@]}"; do
-    1>&2 cp --path "$file" "$copy_path";
+    1>&2 cp --path "$file" "$copy_path"
   done
 
   # Edit runscript as needed
   declare -a new_runscripts=(
-      "$copy_path/snippets/runscript.sh"
-      "$copy_path/snippets/runscript_extended.sh"
-      ); # TODO can this handle spaces?
+    "$copy_path/snippets/runscript.sh"
+    "$copy_path/snippets/runscript_extended.sh"
+  ) # TODO can this handle spaces?
   mapfile -t -O "${#new_runscripts[@]}" new_runscripts < <(
-      find "$copy_path" -name "run.sh"
-      );
-  declare -r new_runscripts;
-  errchol "Editing" "${new_runscripts[@]}";
-  declare -r token="token_dotfiles_global";
+    find "$copy_path" -name "run.sh"
+  )
+  declare -r new_runscripts
+  errchol "Editing" "${new_runscripts[@]}"
+  declare -r token="token_dotfiles_global"
   # shellcheck disable=SC2016
-  declare -r newline='declare -gr dotfiles="${DOTFILES:-"'"$copy_path"'"}"; # ${token@U}';
-  declare rs="";
+  declare -r newline='declare -gr dotfiles="${DOTFILES:-"'"$copy_path"'"}"; # ${token@U}'
+  declare rs=""
   for rs in "${new_runscripts[@]}"; do
-#    errchof "Editing file $rs";
+    #    errchof "Editing file $rs";
     # shellcheck disable=SC1003
-    1>&2 sed -i -e '/'"${token@U}"'/c \'"$newline"'' "$rs";
+    1>&2 sed -i -e '/'"${token@U}"'/c \'"$newline"'' "$rs"
     # This test only makes sense when we replace the token, but then we cannot
     # double-test the standalone exported version.
-#    if ! 1>&2 grep -qe "${token@U}" "$rs"; then
-#      abort "Something went wrong changing the dotfiles variable in $rs";
-#    fi
+    #    if ! 1>&2 grep -qe "${token@U}" "$rs"; then
+    #      abort "Something went wrong changing the dotfiles variable in $rs";
+    #    fi
   done
 
   # (!) We deploy as link to the copied run_script.sh
-#  errchol "Remote deploying runscript as link-to-copy";
-#  1>&2 subcommand deploy --yes --name=run.sh --file "$copy_path/scripts/run_script.sh" --dir "$copy_path";
+  #  errchol "Remote deploying runscript as link-to-copy";
+  #  1>&2 subcommand deploy --yes --name=run.sh --file "$copy_path/scripts/run_script.sh" --dir "$copy_path";
 
   # Output new dotfiles path (so caller must not know the default name)
   # TODO Maybe we should just require a name.
-  printf "%s" "$path/$name";
-  errchok "Done: exporting dotfiles to $copy_path";
-  return 0;
+  printf "%s" "$path/$name"
+  errchok "Done: exporting dotfiles to $copy_path"
+  return 0
 }
 
-command_init_runscript()
-{
+command_init_runscript() {
   # Use caller working directory when called without path argument
-  set_args "--path=$caller_path --extended=false --standalone --confirm=false --yes --help" "$@";
-  eval "$get_args";
+  set_args "--path=$caller_path --extended=false --standalone --confirm=false --yes --help" "$@"
+  eval "$get_args"
 
-  declare -r init_path="$path";
+  declare -r init_path="$path"
 
   # Sanitize
   if [[ "${init_path:0:1}" != "/" ]]; then
-    errchon "Move this sanity check into --standalone case if you want to do this";
-    abort "$0 init_ruscript: Refusing to init at relative path $init_path";
+    errchon "Move this sanity check into --standalone case if you want to do this"
+    abort "$0 init_ruscript: Refusing to init at relative path $init_path"
   fi
 
   # Special case --standalone:
   # Generate standalone dotfiles copy and delegate the task to the copy
   if [[ "$standalone" == "true" ]]; then
-    declare new_dotfiles_dir;
-    new_dotfiles_dir="$(subcommand export_dotfiles_scripts_standalone "$init_path" --yes="$yes")";
-    declare -r new_dotfiles_dir;
-    subcommand rundir "${new_dotfiles_dir}" init_runscript --path="$path" --confirm="$confirm" --extended="$extended";
-    return 0;
+    declare new_dotfiles_dir
+    new_dotfiles_dir="$(subcommand export_dotfiles_scripts_standalone "$init_path" --yes="$yes")"
+    declare -r new_dotfiles_dir
+    subcommand rundir "${new_dotfiles_dir}" init_runscript --path="$path" --confirm="$confirm" --extended="$extended"
+    return 0
   fi
 
   if [[ "$confirm" != "false" ]] && ! [[ "$(ask_user "Initialize runscript at $text_italic$init_path$text_normal?")" == "true" ]]; then
-    errchon "Not initializing at $init_path";
-    return 0;
+    errchon "Not initializing at $init_path"
+    return 0
   fi
 
   if [[ ! -d "$init_path" ]]; then abort "Directory ${text_bold}$init_path${text_normal} does not exist"; fi
-  declare has_run="0";
+  declare has_run="0"
 
-  errchol "Initializing runscript at location $text_italic$init_path$text_normal...";
+  errchol "Initializing runscript at location $text_italic$init_path$text_normal..."
 
   # Warn if files already present
-  if [[ -f "$init_path/run.sh" ]]; then errchow "$init_path/run.sh already exists"; has_run="1"; fi
+  if [[ -f "$init_path/run.sh" ]]; then
+    errchow "$init_path/run.sh already exists"
+    has_run="1"
+  fi
 
   # Select files depending on --extended
   if [[ "$extended" == "false" ]]; then
-    declare -r run_file_name="runscript.sh";
+    declare -r run_file_name="runscript.sh"
   else
-    declare -r run_file_name="runscript_extended.sh";
+    declare -r run_file_name="runscript_extended.sh"
   fi
 
   # Copy
-  if [[ $(( !has_run || replace_run )) == "1" ]]; then
-    subcommand deploy --yes --quiet --copy=true --name=run.sh --file "$dotfiles/snippets/$run_file_name" --dir "$init_path";
-    chmod +x "$init_path/run.sh";
+  if [[ $((!has_run || replace_run)) == "1" ]]; then
+    subcommand deploy --yes --quiet --copy=true --name=run.sh --file "$dotfiles/snippets/$run_file_name" --dir "$init_path"
+    chmod +x "$init_path/run.sh"
   fi
-  echok "Done: Initialized runscript at $text_dim$path$text_normal, sourcing $text_dim$dotfiles$text_normal";
+  echok "Done: Initialized runscript at $text_dim$path$text_normal, sourcing $text_dim$dotfiles$text_normal"
 }
 
 # TODO Add command_employ as opposite of deploy
@@ -679,243 +666,237 @@ command_init_runscript()
 # TODO Option to append 'source ~/dotfiles/.file' to end of an already existing
 #      file (better than aborting).
 # Deploy a dotfile to a location
-command_deploy()
-{
-  set_args "--file= --dir= --copy=false --name --yes --keep --quiet --help" "$@";
-  eval "$get_args";
+command_deploy() {
+  set_args "--file= --dir= --copy=false --name --yes --keep --quiet --help" "$@"
+  eval "$get_args"
 
-  declare be_quiet="false";
+  declare be_quiet="false"
   declare source_file="$file"
   declare target_dir="$dir"
-  declare source_name;
-  source_name="$(basename "$file")";
-  declare target_name="$source_name";
-  declare make_copy="$copy";
-  declare yes_all="false";
+  declare source_name
+  source_name="$(basename "$file")"
+  declare target_name="$source_name"
+  declare make_copy="$copy"
+  declare yes_all="false"
   if [[ "$name" != "false" ]]; then target_name="$name"; fi
-  if [[ "$yes" == "true"  ]]; then yes_all="true"; fi
+  if [[ "$yes" == "true" ]]; then yes_all="true"; fi
   if [[ "$quiet" == "true" ]]; then be_quiet="true"; fi
 
   if [[ "$make_copy" == "false" ]] && [[ ! "${source_file:0:1}" == "/" ]]; then
     if [[ "$be_quiet" == "true" ]]; then
-      errchow "Quiet: Better give full paths for symlinking (is: $source_file)";
-      return 0;
+      errchow "Quiet: Better give full paths for symlinking (is: $source_file)"
+      return 0
     else
       abort "Better give full paths for symlinking (is: $source_file)"
     fi
   fi
 
-  declare target_file="$target_dir/$target_name";
+  declare target_file="$target_dir/$target_name"
 
   # Verify needed stuff is in place
   if [[ ! -f "$source_file" && ! -d "$source_file" ]]; then
     # TODO This if quite then construct is not nice
     if [[ "$be_quiet" == "true" ]]; then
-      errchow "Quiet: No regular file $source_file";
-      return 0;
+      errchow "Quiet: No regular file $source_file"
+      return 0
     else
-      abort "No regular file $source_file";
+      abort "No regular file $source_file"
     fi
   fi
 
   if [[ ! -d "$target_dir" ]]; then
     if [[ "$yes_all" == "true" ]] ||
-       [[ "$(boolean_prompt "Create directory $target_dir?")" == "y" ]]; then
+      [[ "$(boolean_prompt "Create directory $target_dir?")" == "y" ]]; then
       ensure_directory "$target_dir"
     fi
   fi
 
   # Verify nothing is in the way
   declare preparation=":"
-  if [[ -a "$target_file" ]]; then
+  if [[ -e "$target_file" ]]; then
     if [[ "$keep" == "true" ]]; then
       # shellcheck disable=SC2010
-      echos "deployment (keeping existing file)";
-      return 0;
+      echos "deployment (keeping existing file)"
+      return 0
     fi
-    echoi "Target $text_italic$target_dir/$text_bold$target_name$text_normal already exists:";
+    echoi "Target $text_italic$target_dir/$text_bold$target_name$text_normal already exists:"
     # shellcheck disable=SC2010
-    errchoi "$(ls -alF "$target_dir" | grep --color=auto -F "$target_name")";
-    declare choice="n";
+    errchoi "$(ls -alF "$target_dir" | grep --color=auto -F "$target_name")"
+    declare choice="n"
     choice=$(boolean_prompt "Save existing target as $text_italic$target_dir/$text_bold$target_name$text_underline.backup_${text_invert}time$text_normal and replace?")
     if [[ "$choice" == "n" ]]; then
       if [[ "$be_quiet" == "true" ]]; then
-        echon "NOT deploying (overwrite denied by user): $source_file ➜ $target_file";
-        return 0;
+        echon "NOT deploying (overwrite denied by user): $source_file ➜ $target_file"
+        return 0
       else
-        abort "Aborted by user";
+        abort "Aborted by user"
       fi
     fi
     # Only rename after all other confirmations
     # shellcheck disable=SC2016
-    preparation='mv -v "$target_file" "${target_file}.backup_$(date -Iseconds)"';
+    preparation='mv -v "$target_file" "${target_file}.backup_$(date -Iseconds)"'
   fi
 
   # Double check
   if [[ ! "$yes_all" == "true" ]]; then
     [[ "$make_copy" == "false" ]] &&
       choice=$(boolean_prompt "Confirm deployment: Create link $target_file → $source_file?") ||
-      choice=$(boolean_prompt "Confirm deployment: Copy file $target_file ⇐ $source_file?");
+      choice=$(boolean_prompt "Confirm deployment: Copy file $target_file ⇐ $source_file?")
     if [[ "$choice" == "n" ]]; then
-      errchon "NOT deploying (denied by user): $source_file ➜ $target_file";
-      return 0;
+      errchon "NOT deploying (denied by user): $source_file ➜ $target_file"
+      return 0
     fi
   fi
 
   # Just do it
-  errchol "Deploying $text_italic$source_file$text_normal ➜ ${text_italic}$target_dir/${text_bold}$target_name$text_normal"\
-    "$( if [[ "$make_copy" != "false" ]]; then { echo "as copy"; }; else { echo "as link"; }; fi)";
-  eval "$preparation";
+  errchol "Deploying $text_italic$source_file$text_normal ➜ ${text_italic}$target_dir/${text_bold}$target_name$text_normal" \
+    "$(if [[ "$make_copy" != "false" ]]; then { echo "as copy"; }; else { echo "as link"; }; fi)"
+  eval "$preparation"
   if [[ "$make_copy" != "false" ]]; then
-    cp -vT "$source_file" "$target_file" || return;
+    cp -vT "$source_file" "$target_file" || return
   else
-    ln --verbose --symbolic -T "$source_file" "$target_file" || return;
+    ln --verbose --symbolic -T "$source_file" "$target_file" || return
   fi
-  echok "Deployed $text_italic$source_file$text_normal ➜ ${text_italic}$target_dir/${text_bold}$target_name$text_normal";
+  echok "Deployed $text_italic$source_file$text_normal ➜ ${text_italic}$target_dir/${text_bold}$target_name$text_normal"
 }
 
 # Import an external file into dotfiles. I.e., move the actual file here, and
 # then 'deploy' it to its original location. For now only simple 1-to-1 file
 # imports.
-command_import()
-{
-  set_args "--from= --to= --copy --dry-run --help" "$@";
-  eval "$get_args";
+command_import() {
+  set_args "--from= --to= --copy --dry-run --help" "$@"
+  eval "$get_args"
 
   # Sanity checks
   if [[ ! -d "$to" || ! -e "$to" ]]; then
-    abort "Target $to is not a directory";
+    abort "Target $to is not a directory"
   fi
   if [[ ! -f "$from" && ! -d "$from" ]]; then
-    abort "Expected directory or regular file as source: $from";
+    abort "Expected directory or regular file as source: $from"
   fi
-  declare source_name;
-  source_name="$(basename "$from")";
-  declare -r target_path="$to/$source_name";
-  declare -r target_path_colour="$text_dim$to/$text_user_soft$source_name$text_normal";
-  declare -r from_colour="$text_dim$from$text_normal";
+  declare source_name
+  source_name="$(basename "$from")"
+  declare -r target_path="$to/$source_name"
+  declare -r target_path_colour="$text_dim$to/$text_user_soft$source_name$text_normal"
+  declare -r from_colour="$text_dim$from$text_normal"
   if [[ -e "$target_path" ]]; then
-    abort "Target $target_path already exists";
+    abort "Target $target_path already exists"
   fi
   if [[ -d "$from" ]]; then
-    declare file;
-    pushd "$from";
+    declare file
+    pushd "$from"
     for file in **/*; do
       if [[ ! -d "$file" && ! -f "$file" ]]; then
-        abort "Import files or directories. Neither: $from/$file";
+        abort "Import files or directories. Neither: $from/$file"
       fi
     done
-    popd;
+    popd
   fi
 
-  declare source_dir target_path_full;
-  source_dir="$(dirname "$from")";
-  target_path_full="$(realpath -s "$target_path")";
-  show_variable from;
-  show_variable to;
-  show_variable source_dir;
-  show_variable source_name;
-  show_variable target_path;
-  show_variable target_path_full;
+  declare source_dir target_path_full
+  source_dir="$(dirname "$from")"
+  target_path_full="$(realpath -s "$target_path")"
+  show_variable from
+  show_variable to
+  show_variable source_dir
+  show_variable source_name
+  show_variable target_path
+  show_variable target_path_full
   # abort "Aborting fro testing";
 
-  echol "Importing $from_colour ➜ $target_path_colour"\
-    "$(if [[ "$copy" == "true" ]]; then { echo "as copy"; }; else { echo "as link"; }; fi)";
-  declare do_command;
+  echol "Importing $from_colour ➜ $target_path_colour" \
+    "$(if [[ "$copy" == "true" ]]; then { echo "as copy"; }; else { echo "as link"; }; fi)"
+  declare do_command
   if [[ "$dry_run" == "true" ]]; then
-    do_command="print_values";
+    do_command="print_values"
   else
-    do_command="print_and_execute";
+    do_command="print_and_execute"
   fi
   if [[ "$copy" == "true" ]]; then
-    "$do_command" cp -vr "$from" "$to";
+    "$do_command" cp -vr "$from" "$to"
   else
-    "$do_command" mv -v "$from" "$to";
+    "$do_command" mv -v "$from" "$to"
     echo
-    "$do_command" subcommand deploy --yes --file="$target_path_full" --dir="$source_dir";
+    "$do_command" subcommand deploy --yes --file="$target_path_full" --dir="$source_dir"
     echo
   fi
-  echok "Importing $from_colour ➜ $target_path_colour"\
-    "$(if [[ "$copy" == "true" ]]; then { echo "as copy"; }; else { echo "as link"; }; fi)";
+  echok "Importing $from_colour ➜ $target_path_colour" \
+    "$(if [[ "$copy" == "true" ]]; then { echo "as copy"; }; else { echo "as link"; }; fi)"
 }
 
 # Print some basic system information
-command_info()
-{
-  set_args "--disk --inet --system --help" "$@";
-  eval "$get_args";
+command_info() {
+  set_args "--disk --inet --system --help" "$@"
+  eval "$get_args"
 
-  declare -r info_path="$(create_truncate_tmp "system_info.txt")";
+  declare -r info_path="$(create_truncate_tmp "system_info.txt")"
   if [[ "$disk" == "true" ]]; then
-    print_and_execute command df -h >> "$info_path";
+    print_and_execute command df -h >>"$info_path"
   fi
   if [[ "$system" == "true" ]]; then
-    set +e;
-    { print_and_execute lsb_release -a || errchow "lsb_release failed"; } >> "$info_path";
-    set -e;
-    { print_and_execute uname -a; } >> "$info_path";
-    { print_and_execute lscpu; } >> "$info_path";
+    set +e
+    { print_and_execute lsb_release -a || errchow "lsb_release failed"; } >>"$info_path"
+    set -e
+    { print_and_execute uname -a; } >>"$info_path"
+    { print_and_execute lscpu; } >>"$info_path"
   fi
   if [[ "$inet" == "true" ]]; then
-    { print_and_execute sudo netstat -ltnp; } >> "$info_path";
+    { print_and_execute sudo netstat -ltnp; } >>"$info_path"
   fi
 
-  batcat "$info_path";
+  batcat "$info_path"
 
-  return 0;
+  return 0
 }
 
 # ╭──────────────────────╮
 # │ 🖩 Utils              │
 # ╰──────────────────────╯
 
-shutdown_timer()
-{
-  declare -i time="${1:-"60"}";
+shutdown_timer() {
+  declare -i time="${1:-"60"}"
   { progress_sleep "$time" "⏳   ${text_green}[${text_bg}s${text_normal}${text_green}]hutdown${text_normal} ⏩  ⛔ ${text_red}[${text_br}Enter${text_normal}${text_red}] abort${text_normal}" 20 &&
     shutdown "+0"; } &
-  shutdown_pid="$!";
-  trap 'kill "$shutdown_pid";shutdown_pid=""; errchos "Cancelled shutdown (press any key)";' SIGINT; # TODO Util to ADD to trap, not overwrite it
-  echon "shutdown_pid: $shutdown_pid";
+  shutdown_pid="$!"
+  trap 'kill "$shutdown_pid";shutdown_pid=""; errchos "Cancelled shutdown (press any key)";' SIGINT # TODO Util to ADD to trap, not overwrite it
+  echon "shutdown_pid: $shutdown_pid"
 
-  declare user_key;
-  read -n1 -rs user_key; # If nothing happens the timer runs out and shuts down
+  declare user_key
+  read -n1 -rs user_key # If nothing happens the timer runs out and shuts down
   if [[ -n "$shutdown_pid" ]]; then
-    kill "$shutdown_pid";
+    kill "$shutdown_pid"
   else
-    echon "Shutdown timer was interrupted";
+    echon "Shutdown timer was interrupted"
   fi
 
   if [[ -n "$shutdown_pid" ]]; then
     if [[ "$user_key" == "s" ]]; then
-      echok "Shutting down";
+      echok "Shutting down"
       { sleep 1 && shutdown "+0"; } & # Wait 1 second to allow bash to close
-      return 0;
+      return 0
     else
-      echos "Cancelled shutdown";
+      echos "Cancelled shutdown"
     fi
   fi
 }
 
 # This is a helper meant as default additional stuff to be done to update
-rebase_on_master_helper()
-{
-  declare branch;
-  branch="$(git_current_branch)";
+rebase_on_master_helper() {
+  declare branch
+  branch="$(git_current_branch)"
 
   # Sanity check
   if [[ "$branch" == "master" ]]; then
-    abort "rebase_on_master_helper: Refusing to rebase master on master";
+    abort "rebase_on_master_helper: Refusing to rebase master on master"
   fi
 
-  git_fetch_master;
-  git_rebase_ifneeded "$@";
+  git_fetch_master
+  git_rebase_ifneeded "$@"
 }
 
 # TODO remove
 # shellcheck disable=all
-true_colour_old()
-{
+true_colour_old() {
 
   #!/bin/bash
   #
@@ -926,14 +907,12 @@ true_colour_old()
   #   <r> <g> <b> range from 0 to 255 inclusive.
   #   The escape sequence ^[0m returns output to default
 
-  setBackgroundColor()
-  {
-      echo -en "\x1b[48;2;$1;$2;$3""m"
+  setBackgroundColor() {
+    echo -en "\x1b[48;2;$1;$2;$3""m"
   }
 
-  resetOutput()
-  {
-      echo -en "\x1b[0m\n"
+  resetOutput() {
+    echo -en "\x1b[0m\n"
   }
 
   # Gives a color $1/255 % along HSV
@@ -941,79 +920,72 @@ true_colour_old()
   # Echoes "$red $green $blue" where
   # $red $green and $blue are integers
   # ranging between 0 and 255 inclusive
-  rainbowColor()
-  {
-    errcho "Rainbow: [$@]";
-    let h=$((${1}/43))
-      let f=$1-43*$h
-      let t=$f*255/43
-      let q=255-t
+  rainbowColor() {
+    errcho "Rainbow: [$@]"
+    let h=$((${1} / 43))
+    let f=$1-43*$h
+    let t=$f*255/43
+    let q=255-t
 
-      if [ $h -eq 0 ]
-      then
-          echo "255 $t 0"
-      elif [ $h -eq 1 ]
-      then
-          echo "$q 255 0"
-      elif [ $h -eq 2 ]
-      then
-          echo "0 255 $t"
-      elif [ $h -eq 3 ]
-      then
-          echo "0 $q 255"
-      elif [ $h -eq 4 ]
-      then
-          echo "$t 0 255"
-      elif [ $h -eq 5 ]
-      then
-          echo "255 0 $q"
-      else
-          # execution should never reach here
-          echo "0 0 0"
-      fi
+    if [ $h -eq 0 ]; then
+      echo "255 $t 0"
+    elif [ $h -eq 1 ]; then
+      echo "$q 255 0"
+    elif [ $h -eq 2 ]; then
+      echo "0 255 $t"
+    elif [ $h -eq 3 ]; then
+      echo "0 $q 255"
+    elif [ $h -eq 4 ]; then
+      echo "$t 0 255"
+    elif [ $h -eq 5 ]; then
+      echo "255 0 $q"
+    else
+      # execution should never reach here
+      echo "0 0 0"
+    fi
   }
 
-  for i in `seq 0 127`; do
-      setBackgroundColor $i 0 0
-      echo -en " "
+  for i in $(seq 0 127); do
+    setBackgroundColor $i 0 0
+    echo -en " "
   done
   resetOutput
-  for i in `seq 255 128`; do
-      setBackgroundColor $i 0 0
-      echo -en " "
-  done
-  resetOutput
-
-  for i in `seq 0 127`; do
-      setBackgroundColor 0 $i 0
-      echo -n " "
-  done
-  resetOutput
-  for i in `seq 255 128`; do
-      setBackgroundColor 0 $i 0
-      echo -n " "
+  for i in $(seq 255 128); do
+    setBackgroundColor $i 0 0
+    echo -en " "
   done
   resetOutput
 
-  for i in `seq 0 127`; do
-      setBackgroundColor 0 0 $i
-      echo -n " "
+  for i in $(seq 0 127); do
+    setBackgroundColor 0 $i 0
+    echo -n " "
   done
   resetOutput
-  for i in `seq 255 128`; do
-      setBackgroundColor 0 0 $i
-      echo -n " "
+  for i in $(seq 255 128); do
+    setBackgroundColor 0 $i 0
+    echo -n " "
   done
   resetOutput
 
-  for i in `seq 0 127`; do
-      setBackgroundColor `rainbowColor $i`
-      echo -n " "
+  for i in $(seq 0 127); do
+    setBackgroundColor 0 0 $i
+    echo -n " "
   done
   resetOutput
-  for i in `seq 255 128`; do
-      setBackgroundColor `rainbowColor $i`
-      echo -n " "
+  for i in $(seq 255 128); do
+    setBackgroundColor 0 0 $i
+    echo -n " "
+  done
+  resetOutput
+
+  for i in $(seq 0 127); do
+    setBackgroundColor $(rainbowColor $i)
+    echo -n " "
+  done
+  resetOutput
+  for i in $(seq 255 128); do
+    setBackgroundColor $(rainbowColor $i)
+    echo -n " "
   done
   resetOutput
 }
@@ -1024,20 +996,20 @@ true_colour_old()
 # │ 🖹 Help strings       │
 # ╰──────────────────────╯
 
-declare -r unun_help_string='Remove undofiles from current directory';
+declare -r unun_help_string='Remove undofiles from current directory'
 
 declare -r run_help_string='Ephemeral command for whatever is required at the moment
 DESCIPTION
-  Better not rely on this command to have any specific effect.';
+  Better not rely on this command to have any specific effect.'
 declare -r test_help_string="Run tests
 SYNOPSIS
   test
 DESCRIPTION
   Run collection of tests. Tests do not cover everything yet, just some specific
   things. The tests include shellcheck, which is probably most useful
-  day-to-day.";
+  day-to-day."
 
-  # shellcheck disable=SC2016
+# shellcheck disable=SC2016
 declare -r alias_help_string='Manage local alias
 SYNOPSIS
   1) alias
@@ -1054,13 +1026,13 @@ DESCRIPTION
 OPTIONS
   --name: Name of the new alias command
   --value: If provided, set alias to this value
-  --delete: If provided, delete alias';
+  --delete: If provided, delete alias'
 declare -r clear_cache_help_string='Clear script cache
 SYNOPSIS
   clear_cache
 DESCRIPTION
   Remove directory "scripts/.cache/", resetting the cache. All cache uses are
-  required to allow the sudden wipe.';
+  required to allow the sudden wipe.'
 
 declare -r timer_help_string='Set a timer
 SYNOPSIS
@@ -1075,7 +1047,7 @@ OPTIONS
   --message=MESSAGE: Message to show after timer is done
   --console: Additionally print message to console. This preserves the message
              and can help distinguish between multiple messages in quick
-             succession.';
+             succession.'
 
 declare -r update_alternatives_help_string="Wrap linux util 'update-alternatives'
 SYNOPSIS
@@ -1115,7 +1087,7 @@ OPTIONS
     is used as priority, i.e., gcc-10 gets priority 10.
   --dry-run: Do nothing. Only print what would be done without --dry-run.
   --yes: Do not ask user for confirmation (sudo passwd will still be needed).
-    ";
+    "
 
 declare -r restoration_tarball_help_string="Backup files for machine wipe
 SYNOPSIS
@@ -1153,7 +1125,7 @@ OPTIONS
     ❕ This does NOT use the restoration scrip, merely the tarball is
        extracted to see if its content is as expected.
   --verbose: Add -v flag to tar when creating backup.
-  --help: Show this help.";
+  --help: Show this help."
 
 declare -r wipe_cache_help_string="Delete cache directory
   DESCRIPTION
@@ -1162,7 +1134,7 @@ declare -r wipe_cache_help_string="Delete cache directory
     Although it may cause processes using the cache directory to repeat
     computation.
   OPTIONS
-    --help: Show this help.";
+    --help: Show this help."
 
 declare -r upgrade_help_string="Upgrade apt/snap packages
 DESCRIPTION
@@ -1171,23 +1143,23 @@ DESCRIPTION
 OPTIONS
   --daily: Ignore when called fo rthe second time on any given day.
   --with-new-pkgs: Run an additional pass with --with-new-pkgs when doing 'apt
-                   upgrade'.";
+                   upgrade'."
 
 declare -r shutdown_upgrade_help_string="Do daily apt upgrades and shutdown after 1 minute
 DESCRIPTION
   Used the scripts cache util to query upgrades only once per day (or after
   cache wipe).
 OPTIONS
-  --timer=SECONDS: Set the timer to shut-down to SECONDS seconds. Default 60.";
+  --timer=SECONDS: Set the timer to shut-down to SECONDS seconds. Default 60."
 
 declare -r update_dotfiles_branch_help_string=$'Update dotfiles git branch from origin
-\nThis command is meant to be individualized when a git branch is meant to, for example, be rebased on master or merging master continuously.';
+\nThis command is meant to be individualized when a git branch is meant to, for example, be rebased on master or merging master continuously.'
 
 declare -r colours_help_string=$'Demonstrate terminal colour capabilities.
 \nUseful for: checking colour codes or testing which colours are supported.
-See scripts/test/run.sh for implementation';
+See scripts/test/run.sh for implementation'
 
-declare -r termcaps_manpage_help_string=$'Show terminal capability man page';
+declare -r termcaps_manpage_help_string=$'Show terminal capability man page'
 
 declare -r install_help_string="Delegates to: 'scripts/install/ default'
 
@@ -1198,7 +1170,7 @@ declare -r install_help_string="Delegates to: 'scripts/install/ default'
 
         install --help
 
-    (The install script doesnt take any arguments at the moment).";
+    (The install script doesnt take any arguments at the moment)."
 
 declare -r init_runscript_help_string="Initialize default runscript at some directory
 SYNOPSIS
@@ -1219,7 +1191,7 @@ OPTIONS
   --standalone: Create self-contained system by copying all dependenies into
     PATH/. See: export_dotfiles_scripts_standalone --help.
   --confirm: Confirm PATH before continuing.
-  --yes: Passed to export_dotfiles_standalone when --standalone is used.";
+  --yes: Passed to export_dotfiles_standalone when --standalone is used."
 
 declare -r export_dotfiles_scripts_standalone_help_string="Export standalone copy of dotfiles scripts
 SYNOPSIS
@@ -1245,7 +1217,7 @@ OPTIONS
   --path: Parent path to place the dotfiles in. This could just be the project
     directory, so the dotfiles copy is placed next to the runscript.
   --name: Name of the copy of the dotfiles directory. Defaults to dotfiles_copy.
-  --yes: Do not prompt when exporting non-master branch. For testing.";
+  --yes: Do not prompt when exporting non-master branch. For testing."
 
 declare -r deploy_help_string="Copy or symlink dotfile to a specified location
 SYNOPSIS
@@ -1263,7 +1235,7 @@ OPTIONS
   --copy=false: Set to 'true' to create copy instead of symlink (default false).
   --yes: If present, skip confirmation prompt when no problem occurs.
   --quiet: Return 0 when user rejects replacing an existing file. Normally
-    returns nonzero";
+    returns nonzero"
 
 declare -r import_help_string='Import a file/directory as new dotfile
 SYNOPSIS
@@ -1279,7 +1251,7 @@ OPTIONS
   --to=TARGET_DIR: Target directory to move the imported file to.
   --copy: Re-deploy as a copy instead of a symlink (default false).
           ❓ Does this work with both files and directories?
-  --dry-run: Only print what would happen. Do not move/copy.';
+  --dry-run: Only print what would happen. Do not move/copy.'
 
 declare -r info_help_string='Print system information
 DESCRIPTION
@@ -1290,14 +1262,14 @@ SYNOPSIS
 OPTIONS:
   --disk: Disk space.
   --inet: Internet connections.
-  --system: Operating system and hardware.';
+  --system: Operating system and hardware.'
 
 # ╭──────────────────────╮
 # │ ⚙ Boilerplate        │
 # ╰──────────────────────╯
 
 # Transition to provided command
-subcommand "${@}";
+subcommand "${@}"
 # ╭──────────────────────╮
 # │ 🕮  Documentation     │ ✖️ No documentation
 # ╰──────────────────────╯

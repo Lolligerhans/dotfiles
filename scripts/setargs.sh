@@ -59,17 +59,19 @@ set_args() {
   [[ "$(shopt -p extglob)" != "shopt -s extglob" ]] && abort "Requires extglob"
   (($# < 1)) && abort "Setargs usage: dotfiles/doc/setargs.txt"
 
-  # Augment special parameters:
-  #   • --autocomplte   For bash completion
-  #   • --help          To echo the (augmented) parameter string for usage info
-  declare param_string="${1:?set_args: Missing parameter string}"
+  # Special parameters:
+  #  --autocomplte   For bash completion
+  #  --help          To echo the (augmented) parameter string for usage info
+
+  # Mapfile would generate a trailing empty
+  declare param_string="${1%%+([[:space:]])}"
   ((_setargs_debug)) && errchod "Setargs param_string: [$param_string]"
   declare IFS=" "
   declare args="${*:2}"
   IFS=$'\n\t'
   ((_setargs_debug)) && errchod "IFS=[$IFS]"
   declare -a params
-  mapfile -t params <<<"${param_string//+( )/$'\n'}"
+  mapfile -t params <<<"${param_string//+([[:space:]])/$'\n'}"
   params+=("--autocomplete")
   declare -i allow_leftover_argv=0
 
@@ -130,7 +132,7 @@ set_args() {
 
       # Sanity check: reserved parameter name --help must be optional
       if [[ "$name" == "--help" ]]; then
-        abort "set_args: Reserved parameter ${text_user}--help${text_normal} must be optionsl"
+        abort "set_args: Reserved parameter ${text_user}--help${text_normal} must be optional"
       fi
 
       positional_order+=("$name") # Non-optionals may be set by position data

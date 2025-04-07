@@ -135,7 +135,7 @@ vim.g.netrw_liststyle = 3
 -- │ editing                                                                  │
 -- ╰──────────────────────────────────────────────────────────────────────────╯
 
-o.digraph = true
+o.digraph = false
 o.tabstop = 8
 o.expandtab = true
 o.softtabstop = 2            -- Pseudo-tab width. Keep tabstop at 8.

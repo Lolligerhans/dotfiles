@@ -1,19 +1,15 @@
-// FIXME Add file name.
-// FILE_NAME
+// TODO: Add file name.
 //
-// TODO Brief explanation.
+// TODO: Brief explanation.
 
-
-// FIXME Add include guard
+// TODO: Add include guard
 #ifndef INCLUDE_GUARD
-#define INCLUDE_GUARD 1
+#define INCLUDE_GUARD
 
-
-// FIXME Provide namespace
+// TODO: Provide namespace
 namespace NAMESPACE_
 {
 
 } // namespace NAMESPACE_
-
 
 #endif // INCLUDE_GUARD

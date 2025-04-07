@@ -1,0 +1,162 @@
+-- Do nothing when loading this file. It is retired code for documentation only.
+if true then
+  return {}
+end
+
+-- Use same syntax as in actual plugin files. Also calms the language server.
+return {
+
+  -- {
+  --   "echasnovski/mini.starter",
+  --
+  --   -- version = false, -- wait till new 0.7.0 release to put it back on semver
+  --   -- event = "VimEnter",
+  --   opts = function(_ ,opts)
+  --
+  --     local logo = table.concat({
+  --       "            ██╗      █████╗ ███████╗██╗   ██╗██╗   ██╗██╗███╗   ███╗          Z",
+  --       "            ██║     ██╔══██╗╚══███╔╝╚██╗ ██╔╝██║   ██║██║████╗ ████║      Z    ",
+  --       "            ██║    MINI STARTER██╔╝  ╚████╔╝ ██║   ██║██║██╔████╔██║   z       ",
+  --       "            ██║     ██╔══██║ ███╔╝    ╚██╔╝  ╚██╗ ██╔╝██║██║╚██╔╝██║ z         ",
+  --       "            ███████╗██║  ██║███████╗   ██║    ╚████╔╝ ██║██║ ╚═╝ ██║           ",
+  --       "            ╚══════╝╚═╝  ╚═╝╚══════╝   ╚═╝     ╚═══╝  ╚═╝╚═╝     ╚═╝           ",
+  --     }, "\n")
+  --
+  --     logo = require("plugins/util/logo").test_fixed_string("pieces")
+  --
+  --     local pad = string.rep(" ", 22)
+  --     local new_section = function(name, action, section)
+  --       return { name = name, action = action, section = pad .. section }
+  --     end
+  --
+  --     local starter = require("mini.starter")
+  --     --stylua: ignore
+  --     local config = {
+  --       evaluate_single = true,
+  --       header = logo,
+  --       items = {
+  --         new_section("Find file",       LazyVim.pick(),                        "Telescope"),
+  --         new_section("New file",        "ene | startinsert",                   "Built-in"),
+  --         new_section("Recent files",    LazyVim.pick("oldfiles"),              "Telescope"),
+  --         new_section("Find text",       LazyVim.pick("live_grep"),             "Telescope"),
+  --         new_section("Config",          LazyVim.pick.config_files(),           "Config"),
+  --         new_section("Restore session", [[lua require("persistence").load()]], "Session"),
+  --         new_section("Lazy Extras",     "LazyExtras",                          "Config"),
+  --         new_section("Lazy",            "Lazy",                                "Config"),
+  --         new_section("Quit",            "qa",                                  "Built-in"),
+  --       },
+  --       content_hooks = {
+  --         starter.gen_hook.adding_bullet(pad .. "░ ", false),
+  --         starter.gen_hook.aligning("center", "center"),
+  --       },
+  --     }
+  --     return config
+  --   end,
+  --   config = function(_, config)
+  --     -- close Lazy and re-open when starter is ready
+  --     if vim.o.filetype == "lazy" then
+  --       vim.cmd.close()
+  --       vim.api.nvim_create_autocmd("User", {
+  --         pattern = "MiniStarterOpened",
+  --         callback = function()
+  --           require("lazy").show()
+  --         end,
+  --       })
+  --     end
+  --
+  --     local starter = require("mini.starter")
+  --     starter.setup(config)
+  --
+  --     vim.api.nvim_create_autocmd("User", {
+  --       pattern = "LazyVimStarted",
+  --       callback = function(ev)
+  --         local stats = require("lazy").stats()
+  --         local ms = (math.floor(stats.startuptime * 100 + 0.5) / 100)
+  --         local pad_footer = string.rep(" ", 8)
+  --         starter.config.footer = pad_footer .. "⚡ Neovim loaded " .. stats.count .. " plugins in " .. ms .. "ms"
+  --         -- INFO: based on @echasnovski's recommendation (thanks a lot!!!)
+  --         if vim.bo[ev.buf].filetype == "ministarter" then
+  --           pcall(starter.refresh)
+  --         end
+  --       end,
+  --     })
+  --   end,
+  -- },
+
+  -- Is there a more distinct way than repeating the entire config to change
+  -- the logo?
+  -- {
+  --   "goolord/alpha-nvim",
+  --   event = "VimEnter",
+  --   enabled = true,
+  --   init = false,
+  --   opts = function()
+  --       vim.cmd([[echo "alpha config"]])
+  --     local dashboard = require("alpha.themes.dashboard")
+  --     local logo = [[
+  --        ██╗      █████╗ ███████╗██╗   ██╗██╗   ██╗██╗███╗   ███╗          Z
+  --        ██║     ██╔══██╗╚══███╔╝╚██╗ ██╔╝██║   ██║██║████╗ ████║      Z
+  --        ██║     ALPHA STARTER╔╝  ╚████╔╝ ██║   ██║██║██╔████╔██║   z
+  --        ██║     ██╔══██║ ███╔╝    ╚██╔╝  ╚██╗ ██╔╝██║██║╚██╔╝██║ z
+  --        ███████╗██║  ██║███████╗   ██║    ╚████╔╝ ██║██║ ╚═╝ ██║
+  --        ╚══════╝╚═╝  ╚═╝╚══════╝   ╚═╝     ╚═══╝  ╚═╝╚═╝     ╚═╝
+  --      ]]
+  --     logo = require("plugins/util/logo").random("pieces")
+  --
+  --     -- stylua: ignore
+  --     dashboard.section.header.val = vim.split(logo, "\n")
+  --     dashboard.section.buttons.val = {
+  --       -- dashboard.button("f", " " .. " Find file", vim.cmd ( [[ echo \"hello there\" ]] )),
+  --       -- dashboard.button("n", " " .. " New file", [[<cmd> ene <BAR> startinsert <cr>]]),
+  --       -- dashboard.button("r", " " .. " Recent files", vim.cmd([[echo "hello there"]])),
+  --       -- dashboard.button("g", " " .. " Find text", vim.cmd([[echo "hello there"]])),
+  --       -- dashboard.button("c", " " .. " Config", vim.cmd([[echo "hello there"]])),
+  --       dashboard.button("s", " " .. " Restore Session", [[<cmd> lua require("persistence").load() <cr>]]),
+  --       -- dashboard.button("x", " " .. " Lazy Extras", "<cmd> LazyExtras <cr>"),
+  --       -- dashboard.button("l", "󰒲 " .. " Lazy", "<cmd> Lazy <cr>"),
+  --       -- dashboard.button("q", " " .. " Quit", "<cmd> qa <cr>"),
+  --     }
+  --     for _, button in ipairs(dashboard.section.buttons.val) do
+  --       button.opts.hl = "AlphaButtons"
+  --       button.opts.hl_shortcut = "AlphaShortcut"
+  --     end
+  --     dashboard.section.header.opts.hl = "AlphaHeader"
+  --     dashboard.section.buttons.opts.hl = "AlphaButtons"
+  --     dashboard.section.footer.opts.hl = "AlphaFooter"
+  --     dashboard.opts.layout[1].val = 8
+  --     return dashboard
+  --   end,
+  --   config = function(_, dashboard)
+  --     -- close Lazy and re-open when the dashboard is ready
+  --     if vim.o.filetype == "lazy" then
+  --       vim.cmd.close()
+  --       vim.api.nvim_create_autocmd("User", {
+  --         once = true,
+  --         pattern = "AlphaReady",
+  --         callback = function()
+  --           require("lazy").show()
+  --         end,
+  --       })
+  --     end
+  --
+  --     require("alpha").setup(dashboard.opts)
+  --
+  --     vim.api.nvim_create_autocmd("User", {
+  --       once = true,
+  --       pattern = "LazyVimStarted",
+  --       callback = function()
+  --         local stats = require("lazy").stats()
+  --         local ms = (math.floor(stats.startuptime * 100 + 0.5) / 100)
+  --         dashboard.section.footer.val = "⚡ Neovim loaded "
+  --             .. stats.loaded
+  --             .. "/"
+  --             .. stats.count
+  --             .. " plugins in "
+  --             .. ms
+  --             .. "ms"
+  --         pcall(vim.cmd.AlphaRedraw)
+  --       end,
+  --     })
+  --   end,
+  -- },
+}

@@ -29,9 +29,7 @@ ask_user() {
   if (($# < 1 || 2 < $#)); then abort "Wrong usage"; fi
   declare _au_confirm_384734
   declare -n _au_res_1402420156="${2-"_au_confirm_384734"}"
-  errchof "We recently changed the return of ask_user!"
   read -n 1 -rp "$1 [y/N]: " _au_confirm_384734
-  printf -- "\n" # Because we read only 1 character
   if [[ "${_au_confirm_384734}" == [yY] ]]; then
     _au_res_1402420156="true"
   else

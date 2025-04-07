@@ -1,1 +1,2 @@
 --langmap=C++:+.inc
+--langmap=C++:+.ipp

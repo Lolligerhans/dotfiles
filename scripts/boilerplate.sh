@@ -43,6 +43,8 @@ shopt -s extglob
 shopt -s extquote
 # Warn about shifting too far
 shopt -s shift_verbose
+# Expand globs without match to ""
+shopt -s nullglob
 # Use GNU error format. Probably only use this when parsing with a script
 #shopt -s gnu_errfmt
 # TODO consider shopt -s lastpipe
@@ -121,8 +123,9 @@ load_version "$dotfiles/scripts/setargs.sh" 0.0.0
 #load_version "$dotfiles/scripts/cache.sh" 0.0.0
 #load_version "$dotfiles/scripts/git_utils.sh" 0.0.0
 #load_version "$dotfiles/scripts/progress_bar.sh" 0.0.0
+load_version "$dotfiles/scripts/string.sh" 0.0.0
 load_version "$dotfiles/scripts/termcap.sh" 0.0.0
-load_version "$dotfiles/scripts/utils.sh" 3.0.0
+load_version "$dotfiles/scripts/utils.sh" 0.0.0
 
 # Log script entry and exit to stderr
 _col() { if (($1)); then printf "%s" "$text_lightred"; else printf "%s" "$text_lightgreen"; fi; }
@@ -401,7 +404,7 @@ if [[ -v this_location ]] && [[ -n "$this_location" ]] && [[ ! "$this_location" 
 fi
 
 # Sanity checks
-if ! shopt -qp extglob inherit_errexit; then
+if ! shopt -qp extglob nullglob inherit_errexit; then
   # Many of the scripts use these
   abort "Expected 'extglob' and 'inherit_errexit' to be on"
 fi

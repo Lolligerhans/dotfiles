@@ -11,14 +11,17 @@ test_setargs() {
   declare -r old_optionals="${_run_config["declare_optionals"]}"
   _run_config["declare_optionals"]=0
 
-  # ❗ Increase when adding new tests
-  # TODO: Determine automatically
-  declare -i max=28
+  declare -i last=1
+  while >/dev/null declare -F "test_setargs_${last}"; do ((++last)); done
+  ((--last))
+  if ((last == 0)); then
+    abort "Expecting at least one test function"
+  fi
   declare -i t
   declare f
 
   # Go backwards so we can more easily test the newest test when adding some
-  for ((t = max; t >= 1; --t)); do
+  for ((t = last; t >= 1; --t)); do
     f="test_setargs_${t}"
     "$f"
   done
@@ -321,4 +324,16 @@ test_setargs_28() {
   output="$(run_silent 2 test_setargs_helper2_28 --autocomplete)"
   declare -r solution2=$''
   assert_eq "$output" "$solution2" "If there are no other parameters the list is empty"
+}
+
+test_setargs_helper_29() {
+  set_args "--dummy  " "--dummy=test_value"
+  eval "$get_args"
+  printf -- "%s" "$dummy"
+}
+
+test_setargs_29() {
+  echoL "Ignore trailing whitespace in parameter string"
+  assert_returns 0 test_setargs_helper_29
+  assert_eq "$(test_setargs_helper_29)" "test_value" "Argument is read correctly"
 }

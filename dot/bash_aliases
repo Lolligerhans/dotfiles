@@ -46,7 +46,9 @@ _toggle_delta_side_by_side() {
 # 'bashrc_personal'.
 __git_complete g __git_main;
 
-alias s='git --no-pager q-f; git qsl; git s; git q-b;';
+# HACK: Need an extra echo because for some reason git decides not to end with
+#       a newline when using --no-pager.
+alias s='git --no-pager q-f; git qsl; git --no-pager s; echo; git q-b;';
 alias ss='git ss';
 alias S='git qS'; # Also good to type 'S -3' or S -100'
 alias SS='git qSS';
@@ -69,6 +71,7 @@ alias rr='git q-di-rr; git q-di-rr2';
 alias rw='git q-di-rw; git q-di-rw2';
 
 alias a='git add -p';
+alias A='git add -A';
 alias u='git add -u';
 alias c='git ci';
 alias C='_alias_git_commit_message';
@@ -83,11 +86,15 @@ alias co='git co';
 alias di='git di';
 alias dis='git dis';
 alias die='git die';
+alias dim='git di master';
+alias dims='git di master --stat'
+alias dime='git di master --no-ext-diff'
 alias dip='git di @{push}';
 alias diu='git di @{upstream}';
 
 alias gg='cd "$(git rev-parse --show-cdup)"';  # Move relative to base repo
 alias gp='git push';
+alias gpf='git push --force';
 alias gpu='git push --set-upstream';
 alias gt='git add -u && git cit; git push'; # Git Tmp: update + commit as "Tmp"
 
@@ -248,6 +255,8 @@ supercd()
 # For find_file: show path preview in colour
 declare -x _text_user="${text_user}";
 declare -x _text_normal="${text_normal}";
+# For find_file: result is written here
+declare -x FOUND_FILE="";
 _preview_path()
 {
   if [[ -d "$1" ]]; then
@@ -285,8 +294,8 @@ _find_file()
   if (( $# > 0 )) && [[ "$1" == "--help" ]]; then
     echo 'find_file: find ➜ fzf';
     echo ' Result is a path.';
-    echo " Usage: $FUNCNAME [-c|-d|-|-F|-p] [-h|-H]";
-    echo "        $FUNCNAME [-options] path [query]";
+    echo " Usage: ${FUNCNAME[0]} [-c|-d|-|-F|-p] [-h|-H]";
+    echo "        ${FUNCNAME[0]} [-options] path [query]";
     echo '  -c: cd to result (dirname if a file)';
     echo '  -d: Pushd to result (dirname if a file)';
     echo '  -f: Include files (default)';
@@ -300,7 +309,7 @@ _find_file()
 
   # Sanity check
   if [[ "$(shopt -p nocasematch)" != "shopt -u nocasematch" ]]; then
-    >&2 echo "ERROR: $FUNCNAME: shopt -u nocasematch not unset";
+    >&2 echo "ERROR: ${FUNCNAME[0]}: shopt -u nocasematch not unset";
     echon "Needed for case-sensitive matching of options.";
     return 1
   fi
@@ -320,27 +329,27 @@ _find_file()
       H) hidden_dirs=1;;  # Include hidden dirs
       l) list_only=1;;
       p) pager=1;; # Show file instead of cd to dirname
-      \?) 1>&2 echo "ERROR: $FUNCNAME: Invalid option: -$OPTARG" 1>&2; return 1;;
+      \?) 1>&2 echo "ERROR: ${FUNCNAME[0]}: Invalid option: -$OPTARG" 1>&2; return 1;;
     esac
   done
   shift $((OPTIND-1));
 
   # Option saniy check
   if (( dopushd && change )); then
-    1>&2 echo "$FUNCNAME: Warning: -d has precendence over -c";
+    1>&2 echo "${FUNCNAME[0]}: Warning: -d has precendence over -c";
   fi
   if (( (change || dopushd) && pager )); then
-    1>&2 echo "$FUNCNAME: Warning: -{d,c} have precendence over -p";
+    1>&2 echo "${FUNCNAME[0]}: Warning: -{d,c} have precendence over -p";
   fi
   if (( dirs_only && hidden_files )); then
-    1>&2 echo "$FUNCNAME: Warning: -F has precendence over -h";
+    1>&2 echo "${FUNCNAME[0]}: Warning: -F has precendence over -h";
   fi
   if (( list_only && (change || dopushd || pager) )); then
-    1>&2 echo "$FUNCNAME: Warning: -l has precendence over -{c,d,p}";
+    1>&2 echo "${FUNCNAME[0]}: Warning: -l has precendence over -{c,d,p}";
   fi
 
   if (( $# > 2 )); then
-    1>&2 echo "WARNING: $FUNCNAME: Too many arguments";
+    1>&2 echo "WARNING: ${FUNCNAME[0]}: Too many arguments";
   fi
 
   #####################################
@@ -350,7 +359,14 @@ _find_file()
   declare find_path="${1:-"."}";
   declare fzf_query="${2:-}";
   if [[ ! -d "$find_path" ]]; then
-    1>&2 echo "WARNING: $FUNCNAME: No such directory '$find_path' (continuing with '.')";
+    1>&2 echo "WARNING: ${FUNCNAME[0]}: No such directory '$find_path' (continuing with '.')";
+    # If the given path is invalid and we have no search query, use the invalid
+    # path as query. This may help the user to figure out what path they are
+    # actually looking for.
+    if [[ -z "$fzf_query" ]]; then
+      1>&2 echo "NOTE: ${FUNCNAME[0]}: Using as search query instead";
+      fzf_query="$find_path";
+    fi
     find_path=".";
   fi
   declare fzf_command="cat";
@@ -358,15 +374,15 @@ _find_file()
     fzf_command=(fzf -1 --query="$fzf_query" --preview "_preview_path {}");
   fi
 
-  #>&2 echo "DEBUGGING: $FUNCNAME: fzf_query=$fzf_query"
-  #>&2 echo "DEBUGGING: $FUNCNAME: change=$change"
-  #>&2 echo "DEBUGGING: $FUNCNAME: dirs_only=$dirs_only"
-  #>&2 echo "DEBUGGING: $FUNCNAME: dopushd=$dopushd"
-  #>&2 echo "DEBUGGING: $FUNCNAME: hidden_dirs=$hidden_dirs"
-  #>&2 echo "DEBUGGING: $FUNCNAME: hidden_files=$hidden_files"
-  #>&2 echo "DEBUGGING: $FUNCNAME: pager=$pager"
-  #>&2 echo "DEBUGGING: $FUNCNAME: find_path=$find_path"
-  #>&2 echo "DEBUGGING: $FUNCNAME: ${fzf_command[@]@A}"
+  #>&2 echo "DEBUGGING: ${FUNCNAME[0]}: fzf_query=$fzf_query"
+  #>&2 echo "DEBUGGING: ${FUNCNAME[0]}: change=$change"
+  #>&2 echo "DEBUGGING: ${FUNCNAME[0]}: dirs_only=$dirs_only"
+  #>&2 echo "DEBUGGING: ${FUNCNAME[0]}: dopushd=$dopushd"
+  #>&2 echo "DEBUGGING: ${FUNCNAME[0]}: hidden_dirs=$hidden_dirs"
+  #>&2 echo "DEBUGGING: ${FUNCNAME[0]}: hidden_files=$hidden_files"
+  #>&2 echo "DEBUGGING: ${FUNCNAME[0]}: pager=$pager"
+  #>&2 echo "DEBUGGING: ${FUNCNAME[0]}: find_path=$find_path"
+  #>&2 echo "DEBUGGING: ${FUNCNAME[0]}: ${fzf_command[@]@A}"
 
   declare -a dirs_only_flag=();
   declare -a hidden_flag=();
@@ -375,16 +391,16 @@ _find_file()
   fi
 
   if (( !hidden_files && hidden_dirs )); then
-    hidden_flag=('(' -type f -a -name '.?*' -prune ')' -o);
-    >&2 echo "$FUNCNAME: DEBUG: hide files";
+    hidden_flag=( '(' -type f -a -name '.?*' -prune ')' -o );
+    >&2 echo "${FUNCNAME[0]}: DEBUG: hide files";
   elif (( !hidden_dirs && hidden_files )); then
-    hidden_flag=('(' -type d -a -name '.?*' -prune ')' -o);
-    >&2 echo "$FUNCNAME: DEBUG: hide directories";
+    hidden_flag=( '(' -type d -a -name '.?*' -prune ')' -o );
+    >&2 echo "${FUNCNAME[0]}: DEBUG: hide directories";
   elif (( !hidden_dirs && !hidden_files )); then
     hidden_flag=( '('            -name '.?*' -prune ')' -o );
-    #>&2 echo "$FUNCNAME: DEBUG: All hidden";
+    #>&2 echo "${FUNCNAME[0]}: DEBUG: All hidden";
   else
-    >&2 echo "$FUNCNAME: DEBUG: All shown";
+    >&2 echo "${FUNCNAME[0]}: DEBUG: All shown";
   fi
   #echo "DEBUGGING: ${dirs_only_flag[@]@A}";
   #echo "DEBUGGING: ${hidden_flag[@]@A}";
@@ -397,27 +413,28 @@ _find_file()
   if (( dirs_only )) && [[ -d "$fzf_query" ]]; then
     # Special case: no search needed
     out="$fzf_query";
-    >&2 echo "$FUNCNAME: DEBUG: skipping search: $out"
+    >&2 echo "${FUNCNAME[0]}: DEBUG: skipping search: $out"
   else
     declare pipe_name;
     pipe_name="$(mktemp -u)";
-    mkfifo "$pipe_name";
+    command mkfifo "$pipe_name";
     declare -i err=0;
     command find "${find_path}" -mindepth 1 "${hidden_flag[@]}" "${dirs_only_flag[@]}" -print > "$pipe_name" &
     # Ignore fzf failure but capture nonzero exit codes
     out="$("${fzf_command[@]}" <"$pipe_name")" || err="$?";
     kill "$!" 2>/dev/null; # Stop 'find' process (last background process)
     wait "$!" 2>/dev/null;
-    rm "$pipe_name";
+    rm -- "$pipe_name";
     case "$err" in
       "0") :;;
-      "130") >&2 echo "$FUNCNAME: fzf interrupted with ctrl-c or esc"; return 0;;
-      *) 1>&2 echo "ERROR: $FUNCNAME: fzf failed with code $err"; return "$err";;
+      "130") >&2 echo "${FUNCNAME[0]}: fzf interrupted with ctrl-c or esc"; return 0;;
+      *) 1>&2 echo "ERROR: ${FUNCNAME[0]}: fzf failed with code $err"; return "$err";;
     esac
   fi
 
-  # Print search result to console no matter what
-  echo "$out";
+  # Export and print search result no matter what
+  FOUND_FILE="$out";
+  printf -- "%s\n" "${out}";
   if (( list_only )); then
     return 0;
   fi
@@ -425,7 +442,7 @@ _find_file()
   # For cd or pushd, if out is a file, replace out by its dirname to allow
   # changing into it.
   if (( change || dopushd )) && [[ ! -d "$out" ]]; then
-    >&2 echo "$FUNCNAME: DEBUG: '${out}' is not a directory, using dirname";
+    >&2 echo "${FUNCNAME[0]}: DEBUG: '${out}' is not a directory, using dirname";
     out="$(dirname "$out")";
   fi
 
@@ -436,7 +453,7 @@ _find_file()
     cd -- "$out";
   elif (( pager )); then
     if [[ -d "$out" ]]; then
-      command ls --color=always -Fhl "$out" | batcat --color=always;
+      command ls --color=always -Fhl -- "$out" | batcat --color=always;
     else
       command batcat --color=always "$out";
     fi
@@ -469,6 +486,7 @@ body()
 # ______________________________________________________________________________
 # File browsing
 
+  # Predefined locations
   alias conf='cd ~/.config';
   alias nconf='cd ~/.config/nvim';
   alias dot='cd ~/dotfiles';
@@ -479,14 +497,82 @@ body()
   alias muse='cd ~/Documents/MuseScore4/Scores';
 
   alias fin='find . -iname';
-  # `find_file --help` for more info
-  alias f='find_file -p'; # page file
-  alias ff='find_file';
-  alias d='find_file -Fc';  # cd dir
-  alias dd='find_file -Fd'; # pushd dir
-  alias fh='find_file -p -hH';
-  alias dh='find_file -Fc -hH';
-  alias ddh='find_file -Fd -hH';
+  # A couple mappings for our fzf wrapper 'find_file' (see find_file --help).
+  declare f
+
+
+for f in f fp d fd fh dh fph dh fdh ff ffp dd ffd ddh ffh ffph ddh ffdh;
+do
+    # shellcheck disable=SC2139
+    alias "${f}"="_find_file_alias ${f}";
+  done
+  # Helper to make the logic of the aliases more clear
+  # Required format:
+  #   - File search allows "p" for paging
+  #   - Double letter at start indicates search at ~
+  #   - f = file search
+  #   - d = directory search + cd
+  #   - fd = directory search + pushd
+  # Allowing these combinations:
+  #   {f,ff} [p] [h]
+  #   {d,dd,fd,ffd} [h]
+  _find_file_alias() {
+    # ── Translate alias to 'find_file' flags ──────────────────────
+    declare flags="";
+    case "${1:?Missing alias name argument}" in
+      *h*)
+        flags+="hH"
+        ;;&
+      *p*)
+        flags+="p"
+        ;;&
+      *fd*)
+        flags+="Fd"
+        ;;
+      *d*)
+        flags+="Fc"
+        ;;
+      *f*)
+        : "Do nothing here"
+        ;;
+      *)
+        >&2 echo "${FUNCNAME[0]}: Invalid" "${@@A}"
+        return 64
+        ;;
+    esac
+    if [[ -n "$flags" ]]; then
+      flags="-${flags}";
+    fi
+    declare path="";
+    if [[ "${1:0:1}" == "${1:1:1}" ]]; then
+      path=~;
+    fi
+    shift
+    # ── Set path when not dictated by flags ───────────────────────
+    # '_find_file_alias' wrapper overrides the default pathing from 'find_file'.
+    # When alias is not one of the from-$HOME versions, the starting search path
+    # for 'find_file' is set as:
+    #  - When the first user supplied argument is a path, use it. This is
+    #    particularly helpful when we auto-complete paths.
+    #  - When the first user supplied argument is not a path, use "." and leave
+    #    the argument for 'find_file'. It will be interpreted as initial search
+    #    query instead.
+    # To recover the behaviour from 'find_file', 'find_file' must be used
+    # directly.
+    if [[ -z "$path" ]]; then
+      if (($# != 0)) && [[ -d "./${1}" ]]; then
+        path="${1}"
+        shift
+      else
+        # Always set path to ensures that the first word after the alias will be
+        # used as initial search query by 'find_file'.
+        path="."
+      fi
+    fi
+    # Use unquoted flag to ignore when empty
+    # shellcheck disable=SC2086
+    find_file $flags "$path" "${@}";
+  }
 
   _dirs()
   {
@@ -507,7 +593,7 @@ body()
     echo "$text_user_soft$prefix…$text_normal  ${outa[@]//"${prefix}"/…}";
   }
 
-  _pushd() { pushd "$@" >/dev/null; _dirs; };
+  _pushd() { pushd "${@:-"."}" >/dev/null; _dirs; };
   _popd() { popd >/dev/null; _dirs; };
 
   alias D='_pushd'; # Clean with dirs -c
@@ -530,7 +616,7 @@ del()
     if [[ -d "$1" || -f "$1" ]]; then
       mv -f "$1" "/tmp/del/$1_$RANDOM";
     else
-      1>&2 echo "$FUNCNAME: Error: $1: No such file or directory";
+      1>&2 echo "${FUNCNAME[0]}: Error: $1: No such file or directory";
       ret=1;
     fi
     shift;

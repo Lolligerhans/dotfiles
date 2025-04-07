@@ -10,11 +10,14 @@
 # ╭──────────────────────╮
 # │ ⚙ Boilerplate        │
 # ╰──────────────────────╯
+# shellcheck disable=SC2034 # Defined-but-not-used caused by set_args
+# shellcheck disable=SC2154 # Not-defined caused by set_args
 declare -gr dotfiles="${DOTFILES:-"$HOME/dotfiles"}" # TOKEN_DOTFILES_GLOBAL
 # ☯ Every file prevents multi-loads itself using this global dict
 declare -gA _sourced_files=(["runscript"]="")
 # 🖈 If the runscript requires a specific location, set it here
 #declare -gr this_location=""
+# shellcheck source-path=/home/username/dotfiles/scripts/boilerplate.sh
 source "$dotfiles/scripts/boilerplate.sh" "${BASH_SOURCE[0]}" "$@"
 # ╭──────────────────────╮
 # │ 🛠Configuration      │

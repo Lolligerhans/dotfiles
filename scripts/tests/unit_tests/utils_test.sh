@@ -9,8 +9,6 @@ utils_test() {
   test_compare_string_lte_version
   test_date_nocolon
   test_repeat_string
-  test_string_to_array
-  test_array_to_ascii
   test_remove_ansi_escapes
 }
 
@@ -59,47 +57,4 @@ test_date_nocolon() {
   declare -r example="2024-12-31T23-59-59+11-59"
   assert_match "$str" "$pattern" "Should produce date/times without colons"
   assert_eq "${#str}" "${#example}" "Should be same length as example"
-}
-
-test_string_to_array() {
-  declare -r input=12\$\ \'\"
-  declare -a output=()
-  string_to_array output "$input"
-  assert_eq "${#output[@]}" 6 "Output should have 6 elements"
-  assert_eq "${output[0]}" "1" "First char is correct"
-  assert_eq "${output[1]}" "2" "Second char is correct"
-  assert_eq "${output[2]}" '$' "Dollar is correct"
-  assert_eq "${output[3]}" " " "Space is correct"
-  assert_eq "${output[4]}" \' "Quote is correct"
-  assert_eq "${output[5]}" \" "Double quote is correct"
-}
-
-test_array_to_ascii() {
-  echoL "Test regular, intended use"
-  declare -ar input=(1 2 '$' " " \' \")
-  declare -a output=()
-  array_to_ascii output input
-  show_variable output
-  assert_eq "${#output[@]}" "6" "Output should have 6 elements"
-  assert_eq "${output[0]}" "49" "First char is correct"
-  assert_eq "${output[1]}" "50" "Second char is correct"
-  assert_eq "${output[2]}" '36' "Dollar is correct"
-  assert_eq "${output[3]}" "32" "Space is correct"
-  assert_eq "${output[4]}" "39" "Quote is correct"
-  assert_eq "${output[5]}" "34" "Double quote is correct"
-  assert_eq "${output[@]@A}" 'declare -a output=([0]="49" [1]="50" [2]="36" [3]="32" [4]="39" [5]="34")' "Exact match for generated output"
-
-  assert_eq "${input[@]@A}" 'declare -ar input=([0]="1" [1]="2" [2]="\$" [3]=" " [4]="'\''" [5]="\"")' "Input must remain unchanged"
-
-  echoL "Test requirement for empty output array"
-  declare -a not_empty_output=(1)
-  assert_returns 1 array_to_ascii not_empty_output input
-
-  echoL "testing for emtpy transformation"
-  declare -ar input3=()
-  declare -a output3=()
-  array_to_ascii output3 input3
-  show_variable output3
-  assert_eq "${#output3[@]}" "0" "Output should be empty"
-  assert_eq "${output3[@]@A}" "declare -a output3=()" "Exact match for generated output"
 }

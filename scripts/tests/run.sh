@@ -60,8 +60,6 @@ command_default() {
   set_args "--help" "$@"
   eval "$get_args"
 
-  string_test
-  return
   subcommand test --automated
 
   # test_string_to_array

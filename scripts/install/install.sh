@@ -6,6 +6,24 @@
 # short. We keep 1 installation per function to allow calling them individually
 # from run.sh.
 
+install_cppreference() {
+  declare -r download_link="https://github.com/PeterFeicht/cppreference-doc/releases/download/v20241110/html-book-20241110.tar.xz";
+  declare -r checksum_file="checksums/cppreference.txt"
+  declare -r checksum_file_fullpath="${parent_path}/${checksum_file}"
+  declare -r download_directory="${HOME}/Downloads/cppreference"
+  declare -r downloaded_file="html-book-20241110.tar.xz"
+  show_variable download_link
+  show_variable checksum_file_fullpath
+  show_variable downloaded_file
+  ensure_directory "$download_directory"
+  pushd "$download_directory"
+  # Use full path from in ~/Downloads
+  wget_verify_sha256_file "$download_link" "$checksum_file_fullpath"
+  command tar -xJf "$downloaded_file"
+  popd
+  echok "Installed cppreference"
+}
+
 install_diff_highlight() {
   errchol "${FUNCNAME[0]}"
   # Didnt work
@@ -134,17 +152,23 @@ install_mpk() {
 }
 
 install_nvim() {
-  if which nvim >/dev/null; then
+  set_args "--force --" "$@"
+  eval "$get_args"
+
+  echoL "Installing nvim0.10.3"
+  show_variable force
+
+  if [[ "$force" != "true" ]] && which nvim >/dev/null; then
     echos "(found) not installing nvim"
     return
   fi
 
-  declare -r link='https://github.com/neovim/neovim-releases/releases/download/v0.10.0/nvim-linux64.deb'
+  declare -r link='https://github.com/neovim/neovim-releases/releases/download/v0.10.3/nvim-linux64.deb'
   echol "Installing nvim v0.10.0"
   pushd ~/Downloads || return
   wget -q --show-progress --https-only -c "$link"
   declare check="false"
-  checksum_verify_sha256 check '46522ddd0ed56b22a889a25c247a9344d5767ec73d76f48dc54867c893214ffc  nvim-linux64.deb'
+  checksum_verify_sha256 check '813431b268053fdbf9248eec188a78e7e5904c79adfaf630bf25c56cf6192945  nvim-linux64.deb'
   if [[ "$check" != "true" ]]; then
     mv -vf nvim-linux64.deb nvim-linux64.deb.bad
     errchoe "Failed to verify checksum"
@@ -157,9 +181,9 @@ install_nvim() {
 install_tree_sitter() {
   if which tree-sitter >/dev/null; then
     echos "(found) tree-sitter"
-    return
+    return 0
   fi
-  cargo install tree-sitter-cli
+  command cargo install "tree-sitter-cli"
 }
 
 install_vundle() {

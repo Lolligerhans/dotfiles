@@ -34,6 +34,7 @@ stty -ixon
 
 shopt -s autocd;
 shopt -s globstar;
+shopt -s nullglob;
 
 declare -x HISTSIZE=; # Unlimited
 declare -x HISTFILE=~/.local/share/bash_history;
@@ -121,7 +122,7 @@ shopt -s histappend;
 
     # TODO Move this out of funciton. Is static anyway
     declare -r _new_before_git_ps1='\[${text_bdy}\]\D{%F} \[${text_bly}\]\A\[${text_normal}\]$([[ -n "$VIRTUAL_ENV" ]] && printf " \[${text_purple}\]${_venv_dir}/\[${text_normal}${text_blp}\]${_venv_base}\[${text_normal}\]")\[${text_dim}\] \u ⌂ \H\[${text_normal}\]\n\[${text_italic}${text_blue}\]${_pwd_dir}/\[${text_blb}\]${_pwd_name}\[${text_normal}\]$(((_dirs_count!=0))&&printf " %s" "\[${text_bb}\]<\[${text_blb}\]$((_dirs_count+1))\[${text_bb}\]>\[${text_normal}\]")';
-    declare -r _new_after_git_ps1=' $(((\j!=0))&&printf "\[${text_bc}\][\[${text_blc}\]\j\[${text_bc}\]]\[${text_normal}\] ")\[${text_normal}\]\[${text_normal}\]$( (($_prompt_ret!=0)) && printf "\[${text_br}\]" || printf "\[${text_bg}\]")\$›\[$text_normal\] ';
+    declare -r _new_after_git_ps1=' $(((\j!=0))&&printf "\[${text_bc}\][\[${text_blc}\]\j\[${text_bc}\]]\[${text_normal}\] ")\[${text_normal}\]\[${text_normal}\]\[${text_brightwhite}${text_dim}\]\! \[${text_normal}${text_brightblack}\]\# $( (($_prompt_ret!=0)) && printf "\[${text_br}\]" || printf "\[${text_bg}\]")\$›\[$text_normal\] ';
     declare -r _new_git_ps1_format=' (\[${text_dim}$text_white\]$(git config --get user.name)\[${text_normal}\]\[${_git_col}\]$_git_repo\[$text_green\]⎇\[${text_normal}\]  %s)';
 #    declare _ret="$?";
     # Termcap for bold text has a fallthrough in the __git_ps1 format string
@@ -148,12 +149,12 @@ shopt -s histappend;
   # Select prompt
   declare -x PS3="${text_user_hard}№›${text_normal} ";
 
-source ~/.bash_aliases;
-source ~/.bash_aliases_local || true; # Might not exist
+source -- ~/.bash_aliases;
+source -- ~/.bash_aliases_local || true; # Dynamically created by dotfiles/run.sh
 
 if command -v mcfly &> /dev/null; then
   # Doing this twice leads to errors!
-  eval "$(mcfly init bash)";
+  eval -- "$(mcfly init bash)";
 fi
 
 # Env
@@ -171,6 +172,13 @@ declare -x DELTA_FEATURES="+side-by-side";
 # │                                                            │
 # ╰────────────────────────────────────────────────────────────╯
 
-command xmodmap -e 'clear Lock' -e 'keycode 0x42 = Escape';
+# Maps CAPS_LOCK presses to produce ESC effect instead. Pressing SHIFT-CAPS_LOCK
+# produces the regular CAPS_LOCK effect. The effect is system-wide, opening any
+# bash terminal will (re-)activate it.
+command setxkbmap -option -option caps:escape_shifted_capslock
+# The note is no logner necessary with the new version.
+#     echo "${BASH_SOURCE[0]}: Remapping Caps Locks to Escape";
+# A deprecated alternative is xmodmap but it is also worse:
+#     command xmodmap -e 'clear Lock' -e 'keycode 0x42 = Escape';
 
 # vim: filetype=bash

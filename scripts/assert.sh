@@ -123,7 +123,7 @@ assert_returns() {
   # When expecting failure, hide stderr.
   # When expecting success, hide stdout.
   declare -i ret
-  may_fail ret -- run_silent $((expected == 0 ? 1 : 2)) "${@:?}"
+  may_fail ret -- run_silent "$((expected == 0 ? 1 : 2))" "${@:?}"
 
   if ((ret == expected)); then
     log_success "\$? == ${expected} | ${@}" || true

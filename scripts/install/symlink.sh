@@ -66,13 +66,24 @@ symlink_bashrc() {
 }
 
 symlink_ectags() {
+  errchoe "Deprecated because exuberant ctags is outdated. Use symlink_uctags instead."
   subcommand run "$dotfiles" deploy --yes --keep \
     --file="$dotfiles/dot/ctags" --name=".ctags" --dir="$HOME"
 }
 
 symlink_uctags() {
+  # subcommand run "$dotfiles" deploy --yes --keep \
+  #   --file="$dotfiles/dot/ignore.ctags" --dir="$HOME/.config/ctags"
+  # subcommand run "$dotfiles" deploy --yes --keep \
+  #   --file="$dotfiles/dot/langmap.ctags" --dir="$HOME/.config/ctags"
+
+  # linnking to ~/.config/ctags/ used to work but current it does not. Per
+  # readme on GitHub only ~/.ctags.d/ is considered.
+
   subcommand run "$dotfiles" deploy --yes --keep \
     --file="$dotfiles/dot/ignore.ctags" --dir="$HOME/.ctags.d"
+  subcommand run "$dotfiles" deploy --yes --keep \
+    --file="$dotfiles/dot/langmap.ctags" --dir="$HOME/.ctags.d"
 }
 
 symlink_gdbinit() {
@@ -123,7 +134,7 @@ symlink_ssh_config() {
 
 symlink_toprc() {
   subcommand run "$dotfiles" deploy --yes --keep \
-    --file="$dotfiles/dot/toprc" --dir="/home/liba/.config/procps/"
+    --file="$dotfiles/dot/toprc" --dir="$HOME/.config/procps/"
 }
 
 symlink_vim_ftplugin() {

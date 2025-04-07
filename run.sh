@@ -53,8 +53,6 @@ declare -ar restoration_files=(
   "${dotfiles}"
   "${HOME}/.ssh"/id*
   "${HOME}/.ssh/known_hosts"
-  # TODO: Once we only have machines with snap remove the other
-  "${HOME}/.mozilla/firefox/"
   "${HOME}/snap/firefox/common/.mozilla/firefox/"
 )
 declare -r update_alternatives_default_link="/usr/bin"
@@ -79,6 +77,39 @@ command_test() {
 
   # Order so that we need not scroll output much
   subcommand rundir scripts/tests test --all
+}
+
+command_nvim() {
+  set_args "--help --backup --restore" "$@"
+  eval "$get_args"
+
+  declare -r extension="runscriptbackup"
+
+  if [[ "$backup" == "true" && "$restore" == "true" ]]; then
+    abort "Must pass exactly one option"
+  fi
+
+  if [[ "$backup" == "true" ]]; then
+    echol "Backing up nvim config"
+    command mv ~/.config/nvim{,."$extension"}
+    command mv ~/.local/share/nvim{,."$extension"}
+    command mv ~/.local/state/nvim{,."$extension"}
+    command mv ~/.cache/nvim{,."$extension"}
+  fi
+
+  if [[ "$restore" == "true" ]]; then
+    echol "Restoring nvim config"
+    command mv ~/.config/nvim{."$extension",}
+    command mv ~/.local/share/nvim{."$extension",}
+    command mv ~/.local/state/nvim{."$extension",}
+    command mv ~/.cache/nvim{."$extension",}
+  fi
+
+  echon "Curretn state:"
+  command ls --color=auto -Fh -A -ltr ~/.config/ | command grep nvim
+  command ls --color=auto -Fh -A -ltr ~/.local/share/ | command grep nvim
+  command ls --color=auto -Fh -A -ltr ~/.local/state/ | command grep nvim
+  command ls --color=auto -Fh -A -ltr ~/.cache/ | command grep nvim
 }
 
 command_unun() {
@@ -157,26 +188,46 @@ command_clear_cache() {
 }
 
 command_timer() {
-  set_args "--minutes= --message=timer --console --help" "$@"
+  set_args "--duration=4 --unit=m --message=timer --no-beep --no-console --help" "$@"
   eval "$get_args"
+
+  declare -Ar seconds_map=(
+    ["s"]="1"
+    ["m"]="60"
+  )
 
   # Sanity check
   if ! >/dev/null 2>&1 notify-send --version; then
     abort "${FUNCNAME[0]}: notify-send not installed"
   fi
 
-  # Start tiemr in background
+  if [[ ! -v seconds_map["$unit"] ]]; then
+    show_variable seconds_map
+    abort "Invalid unit"
+  fi
+
+  if [[ "$duration" != +([[:digit:]]) ]]; then
+    show_variable duration
+    abort "Duration must contain digits only"
+  fi
+
   {
-    sleep "$((minutes * 60))"
+    declare -ri factor="${seconds_map[$unit]}"
+    command sleep "$((duration * factor))"
     # This is the predefined 'alert' alias in Ubuntu 20
-    notify-send --urgency=low "$message: $minutes minutes"
-    if [[ "$console" == "true" ]]; then
-      echou "${FUNCNAME[0]}: $message: $minutes minutes"
+    command notify-send "$message ($duration$unit)"
+    if [[ "$no_beep" == "false" ]]; then
+      # Beep sound
+      printf -- "\a"
     fi
-
+    if [[ "$no_console" == "false" ]]; then
+      echou "$message ($duration$unit)"
+    fi
   } &
+  declare -ri pid="${!}"
+  disown "$pid"
 
-  echok "Started timer for $minutes minutes"
+  echok "Started ${duration}${unit} timer with pid $pid"
 }
 
 command_update_alternatives() {
@@ -828,8 +879,9 @@ command_import() {
 command_info() {
   set_args "--disk --inet --system --help" "$@"
   eval "$get_args"
+  declare -r filename="system_info_txt"
 
-  declare -r info_path="$(create_truncate_tmp "system_info.txt")"
+  declare -r info_path="$(create_truncate_tmp "$filename")"
   if [[ "$disk" == "true" ]]; then
     print_and_execute command df -h >>"$info_path"
   fi
@@ -996,6 +1048,18 @@ true_colour_old() {
 # │ 🖹 Help strings       │
 # ╰──────────────────────╯
 
+declare -r nvim_help_string='Backup or restore nvim config files
+SYNOPSIS
+  nivm --backup
+  nvim --restore
+DSCRIPTION
+  Commands to move nvim config files when we want to test a fresh LazyVim from
+  the LazyVim starter. Only one option can be passed at a time. When called
+  without options, only displays the current state.
+OPTIONS
+  --backup: Move the live config files away. Do not call twice in a row.
+  --restore: Move the backup files to live config. Must call --backup beforehand.'
+
 declare -r unun_help_string='Remove undofiles from current directory'
 
 declare -r run_help_string='Ephemeral command for whatever is required at the moment
@@ -1038,16 +1102,20 @@ declare -r timer_help_string='Set a timer
 SYNOPSIS
   timer MINUTES
   timer MINUTES --message=MESSAGE
+  timer SECONDS --unit=s
   timer MINUTES --console
 DESCRIPTION
-  Sets a timer that will trigger after MINUTES many minutes. Uses "notify-send"
-  to show a notification when the timer is done.
+  Notifies with
+    - notify-send
+    - console message
+    - beep sound
+  after time duration has passed.
 OPTIONS
-  --minutes=MINUTES: Set time to MINUTES many minutes
+  --duration=NUMBER: Number of time units to wait for
+  --unit={m,s}: Time unit. Minutes/seconds.
   --message=MESSAGE: Message to show after timer is done
-  --console: Additionally print message to console. This preserves the message
-             and can help distinguish between multiple messages in quick
-             succession.'
+  --no-beep: Do not produce a beep ("\a")
+  --no-console: Do not print text to console'
 
 declare -r update_alternatives_help_string="Wrap linux util 'update-alternatives'
 SYNOPSIS

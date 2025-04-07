@@ -1,7 +1,11 @@
-return
-{
+return {
   {
     "stevearc/conform.nvim",
-    enabled = false,
+    opts = {
+      formatters_by_ft = {
+        cpp = { "clang-format" },
+        javascript = { "clang-format" },
+      },
+    },
   },
 }

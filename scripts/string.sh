@@ -42,9 +42,74 @@ load_version "$dotfiles/scripts/version.sh" "0.0.0";
 # │ 𝑓 Functional         │
 # ╰──────────────────────╯
 
+# Convert array of 1-character strings to array of ASCII values (as decimal
+# string). The input array must contain only single-letter ascii strings. Use
+# with string_to_array to convert strings their ASCII values.
+# - $1: output array variable
+# - $2: input array variable
+# Example:
+#     ("A" "B" "C") → ("65" "66" "67")
+array_to_ascii() {
+  declare -n _out_stasc_57482391="${1:?Missing poutput variable}"
+  declare -n _in_stasc_457932480394="${2:?Missing input variable}"
+  declare -i in_len="${#_in_stasc_457932480394[@]}"
+
+  echoi "${@@A}"
+
+  if ((${#_out_stasc_57482391[@]} != 0)); then
+    abort "Expecting empty output array ${_out_stasc_57482391[*]@A}"
+  fi
+  if ((in_len == 0)); then
+    # Our printf-mapfile construction cannot handle this case
+    return 0
+  fi
+
+  declare serialized
+  printf -v serialized -- "%d\t" "${_in_stasc_457932480394[@]/#/\"}"
+  # serialized=$'65\t66\t67\t'
+  read -ra _out_stasc_57482391 <<<"${serialized}"
+}
+
 common_prefix() {
   # https://stackoverflow.com/a/17475354
   printf "%s\n" "$@" | sed -e '$!{N;s/^\(.*\).*\n\1.*$/\1\n\1/;D;}'
+}
+
+# Compares strings using by $(sort -Vs), sorting (version) numbers within
+# strings by their value ("less-than-or-equal").
+# $1:      should
+# $2:      is
+# Outputs "true" if $1 <= $2, else "false"
+# Return:  0 if 'should' <= 'is' using sort -V, else 1
+compare_string_lte_version() {
+  if (("$#" != 2)); then abort "${FUNCNAME[0]}: Wrong usage:" "$@"; fi
+  declare -r should="$1"
+  declare -r is="$2"
+  declare -r smallest="$(sort -Vs <<<"$is"$'\n'"$should" | head -1)"
+  if [[ "$smallest" == "$should" ]]; then
+    printf -- "true"
+  else
+    printf -- "false"
+  fi
+}
+
+# Convert string into array of characters
+# - $1: output array variable
+# - $2: input string
+# Example:
+#     "abc" → ("a" "b" "c")
+string_to_array() {
+  declare -n _out_starr_57482391="${1:?Missing poutput variable}"
+  declare -r string="${2:?}"
+
+  if ((${#_out_starr_57482391[@]} != 0)); then
+    abort "Expecting empty output array"
+  fi
+
+  declare -i i
+  for ((i = 0; i < ${#string}; i++)); do
+    _out_starr_57482391+=("${string:i:1}")
+  done
 }
 
 # Remove color escape sequences from string

@@ -4,6 +4,8 @@ if true then return {} end
 
 -- every spec file under the "plugins" directory will be loaded automatically by lazy.nvim
 --
+-- In your plugin files, you can:
+-- * add extra plugins
 -- * disable/enabled LazyVim plugins
 -- * override the configuration of LazyVim plugins
 return {
@@ -26,7 +28,7 @@ return {
   },
 
   -- disable trouble
-  { "folke/trouble.nvim",      enabled = true },
+  { "folke/trouble.nvim", enabled = false },
 
   -- override nvim-cmp and add cmp-emoji
   {
@@ -82,7 +84,7 @@ return {
       init = function()
         require("lazyvim.util").lsp.on_attach(function(_, buffer)
           -- stylua: ignore
-          vim.keymap.set("n", "<leader>co", "TypescriptOrganizeImports", { buffer = buffer, desc = "Organize Imports" })
+          vim.keymap.set( "n", "<leader>co", "TypescriptOrganizeImports", { buffer = buffer, desc = "Organize Imports" })
           vim.keymap.set("n", "<leader>cR", "TypescriptRenameFile", { desc = "Rename File", buffer = buffer })
         end)
       end,
@@ -155,7 +157,11 @@ return {
     "nvim-lualine/lualine.nvim",
     event = "VeryLazy",
     opts = function(_, opts)
-      table.insert(opts.sections.lualine_x, "😄")
+      table.insert(opts.sections.lualine_x, {
+        function()
+          return "😄"
+        end,
+      })
     end,
   },
 

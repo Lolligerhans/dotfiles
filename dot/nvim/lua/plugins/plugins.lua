@@ -10,44 +10,43 @@
 -- * add extra plugins
 -- * disable/enabled LazyVim plugins
 -- * override the configuration of LazyVim plugins
-return
-{
+return {
 
   -- ╭───────────────────────────────────────────────────────────╮
   -- │ Configure LazyVim plugins                                 │
   -- ╰───────────────────────────────────────────────────────────╯
 
-  -- {
-  --   "akinsho/bufferline.nvim",
-  --   opts = {
-  --     options = {
-  --       mode = "tabs",
-  --     },
-  --   },
-  --   -- enabled = false,
-  -- },
+  {
+    "akinsho/bufferline.nvim",
+    opts = {
+      options = {
+        -- mode = "tabs",
+        separator_style = "slant",
+      },
+    },
+    -- enabled = false,
+  },
 
   -- add gruvbox
   -- Configure LazyVim to load gruvbox
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme =
+      colorscheme = "catppuccin",
       -- "retrobox",
       -- "gruvbox",
-      "catppuccin",
       -- "tokyonight-night",
       -- "onedark",
       -- "everforest",
       -- "nightfox",
-      {
-        "hrsh7th/nvim-cmp",
-        dependencies = { "hrsh7th/cmp-emoji" },
-        ---@param opts cmp.ConfigSchema
-        opts = function(_, opts)
-          table.insert(opts.sources, { name = "emoji" })
-        end,
-      },
+      -- {
+      --   "hrsh7th/nvim-cmp",
+      --   dependencies = { "hrsh7th/cmp-emoji" },
+      --   ---@param opts cmp.ConfigSchema
+      --   opts = function(_, opts)
+      --     table.insert(opts.sources, { name = "emoji" })
+      --   end,
+      -- },
     },
   },
 
@@ -66,24 +65,6 @@ return
   --   },
   -- },
 
-  {
-    "ibhagwan/fzf-lua",
-    -- optional for icon support
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-    -- keys = function() return { {} } end,
-    config = function()
-      -- calling `setup` is optional for customization
-      require("fzf-lua").setup({
-        "default",
-        -- Prevent default layout that reverse the order
-        fzf_opts = { ['--layout'] = false },
-        -- previewer = "builtin", ??
-      })
-
-      -- vim.cmd("FzfLua setup_fzfvim_cmds")
-    end
-  },
-
   -- change trouble config
   {
     "folke/trouble.nvim",
@@ -94,38 +75,38 @@ return
   -- -- disable trouble
   -- { "folke/trouble.nvim",                             enabled = false
 
-  -- override nvim-cmp and add cmp-emoji
-  {
-    "hrsh7th/nvim-cmp",
-    dependencies = { "hrsh7th/cmp-emoji" },
-    ---@param opts cmp.ConfigSchema
-    opts = function(_, opts)
-      table.insert(opts.sources, { name = "emoji" })
-    end,
-  },
+  -- -- override nvim-cmp and add cmp-emoji
+  -- {
+  --   "hrsh7th/nvim-cmp",
+  --   dependencies = { "hrsh7th/cmp-emoji" },
+  --   ---@param opts cmp.ConfigSchema
+  --   opts = function(_, opts)
+  --     table.insert(opts.sources, { name = "emoji" })
+  --   end,
+  -- },
 
-  -- change some telescope options and a keymap to browse plugin files
-  {
-    "nvim-telescope/telescope.nvim",
-    keys = {
-      -- add a keymap to browse plugin files
-      -- stylua: ignore
-      {
-        "<leader>fp",
-        function() require("telescope.builtin").find_files({ cwd = require("lazy.core.config").options.root }) end,
-        desc = "Find Plugin File",
-      },
-    },
-    -- change some options
-    -- opts = {
-    --   defaults = {
-    --     layout_strategy = "horizontal",
-    --     layout_config = { prompt_position = "top" },
-    --     sorting_strategy = "ascending",
-    --     winblend = 0,
-    --   },
-    -- },
-  },
+  -- -- change some telescope options and a keymap to browse plugin files
+  -- {
+  --   "nvim-telescope/telescope.nvim",
+  --   keys = {
+  --     -- add a keymap to browse plugin files
+  --     -- stylua: ignore
+  --     {
+  --       "<leader>fp",
+  --       function() require("telescope.builtin").find_files({ cwd = require("lazy.core.config").options.root }) end,
+  --       desc = "Find Plugin File",
+  --     },
+  --   },
+  --   -- change some options
+  --   -- opts = {
+  --   --   defaults = {
+  --   --     layout_strategy = "horizontal",
+  --   --     layout_config = { prompt_position = "top" },
+  --   --     sorting_strategy = "ascending",
+  --   --     winblend = 0,
+  --   --   },
+  --   -- },
+  -- },
 
   -- add pyright to lspconfig
   {
@@ -176,16 +157,13 @@ return
     },
   },
 
-  -- for typescript, LazyVim also includes extra specs to properly setup lspconfig,
-  -- treesitter, mason and typescript.nvim. So instead of the above, you can use:
-  { import = "lazyvim.plugins.extras.lang.typescript" },
-
   -- add more treesitter parsers
   {
     "nvim-treesitter/nvim-treesitter",
     opts = function(_, opts)
       -- add tsx and treesitter
       vim.list_extend(opts.ensure_installed, {
+        "cpp",
         "bash",
         "css",
         "html",
@@ -242,14 +220,14 @@ return
   -- use mini.starter instead of alpha
   -- { import = "lazyvim.plugins.extras.ui.mini-starter" },
 
-  -- add jsonls and schemastore packages, and setup treesitter for json, json5 and jsonc
-  { import = "lazyvim.plugins.extras.lang.json" },
-
   -- add any tools you want to have installed below
   {
     "williamboman/mason.nvim",
     opts = {
       ensure_installed = {
+        "cpptools",
+        "clangd",
+        "clang-format",
         "stylua",
         "shellcheck",
         "shfmt",
@@ -258,80 +236,26 @@ return
     },
   },
 
-  -- Is there a more distinct way than repeating the entire config to change
-  -- the logo?
+  -- {
+  --   "folke/snacks.nvim",
+  --   opts = { dashboard = { enabled = false } },
+  -- },
+
   {
-    "goolord/alpha-nvim",
-    event = "VimEnter",
-    enabled = true,
-    init = false,
-    opts = function()
-      local dashboard = require("alpha.themes.dashboard")
-      --   local logo = [[
-      --      ██╗      █████╗ ███████╗██╗   ██╗██╗   ██╗██╗███╗   ███╗          Z
-      --      ██║     ██╔══██╗╚══███╔╝╚██╗ ██╔╝██║   ██║██║████╗ ████║      Z
-      --      ██║     ███████║  ███╔╝  ╚████╔╝ ██║   ██║██║██╔████╔██║   z
-      --      ██║     ██╔══██║ ███╔╝    ╚██╔╝  ╚██╗ ██╔╝██║██║╚██╔╝██║ z
-      --      ███████╗██║  ██║███████╗   ██║    ╚████╔╝ ██║██║ ╚═╝ ██║
-      --      ╚══════╝╚═╝  ╚═╝╚══════╝   ╚═╝     ╚═══╝  ╚═╝╚═╝     ╚═╝
-      -- ]]
-      local logo = require("plugins/util/logo").random("pieces")
-
-      -- stylua: ignore
-      dashboard.section.header.val = vim.split(logo, "\n")
-      dashboard.section.buttons.val = {
-        dashboard.button("f", " " .. " Find file", LazyVim.pick()),
-        dashboard.button("n", " " .. " New file", [[<cmd> ene <BAR> startinsert <cr>]]),
-        dashboard.button("r", " " .. " Recent files", LazyVim.pick("oldfiles")),
-        dashboard.button("g", " " .. " Find text", LazyVim.pick("live_grep")),
-        dashboard.button("c", " " .. " Config", LazyVim.pick.config_files()),
-        dashboard.button("s", " " .. " Restore Session", [[<cmd> lua require("persistence").load() <cr>]]),
-        dashboard.button("x", " " .. " Lazy Extras", "<cmd> LazyExtras <cr>"),
-        dashboard.button("l", "󰒲 " .. " Lazy", "<cmd> Lazy <cr>"),
-        dashboard.button("q", " " .. " Quit", "<cmd> qa <cr>"),
-      }
-      for _, button in ipairs(dashboard.section.buttons.val) do
-        button.opts.hl = "AlphaButtons"
-        button.opts.hl_shortcut = "AlphaShortcut"
-      end
-      dashboard.section.header.opts.hl = "AlphaHeader"
-      dashboard.section.buttons.opts.hl = "AlphaButtons"
-      dashboard.section.footer.opts.hl = "AlphaFooter"
-      dashboard.opts.layout[1].val = 8
-      return dashboard
-    end,
-    config = function(_, dashboard)
-      -- close Lazy and re-open when the dashboard is ready
-      if vim.o.filetype == "lazy" then
-        vim.cmd.close()
-        vim.api.nvim_create_autocmd("User", {
-          once = true,
-          pattern = "AlphaReady",
-          callback = function()
-            require("lazy").show()
-          end,
-        })
-      end
-
-      require("alpha").setup(dashboard.opts)
-
-      vim.api.nvim_create_autocmd("User", {
-        once = true,
-        pattern = "LazyVimStarted",
-        callback = function()
-          local stats = require("lazy").stats()
-          local ms = (math.floor(stats.startuptime * 100 + 0.5) / 100)
-          dashboard.section.footer.val = "⚡ Neovim loaded "
-              .. stats.loaded
-              .. "/"
-              .. stats.count
-              .. " plugins in "
-              .. ms
-              .. "ms"
-          pcall(vim.cmd.AlphaRedraw)
-        end,
-      })
-    end,
+    "folke/snacks.nvim",
+    ---@type snacks.Config
+    opts = {
+      dashboard = {
+        -- your dashboard configuration comes here
+        -- or leave it empty to use the default settings
+        -- refer to the configuration section below
+        preset = {
+          header = require("plugins/util/logo").random("pieces"),
+          -- header = [[
+          --         I am a happy header]],
+        },
+      },
+    },
   },
 
   -- ╭───────────────────────────────────────────────────────────────────────────╮
@@ -369,17 +293,17 @@ return
   {
     "nvim-treesitter/nvim-treesitter-context",
     opts = {
-      enable = true,            -- Enable this plugin (Can be enabled/disabled later via commands)
-      max_lines = 0,            -- How many lines the window should span. Values <= 0 mean no limit.
-      min_window_height = 0,    -- Minimum editor window height to enable context. Values <= 0 mean no limit.
+      enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
+      max_lines = 10, -- How many lines the window should span. Values <= 0 mean no limit.
+      min_window_height = 0, -- Minimum editor window height to enable context. Values <= 0 mean no limit.
       line_numbers = true,
       multiline_threshold = 20, -- Maximum number of lines to show for a single context
-      trim_scope = 'outer',     -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
-      mode = 'topline',         -- Line used to calculate context. Choices: 'cursor', 'topline'
+      trim_scope = "outer", -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
+      mode = "topline", -- Line used to calculate context. Choices: 'cursor', 'topline'
       -- Separator between context and content. Should be a single character string, like '-'.
       -- When separator is set, the context will only show up when there are at least 2 lines above cursorline.
       separator = nil,
-      zindex = 20,     -- The Z-index of the context window
+      zindex = 20, -- The Z-index of the context window
       on_attach = nil, -- (fun(buf: integer): boolean) return false to disable attaching
     },
   },
@@ -407,8 +331,8 @@ return
       keymaps = {
         insert = false,
         insert_line = false,
-        normal = false,          -- Use visual mode ß. Changes '<,'>.
-        normal_cur = "gßß",      -- Use double to be consistent with "dd", "cc", etc.
+        normal = false, -- Use visual mode ß. Changes '<,'>.
+        normal_cur = "gßß", -- Use double to be consistent with "dd", "cc", etc.
         normal_line = "gß",
         normal_cur_line = false, -- Use visual mode ßß. Changes '<'>.
         visual = "ß",
@@ -427,5 +351,4 @@ return
 
   -- List:
   -- https://github.com/Shatur/neovim-session-manager
-
 }

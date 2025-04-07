@@ -1,10 +1,8 @@
-# For universal ctags.
-# For exuberant see ./ctags.
---exclude=Session.vim
---exclude=Session_active.vim
---exclude=@.ctagsignore
+# This file is for universal ctags.
+# For exuberant ctags, see ./ctags.
 
-# Local ignorefile .ctagsignore may only contain patterns (not --options).
-# Directories should NOT end in "/".
+# Put a file named ".ctagsignore" into the project directory. It will be loaded
+# Directories should NOT end in "/". Example:
 #     data
 #     test/whatever
+--exclude=@.ctagsignore

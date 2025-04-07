@@ -89,12 +89,67 @@ function Concatenate_lines(logo1, logo2, concat)
   return table.concat(result_table)
 end
 
+---Take the old logo form (single string containing newlines; used by the
+---'alpha' starter), and return the new format (table of strings; used by
+---mini.starter).
+---@param logo_as_string string Logo string containing newlines for multiline
+---                      logos
+---@return table # Table containing one entry per line [1, ... ,n]
+function Split_lines(logo_as_string)
+--FIXME: I hope this syntax regex matches to confirm that we use newlines as
+  --       delimeter in the logo string.
+  assert(logo_as_string ~= ".*\n.*")
+  local result_table = {}
+  local split = vim.split(logo_as_string, "\n")
+  for i, line in ipairs(split) do
+    print("inserting line", i, ":")
+    print(line)
+    table.insert(result_table, line)
+  end
+  return result_table
+end
+
 ---@param name string Name of the index file
 ---@return string # Concatenated selection of sub-logos
 function Ranodm_logo_pair(name)
   local logos = Get_raw_logo_collection(name)
   local selection = Select_n(logos, 2)
   return Concatenate_lines(selection[1], selection[2], "   ")
+end
+
+---@param name string Name of the index file
+---@return table # Table of strings reflecting the lines of the logo
+function Random_logo_pair_table(name)
+  print("Entering Random_logo_pair_table")
+  local logos = Get_raw_logo_collection(name)
+  local selection = Select_n(logos, 2)
+  local logos_as_string = Concatenate_lines(selection[1], selection[2], "   ")
+  print("logo as string:")
+  print(logos_as_string)
+  local result = Split_lines(selection[logos_as_string])
+  print("first line of table:")
+  print(result[1])
+  print("second line of table:")
+  print(result[2])
+  return result
+end
+
+function Fixed_test_table(name)
+  assert(#name > 0, "We dont use a name in the test, but the actual thing uses a name so we require it")
+  local logo_table = {}
+  table.insert(logo_table, "|----|")
+  table.insert(logo_table, "|Test|")
+  table.insert(logo_table, "|----|")
+  return logo_table
+end
+
+function Fixed_test_string(name)
+  assert(#name > 0, "We dont use a name in the test, but the actual thing uses a name so we require it")
+  local logo_table = {}
+  table.insert(logo_table, "|----|")
+  table.insert(logo_table, "|Test|")
+  table.insert(logo_table, "|----|")
+  return table.concat(logo_table, "\n")
 end
 
 -- We return a table with function usable for logo generation
@@ -104,4 +159,6 @@ return
   simple = Get_raw_logo,
   -- Shows 2 random logos side-by-side
   random = Ranodm_logo_pair,
+  random_table = Random_logo_pair_table,
+  test_fixed_table = Fixed_test_table,
 }

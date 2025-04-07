@@ -4,7 +4,27 @@
 
 local m = vim.keymap
 
---map({ "i", "x", "n", "s" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save File" })
+-- LazyVim defaults (not repeated here)
+--m.set({ "i", "x", "n", "s" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save File" })
+
+-- ╭───────────────────────────────────────────────────────────╮
+-- │ Technical                                                 │
+-- ╰───────────────────────────────────────────────────────────╯
+
+-- When using function keys with Shift/Ctrl, nvim may instead receive what it
+-- thinks are higher function keys (e.g., <F13> instead of <S-F1>). We map them
+-- to whatever nvim reports <C-v> + FunctionKey
+m.set({ "", "!", "l" }, "<F15>", "<S-F3>", { remap = true })
+m.set({ "", "!", "l" }, "<F16>", "<S-F4>", { remap = true })
+m.set({ "", "!", "l" }, "<F25>", "<C-F1>", { remap = true })
+m.set({ "", "!", "l" }, "<F27>", "<C-F3>", { remap = true })
+m.set({ "", "!", "l" }, "<F28>", "<C-F4>", { remap = true })
+m.set({ "", "!", "l" }, "<F39>", "<C-S-F3>", { remap = true })
+m.set({ "", "!", "l" }, "<F40>", "<C-S-F4>", { remap = true })
+m.set({ "", "!", "l" }, "<F29>", "<C-F5>", { remap = true })
+m.set({ "", "!", "l" }, "<F30>", "<C-F6>", { remap = true })
+m.set({ "", "!", "l" }, "<F31>", "<C-F7>", { remap = true })
+m.set({ "", "!", "l" }, "<F32>", "<C-F8>", { remap = true })
 
 -- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Replacements / Changes                                                    │
@@ -24,11 +44,82 @@ m.set("n", "<leader>L", "<cmd>Lazy<cr>", { remap = false, desc = "LazyVim" })
 
 -- moved to <leader>ß:
 m.del("n", "<leader>:")
-m.set("n", "<leader>ß:", "<cmd>Telescope command_history<cr>",
-  { remap = false, desc = "Command History" })
+m.set("n", "<leader>ß:", "<cmd>FzfLua command_history<cr>", { remap = false, desc = "Command History" })
 
 -- Replaced with our own (remains at <leader>ff)
 m.del("n", "<leader><leader>")
+
+-- ╭───────────────────────────────────────────────────────────╮
+-- │ Debug Adapter Protocol                                    │
+-- ╰───────────────────────────────────────────────────────────╯
+
+vim.keymap.set("n", "<f5>", function()
+  require("dap").continue()
+end)
+vim.keymap.set("n", "<f6>", function()
+  require("dap").step_over()
+end)
+vim.keymap.set("n", "<f7>", function()
+  require("dap").step_into()
+end)
+vim.keymap.set("n", "<f8>", function()
+  require("dap").step_out()
+end)
+-- <C-F7>, <C-F8> use the same function key as stepping in and out of a function
+vim.keymap.set("n", "<C-F7>", function()
+  require("dap").down()
+end)
+vim.keymap.set("n", "<C-F8>", function()
+  require("dap").up()
+end)
+-- vim.keymap.set("n", "<leader>b", function()
+--   require("dap").toggle_breakpoint()
+-- end)
+-- vim.keymap.set("n", "<leader>b", function()
+--   require("dap").set_breakpoint()
+-- end)
+vim.keymap.set("n", "<leader>dlp", function()
+  require("dap").set_breakpoint(nil, nil, vim.fn.input("log point message: "))
+end)
+-- vim.keymap.set("n", "<leader>dr", function()
+--   require("dap").repl.open()
+-- end)
+-- vim.keymap.set("n", "<Leader>dl", function()
+--   require("dap").run_last()
+-- end)
+vim.keymap.set({ "n", "v" }, "<Leader>dWh", function()
+  require("dap.ui.widgets").hover()
+end)
+vim.keymap.set({ "n", "v" }, "<Leader>dWp", function()
+  require("dap.ui.widgets").preview()
+end)
+-- vim.keymap.set("n", "<Leader>df", function()
+--   local widgets = require("dap.ui.widgets")
+--   widgets.centered_float(widgets.frames)
+-- end)
+-- vim.keymap.set('n', '<Leader>ds', function()
+--   local widgets = require("dap.ui.widgets")
+--   widgets.centered_float(widgets.scopes)
+-- end)
+
+-- ╭───────────────────────────────────────────────────────────╮
+-- │ Files                                                     │
+-- ╰───────────────────────────────────────────────────────────╯
+
+m.set({ "i", "x", "n", "s" }, "<C-S-s>", "<cmd>wa<cr><esc>", { desc = "Save modified Files" })
+
+-- "File switch" mappings
+m.set("n", "<leader>fsh", "<cmd>e %:p:r.hpp<cr>", { remap = false, desc = "Edit .hpp" })
+m.set("n", "<leader>fsc", "<cmd>e %:p:r.cpp<cr>", { remap = false, desc = "Edit .cpp" })
+m.set("n", "<leader>fsi", "<cmd>e %:p:r.ipp<cr>", { remap = false, desc = "Edit .inc" })
+m.set("n", "<leader>fst", "<cmd>e %:p:r.test<cr>", { remap = false, desc = "Edit .test" })
+
+m.set("n", "<F3>", "<cmd>bo cw|cN<cr>zvzz", { remap = false, desc = "quickfix previous" })
+m.set("n", "<F4>", "<cmd>bo cw|cn<cr>zvzz", { remap = false, desc = "quickfix next" })
+m.set("n", "<S-F3>", "<cmd>bo cw|cNf<cr>", { remap = false, desc = "quickfix file previous" })
+m.set("n", "<S-F4>", "<cmd>bo cw|cnf<cr>", { remap = false, desc = "quickfix file next" })
+m.set("n", "<C-F3>", "<cmd>bo cw|N<cr>", { remap = false, desc = "arg previous" })
+m.set("n", "<C-F4>", "<cmd>bo cw|n<cr>", { remap = false, desc = "arg next" })
 
 -- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Global/Generic                                                            │
@@ -40,23 +131,23 @@ m.del("n", "<leader><leader>")
 -- FIXME: None of these work in "replace-pending" mode
 
 -- Try mapping öäÖÄ to produce []{} always, except for i_CTRL-V
-m.set({ "", "!", "l" }, "<c-c>", "<esc>", { desc = "[Esc]" })
+-- m.set({ "", "!", "l" }, "<c-c>", "<esc>", { desc = "[Esc]" })
 m.set({ "", "!", "l", "t", "o" }, "ö", "[", { remap = true })
 m.set({ "", "!", "l", "t", "o" }, "Ö", "{", { remap = true })
 m.set({ "", "!", "l", "t", "o" }, "öö", "[[", { remap = true })
-m.set({ "", "!", "l", "t", "o" }, "ÖÖ", "]]", { remap = true })
+m.set({ "", "o" }, "ää", "]]", { remap = true })
 m.set({ "", "!", "l", "t", "o" }, "ä", "]", { remap = true })
 m.set({ "", "!", "l", "t", "o" }, "Ä", "}", { remap = true })
 m.set({ "i" }, "ÖÖ", "{{", { remap = true }) -- for imap {{
 m.set({ "i" }, "ÄÄ", "}}", { remap = true }) -- for imap }}
+m.set({ "!", "l", "t" }, "ü", "_", { remap = true })
 -- Quitting
 m.set("n", "<c-q>", ":q<cr>", { desc = "Close window hard" })
 m.set("n", "<leader>Q", ":sus<cr>", { remap = false, desc = "suspend" })
 m.set("n", "<leader>qQ", ":qa<cr>", { remap = false, desc = "Quit hard" })
 
 -- nnoremap <leader>: :enew\|pu=execute(':help')<c-f>T:ve
-m.set("n", "<leader>:", ":enew|pu=execute(':help')<c-f>T:ve",
-  { remap = false, desc = "Capture :command output" })
+m.set("n", "<leader>:", ":enew|pu=execute(':help')<c-f>T:ve", { remap = false, desc = "Capture :command output" })
 
 m.set("n", "<leader>qw", "<cmd>xa<cr>", { remap = false, desc = "Write & Quit" })
 
@@ -65,14 +156,14 @@ m.set("n", "<leader>qw", "<cmd>xa<cr>", { remap = false, desc = "Write & Quit" }
 -- TDOo <c-F12> reload vimrc/config?
 
 m.set("i", "<F1>", "<nop>", { remap = false }) -- Remove nvim default mapping
-m.set("n", "<F1>", "<cmd>make<cr>", { remap = false })
-m.set("n", "<F2>", "<cmd>split term://./run.sh<cr>", { remap = false })
+m.set("n", "<F1>", "<cmd>make|bo cw<cr>", { remap = false })
+m.set("n", "<F2>", "<cmd>bo split term://./run.sh<cr>", { remap = false })
 
 -- Delete errors for Shellcheck error code under cursor
 m.set("n", "<leader>ces", "m`*<cmd>g//-2,+2d<cr>``", { remap = false, desc = "Code edit [s]hellcheck" })
 
 -- Git add using bash alias 'a' in the LazyVim terminal popup
-m.set("n", "<F5>", "<c-/>a<cr>", { remap = true, desc = "Git add" })
+-- m.set("n", "<F5>", "<c-/>a<cr>", { remap = true, desc = "Git add" })
 m.set("t", "<esc><esc>", "<c-/><c-n>", { remap = false })
 
 -- ╭───────────────────────────────────────────────────────────────────────────╮
@@ -102,8 +193,8 @@ m.set("n", "<c-right>", "<cmd>vertical resize +10<cr>", { remap = false, desc = 
 m.set("n", "<c-down>", "<cmd>resize -10<cr>", { remap = false, desc = "Decrease window height" })
 m.set("n", "<c-up>", "<cmd>resize +10<cr>", { remap = false, desc = "Increase window height" })
 
-m.set("n", "<c-e>", "5<c-e>", { remap = false, desc = "Scroll view up" })
-m.set("n", "<c-y>", "5<c-y>", { remap = false, desc = "Scroll view down" })
+m.set({"n", "v"}, "<c-e>", "5<c-e>", { remap = false, desc = "Scroll view up" })
+m.set({"n", "v"}, "<c-y>", "5<c-y>", { remap = false, desc = "Scroll view down" })
 
 -- TODO: Bring back normal tabs in lazyvim
 m.set("n", "<A-e>", "<cmd>BufferLineMovePrev<cr>", { remap = false, desc = "Move buffer left" })
@@ -125,7 +216,6 @@ m.set("c", "<S-F10>", "windo diffthis<cr>", { remap = false, desc = "diff window
 -- TODO tagber?
 -- TODO Indent guides?
 
-
 -- " switch between {source, header, include, test} file
 m.set("n", "<leader>bmh", "<cmd>fin %:t:r.h<cr>", { remap = false, desc = ".h" })
 m.set("n", "<leader>bms", "<cmd>fin %:t:r.cpp<cr>", { remap = false, desc = ".cpp" })
@@ -137,16 +227,12 @@ m.set("n", "<leader>bmt", "<cmd>fin %:t:r.test<cr>", { remap = false, desc = ".t
 --      garb tab.
 
 -- For now we will be using the default terminal mode maps for mocing etc.
-m.set("n", "<leader>wt",
-  "<cmd>-tab terminal<cr>",
-  { remap = false, desc = "Terminal" })
+m.set("n", "<leader>wt", "<cmd>-tab terminal<cr>", { remap = false, desc = "Terminal" })
 
--- TODO: How to define whichkey group?
-m.set(
-  "n", "<leader>tc",
-  function() vim.opt.cursorcolumn = not vim.opt.cursorcolumn:get() end,
-  { remap = false, desc = "Toggle cusor [c]olumn" }
-)
+-- TODO: How to define which-key group?
+m.set("n", "<leader>tc", function()
+  vim.opt.cursorcolumn = not vim.opt.cursorcolumn:get()
+end, { remap = false, desc = "Toggle cusor [c]olumn" })
 
 m.set("n", "<A-h>", "zc", { remap = true, desc = "Close fold" })
 m.set("n", "<A-l>", "zo", { remap = true, desc = "Open fold" })
@@ -159,32 +245,31 @@ m.set("n", "<A-k>", "zk", { remap = true, desc = "Jump to previous fold" })
 -- │ Editing / Insert mode                                                     │
 -- ╰───────────────────────────────────────────────────────────────────────────╯
 
+m.set({ "n", "v" }, "<A-s>", "s", { remap = false, desc = "Substitute" })
+
 -- ── Sorting ────────────────────────────────────────────────
 -- TODO: How to do visual mode commands in lua?
-m.set(
-  "v", "<leader>is", "cẞstart<cr>ẞend<esc>P<esc>",
-  { remap = false, desc = "(1) Sort range" }
-)
-m.set(
-  "n", "<leader>isp", function() require("sort").mark_paragraph() end,
-  { remap = false, desc = "(2-1) Mark as sorting paragraph" }
-)
-m.set(
-  "n", "<leader>iss", function() require("sort").mark_sort() end,
-  { remap = false, desc = "(2-2) Mark as sorting location" }
-)
-m.set(
-  "n", "<leader>isS", function() require("sort").sort() end,
-  { remap = false, desc = "(3) Process markers" }
-)
+m.set("v", "<leader>is", "cẞstart<cr>ẞend<esc>P<esc>", { remap = false, desc = "(1) Sort range" })
+m.set("n", "<leader>isp", function()
+  require("sort").mark_paragraph()
+end, { remap = false, desc = "(2-1) Mark as sorting paragraph" })
+m.set("n", "<leader>iss", function()
+  require("sort").mark_sort()
+end, { remap = false, desc = "(2-2) Mark as sorting location" })
+m.set("n", "<leader>isS", function()
+  require("sort").sort()
+end, { remap = false, desc = "(3) Process markers" })
 
-m.set("n", "<leader>d<space>", "gElcw<space><esc>",
-  { remap = false, desc = "Shrink leading whitespace" })
+m.set("n", "<leader>d<space>", "gElcw<space><esc>", { remap = false, desc = "Shrink leading whitespace" })
 
 m.set("i", "{{", "{<cr>}<esc>O", { remap = false, desc = "Open block line" })
 m.set("i", "{;", "{<cr>};<esc>O", { remap = false, desc = "Open block line with ;" })
 m.set("i", "}}", "{<cr>}<left>", { remap = false, desc = "Open empty block line" })
-m.set("i", "};", "{<cr>};<left><left>", { remap = false, desc = "Open empty block line with ;" })
+-- NOTE: This one got too annoying because we cannot close braces with  };
+--       anymore.
+-- TODO: The no-newline overloads are obsolete when using formatters. Consider
+--       removing them.
+-- m.set("i", "};", "{<cr>};<left><left>", { remap = false, desc = "Open empty block line with ;" })
 m.set("i", "{}", "{}<left>", { remap = false, desc = "Open empty block" })
 
 m.set("i", "<c-r>L", 'line(".")', { remap = false, expr = true, desc = "Lineno" })
@@ -192,37 +277,48 @@ m.set("i", "<c-r>L", 'line(".")', { remap = false, expr = true, desc = "Lineno" 
 -- TODO Filetype specific
 -- nnoremap <leader>b m`GooCBench: *``
 
-m.set("t", "<c-r>", "'<c-\\><c-n>\"'.nr2char(getchar()).'pi'",
-  { remap = false, expr = true, desc = "Register..." })
+m.set("t", "<c-r>", "'<c-\\><c-n>\"'.nr2char(getchar()).'pi'", { remap = false, expr = true, desc = "Register..." })
 
 -- Scrape function calls from the end.Anti-join. Does not re-align, so
 -- autoformatter must salvage the remains.
 -- Inserts \r at ,<space> {<space> <space>} and similar.
 -- TODO: We iverwrite vim's gj. Do we care? we can always unmap gj ad-hoc.
-m.set({ "n", "v" }, "gj",
+m.set(
+  { "n", "v" },
+  "gj",
   "<cmd>s/.*\\(,\\zs \\+\\ze\\|\\zs \\+\\ze[\\])}]\\|[\\[({]\\zs \\+\\ze\\)/\\r<cr>``",
-  { remap = false, desc = "Scrape at end" })
+  { remap = false, desc = "Scrape at end" }
+)
 
 -- Convert binary <--> hexadecimal <--> hexdump
-m.set({ "v" }, "<leader>xr", "<esc>'<kmh'>jml<cmd>HexRead<cr>'hjV'lk>",
-  { remap = false, desc = "Hex read (hex->dump)" })
-m.set({ "n" }, "<leader>cxr",
+m.set(
+  { "v" },
+  "<leader>xr",
+  "<esc>'<kmh'>jml<cmd>HexRead<cr>'hjV'lk>",
+  { remap = false, desc = "Hex read (hex->dump)" }
+)
+m.set(
+  { "n" },
+  "<leader>cxr",
   "/[^[:xdigit:][:space:]]<cr>VN$/[[:xdigit:]]<cr>o^N<bslash>xr<cmd>silent nohl<cr>",
-  { remap = false, desc = "Hex read (within next non-pure-hex lines)" })
+  { remap = false, desc = "Hex read (within next non-pure-hex lines)" }
+)
 m.set({ "v" }, "<leader>xx", "<cmd>!xxd -p<cr>", { remap = false, desc = "Hex encode (bin->hex)" })
 m.set({ "v" }, "<leader>xb", "<cmd>!xxd -r -p<cr>", { remap = false, desc = "Hex decode (hex->bin)" })
 m.set({ "v" }, "<leader>xs", "<cmd>!xxd -r | xxd -p<cr>", { remap = false, desc = "Hex string (dump->hex)" })
 
 -- Replace { at end of line with { at start of line
 -- FIXME: Does not work with our global "ö" → "{" mapping
-m.set({ "n", "v" }, "<leader>{", ":s/\\(\\s*\\)\\S.\\{-}\\zs\\s*{$/\\r\\1{/g<cr>",
+m.set(
+  { "n", "v" },
+  "<leader>{",
+  ":s/\\(\\s*\\)\\S.\\{-}\\zs\\s*{$/\\r\\1{/g<cr>",
   { remap = false, desc = "Replace trailing {" }
 )
 
 -- Hard wrap after 80 characters. Because n_gww does not work on lines without
 -- whitespace.
-m.set({ "n", "v" }, "gwW", "<cmd>s/.\\{80}\\zs/\\r/g<cr>",
-  { remap = false, desc = "hard wrap 80 characters" })
+m.set({ "n", "v" }, "gwW", "<cmd>s/.\\{80}\\zs/\\r/g<cr>", { remap = false, desc = "hard wrap 80 characters" })
 
 -- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Movements                                                                 │
@@ -237,20 +333,13 @@ m.set({ "n", "v" }, "gwW", "<cmd>s/.\\{80}\\zs/\\r/g<cr>",
 m.set("n", "<A-O>", "g;", { remap = false, desc = "Previous change" })
 m.set("n", "<A-I>", "g,", { remap = false, desc = "Next change" })
 
-m.set("n", "<F3>", "<cmd>cN<cr>zvzz", { remap = false, desc = "quickfix previous" })
-m.set("n", "<F4>", "<cmd>cn<cr>zvzz", { remap = false, desc = "quickfix next" })
-m.set("n", "<S-F3>", "<cmd>:cNf<cr>", { remap = false, desc = "quickfix file previous" })
-m.set("n", "<S-F4>", "<cmd>:cnf<cr>", { remap = false, desc = "quickfix file next" })
-
 -- Diff jumps
 m.set("n", "<F9>", "[czz", { remap = false, desc = "hunk previous" })
 m.set("n", "<F10>", "]czz", { remap = false, desc = "hunk next" })
 m.set("n", "<S-F9>", "<F21>", { remap = true, desc = "conflict previous" })
 m.set("n", "<S-F10>", "<F22>", { remap = true, desc = "conflict next" })
-m.set("n", "<F21>", "<cmd>call JumpToString('^<<<<'..'<<<', 'N')<cr>",
-  { remap = false, desc = "conflict previous" })
-m.set("n", "<F22>", "<cmd>call JumpToString('^<<<<'..'<<<', 'n')<cr>",
-  { remap = false, desc = "conflict next" })
+m.set("n", "<F21>", "<cmd>call JumpToString('^<<<<'..'<<<', 'N')<cr>", { remap = false, desc = "conflict previous" })
+m.set("n", "<F22>", "<cmd>call JumpToString('^<<<<'..'<<<', 'n')<cr>", { remap = false, desc = "conflict next" })
 
 -- LazyVim setting something similar enough
 -- We could think about mapping Alt-j to the regular behaviour
@@ -283,7 +372,9 @@ m.set("n", "gM", "M", { remap = false, desc = "To Middle line of window" })
 --   endif
 -- endfunction
 -- ]])
-m.set("n", "dO", function() DiffToggle() end, { remap = false, desc = "Diff toggle" })
+m.set("n", "dO", function()
+  DiffToggle()
+end, { remap = false, desc = "Diff toggle" })
 
 -- if vim.opt.diff:get() then
 --   -- Wont trigger if we manually set diff mode, but ok for now.
@@ -294,6 +385,8 @@ m.set("n", "dO", function() DiffToggle() end, { remap = false, desc = "Diff togg
 --╭────────────────────────────────────────────────────────────────────────────╮
 --│ Plugin control                                                             │
 --╰────────────────────────────────────────────────────────────────────────────╯
+
+m.set({ "n" }, "<leader>pc", "<cmd>TSContextToggle<cr>", { remap = false, desc = "Toggle Treesitter-Context" })
 
 -- ── FzfLua ─────────────────────────────────────────────────
 -- ß (fzf) Find file/buffer (<c-x>, <c-v>, <c-t> to split, vert, tab open them)
@@ -316,6 +409,7 @@ m.set({ "n" }, "ßr", "<cmd>FzfLua lsp_references<cr>", { remap = false, desc = 
 m.set({ "n" }, "ßü", "<cmd>FzfLua lsp_document_symbols<cr>", { remap = false, desc = "Search document symbols" })
 m.set({ "n" }, "ßÜ", "<cmd>FzfLua lsp_workspace_symbols<cr>", { remap = false, desc = "Search workspace symbols" })
 m.set({ "n" }, "ßq", "<cmd>FzfLua quickfix<cr>", { remap = false, desc = "Search quickfix window" })
+m.set({ "n" }, "ßR", "<cmd>FzfLua resume<cr>", { remap = false, desc = "Resume fzf search" })
 -- Remaps to more conventient key combinations:
 m.set({ "n" }, "<leader><leader>", "ßf", { remap = true, desc = "Find file" })
 m.set({ "n" }, "<leader><C-space>", "ßL", { remap = true, desc = "Search lines (ripgrep)" })
@@ -360,8 +454,7 @@ m.set("i", "<c-l>", "<c-k>", { remap = false, desc = "digraph" })
 
 ---Map any text in input mode after double <C-l>
 local inputMap = function(input, output)
-  m.set({ "i" }, "<C-l><C-l>" .. input, output,
-    { remap = false })
+  m.set({ "i" }, "<C-l><C-l>" .. input, output, { remap = false })
 end
 
 -- Symbol representing vertical (non-breaking) space. Use <sp><sp> or NS for the
@@ -510,3 +603,12 @@ inputMap("}t", "⎫")
 inputMap("}m", "⎪")
 inputMap("}M", "⎬")
 inputMap("}b", "⎭")
+
+-- ╭───────────────────────────────────────────────────────────╮
+-- │ Preliminary                                               │
+-- ╰───────────────────────────────────────────────────────────╯
+
+-- ── Typos ──────────────────────────────────────────────────
+m.set("i", "cosnt", "const", { remap = false })
+m.set("i", "tempalte", "template", { remap = false })
+m.set("i", "incldue", "include", { remap = false })

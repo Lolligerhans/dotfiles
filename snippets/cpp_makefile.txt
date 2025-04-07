@@ -1,46 +1,47 @@
-# FIXME Check out the weiss makefile for wildcard directories
-# FIXME Check out the fake target makefile
-
-# TODO
-# 1. Determine binar name _BIN_NAME_
-
-# Files
-SRC = $(wildcard *.cpp)
-OBJ = ${SRC:.cpp=.o}
-DEPS = ${SRC:.cpp=.d}
-OUT = _BIN_NAME_
-
-# Compiler and flags
+# ── Env ───────────────────────────────────────────────────────
+SCRIPT_OUT := neetcode
 CXX := g++
-CXXFLAGS := -Wall -Werror -Wextra -Wpedantic -Wconversion -std=c++17 -mcmodel=medium -march=native -MMD -MP
-OXXFLAGS := #-I/usr/include ??
-#LXXFLAGS :=
-#-L/usr/lib/ ??
-DEBUGFLAGS := -O0 -g
-RELEASEFLAGS := -Ofast -DNDEBUG
 
-# Release Target
-$(OUT): CXXFLAGS += $(RELEASEFLAGS)
-$(OUT): $(OBJ)
-	$(CXX) $(OBJ) $(CXXFLAGS) -o $(OUT)
+# ── Files ─────────────────────────────────────────────────────
+SCRIPT_SRC := ${wildcard ./*.cpp}
+SCRIPT_OBJ := ${SCRIPT_SRC:.cpp=.o}
+SCRIPT_SRC_DIR := ${wildcard */*.cpp}
+SCRIPT_OBJ_DIR := ${SCRIPT_SRC_DIR:.cpp=.o}
+SCRIPT_SRC_ALL := ${SCRIPT_SRC} ${SCRIPT_SRC_DIR}
+SCRIPT_OBJ_ALL := ${SCRIPT_OBJ} ${SCRIPT_OBJ_DIR}
 
-# Debug Target
-.PHONY: debug
-debug: CXXFLAGS += $(DEBUGFLAGS)
-debug: .debug
+# ── Flags ─────────────────────────────────────────────────────
+FLAGS_STD    := -std=c++23
+FLAGS_LIBS   := #-pthread -lm
+FLAGS_WARN   := -Wall -Wextra -Wshadow -Werror -Wmissing-declarations
+FLAGS_NDEBUG := #-DNDEBUG
+FLAGS_AUTO := -MMD -MP
+FLAGS_TEST := -DDEV
+FLAGS_OPT := -O2 #-flto -march=native
+FLAGS  := ${FLAGS_STD} ${FLAGS_LIBS} ${FLAGS_WARN} ${FLAGS_AUTO} ${FLAGS_TEST} ${FLAGS_NDEBUG} ${FLAGS_OPT}
 
-.debug: $(OBJ)
-	$(CXX) $(OBJ) $(CXXFLAGS) -o $(OUT)
-	touch .debug
 
-# Object Targets
+# ── Targets ───────────────────────────────────────────────────
+
+${SCRIPT_OUT}: ${SCRIPT_OBJ_ALL}
+	${CXX} ${FLAGS} ${SCRIPT_OBJ_ALL} -o ${SCRIPT_OUT}
+
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(OXXFLAGS) -c $<
+	${CXX} ${FLAGS} -c $< -o $@
 
-# Include Targets
--include ${SRC:.cpp=.d}
+-include ${SCRIPT_SRC_ALL:%.cpp=%.d}
 
-# Clean Target
 .PHONY: clean
 clean:
-	rm -vrf $(OBJ) $(DEPS)
+	rm -f ${SCRIPT_SRC_ALL:.cpp=.d}
+	rm -f ${SCRIPT_OBJ_ALL}
+	rm -f ${SCRIPT_OUT}
+
+.PHONY: debug
+debug:
+	@echo "CXX: ${CXX}"
+	@echo "SCRIPT_OUT: ${SCRIPT_OUT}"
+	@echo "SCRIPT_SRC: ${SCRIPT_SRC}"
+	@echo "SCRIPT_OBJ_ALL: ${SCRIPT_OBJ}"
+	@echo "SCRIPT_SRC_ALL: ${SCRIPT_SRC_ALL}"
+	@echo "FLAGS: ${FLAGS}"

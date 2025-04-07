@@ -107,7 +107,8 @@ command_full_install() {
 
 # TODO: Move other commands install_xyz to install.sh and call them from here
 command_install() {
-  set_args "--help --all \
+  set_args "--help --all --force \
+    --cppreference \
     --diff-highlight \
     --difftastic \
     --fzf \
@@ -117,10 +118,12 @@ command_install() {
     --nvim \
     --tree-sitter \
     --vundle \
+    -- \
     " "$@"
   eval "$get_args"
 
   declare -Ar install_functions=(
+    ["cppreference"]="install_cppreference"
     ["diff_highlight"]="install_diff_highlight"
     ["difftastic"]="install_difftastic"
     ["fzf"]="install_fzf"
@@ -139,7 +142,7 @@ command_install() {
     if [[ "$all" == "true" || "$_arg" == "true" ]]; then
       func="${install_functions[$arg]}"
       {
-        may_fail exit_code -- "$func"
+        may_fail exit_code -- "$func" --force="$force" -- "${argv[@]}"
       } &>>"${logfile}"
       if ((0 == exit_code)); then
         echok "Install ok: ${arg//_/-}" | tee -a "$logfile"
@@ -180,7 +183,6 @@ command_symlink() {
     ["bash_gitcompletion"]="symlink_bash_gitcompletion"
     ["bashrc"]="symlink_bashrc"
     ["ctags"]="symlink_uctags"
-    ["ctags"]="symlink_ectags"
     ["gdbinit"]="symlink_gdbinit"
     ["gitconfig"]="symlink_gitconfig"
     ["gitignore_global"]="symlink_gitignore_global"
@@ -285,16 +287,16 @@ command_install_nala_legacy() {
 
   # Install nala from source as legacy support for Ubuntu 20
   errchol "Installing nala dependencies..."
-  sudo apt-get install -y wget build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev libbz2-dev
+  command sudo apt-get install -y wget build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev libbz2-dev
 
   errchol "Downloading nala dource code..."
   ensure_directory "$base_dir"
   pushd "$base_dir"
-  git clone https://gitlab.com/volian/nala.git
+  command git clone https://gitlab.com/volian/nala.git
   pushd nala/
 
   errchol "Building legacy version"
-  sudo make legacy
+  command sudo make legacy
   #sudo make legacy-update to update
 
   errchok "Installed: nala legacy"
@@ -307,15 +309,16 @@ command_install_missing_term_readkey() {
   declare confirm="false"
   set_args "--yes" "$@"
   eval "$get_args"
-  [[ "$yes" == "true" ]] && confirm="true"
 
-  # Fix git warning missing term::readkey for interactive add
+  if [[ "$yes" == "true" ]]; then confirm="true"; fi
+
+  # Fixes git warning about missing term::readkey for interactive git add
   errchol "${FUNCNAME[0]}: Trying to fix missing Term::ReadKey"
-  apt-cache search term.*readkey
+  command apt-cache search "term.*readkey" || return
   if [[ "$confirm" == "true" ]] || [[ "$(ask_user "Install libterm-readkey-perl?")" == "true" ]]; then
-    sudo apt install libterm-readkey-perl
+    command sudo apt install "libterm-readkey-perl"
   else
-    errchol "${FUNCNAME[0]}: declined"
+    echoL "${FUNCNAME[0]}: user declined"
   fi
 }
 
@@ -356,6 +359,8 @@ command_install_collected_apt() {
       iftop \
       shellcheck \
       git-delta \
+      g++-14 \
+      libc++-dev \
       npm ||
       echoe "Installing apt packages failed"
 
@@ -492,15 +497,26 @@ DESCRIPTION
   Does no run add_credentials beforehand, unlile the default command."
 declare -r install_help_string="Install components (incomplete)
 SYNOPSIS
-  install --help
-  install [--target, ...]
+   (1)  install --help
+   (2)  install --TARGET...
+   (3)  install --all
+   (4)  install --TARGET --force
+   (4)  install --TARGET -- argv...
 DESCRIPTION
-  Install individual components by specifying them as --argument(s). Targets are
-  executed in unspecified order.
-  Returns with success even if installation fails. Check output for errors.
+  Install individual components by specifying them as --TARGET (2). TARGETs are
+  executed in unspecified order. Returns with success even if installation
+  fails. Check output for errors.
+  Some options are passed to the TARGET installation functions (4).
+  All argv data is passed to the TARGET installation functions (5).
 OPTIONS
   --all: Install all selectable options
-  [--target]: Target to be installed. Use --help to get a list.":
+  --TARGET: Target to be installed. Use --help to get a list.
+  --force: Pass --force to the installation functions. May be ignored by the
+           installation functions.
+  -- argv: Arguments passed to setargs' argv (i.e., after a double dash --), are
+           passed to the installation function for each provided target. Some
+           installation functions will not react in any meaningful way. We
+           implement these install function options when we need them."
 # shellcheck disable=SC2155,SC1070
 declare -r install_idea_help_string="Install IDEA
 DESCRIPTION
@@ -560,5 +576,7 @@ declare logfile_permanent
 logfile_permanent="$log_dir/$(date_nocolon).log"
 declare -r logfile_permanent
 1>&2 show_variable log_dir
+1>&2 show_variable logfile
+1>&2 show_variable logfile_permanent
 1>&2 ensure_directory "$log_dir"
 1>&2 cp "$logfile" "$logfile_permanent"

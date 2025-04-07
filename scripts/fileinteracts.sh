@@ -96,6 +96,40 @@ same_file_linked() {
   [[ "$(readlink -f "$1")" -ef "$(readlink -f "$2")" ]]
 }
 
+# Donwload link and verify agaisnt a checksum file. Similar to
+# wget_verify_sha256 but uses a verification file which is often more
+# convenient.
+# $1  (in)  link
+# $2  (in)  path to checksum file
+wget_verify_sha256_file() {
+  if (( "$#" != 2 )); then
+    abort "Invalid argumetns: $*"
+  fi
+
+  declare -r expected_download_dir="${HOME}/Downloads"
+  declare -r link="${1:?Missing argument}"
+  declare -r checksum_path="${2:?Missing argument}"
+  show_variable link
+  show_variable checksum_path
+  if [[ "$PWD" != "$expected_download_dir/"* ]]; then
+    errchow "Downloading outside of $expected_download_dir"
+  fi
+  if [[ ! -f "$checksum_path" ]]; then
+    abort "Checksum file does not exist: $checksum_path"
+  fi
+  if ! sha256sum --version &>/dev/null; then
+    abort "sha256sum not available"
+  fi
+
+  echoL "Downloading $link"
+
+  command wget --quiet --continue --show-progress "$link" || true
+  if ! sha256sum --check "$checksum_path"; then
+    abort "Checksum failed"
+  fi
+  echok "Downloaded $link"
+}
+
 # Download to ~/Downloads/ and verify SHA256
 # $1  (in)  Link
 # $2  (in)  SHA256 as hex string

@@ -29,7 +29,9 @@ ask_user() {
   if (($# < 1 || 2 < $#)); then abort "Wrong usage"; fi
   declare _au_confirm_384734
   declare -n _au_res_1402420156="${2-"_au_confirm_384734"}"
-  read -n 1 -rp "$1 [y/N]: " _au_confirm_384734
+  # test_blpi is the same as used by 'echou'. By now this colour means "text for
+  # human at time of running", often of immediate importance.
+  read -n 1 -rp "${text_blpi}${1}${text_normal} (y/N): " _au_confirm_384734
   if [[ "${_au_confirm_384734}" == [yY] ]]; then
     _au_res_1402420156="true"
   else
@@ -37,6 +39,8 @@ ask_user() {
   fi
   if (($# == 1)); then
     printf -- "%s" "$_au_res_1402420156"
+  else
+    printf -- "%b" "\n"
   fi
 }
 
@@ -58,4 +62,24 @@ boolean_prompt() {
   if (($# == 1)); then
     printf -- "%s" "$_bp_res_1402420156"
   fi
+}
+
+# Funny automation halper: Prints steps to be done and waits for confirmation.
+# If the user declines, returns 1.
+#  - $1:  first message
+#  - $2:  second message
+#  - ...
+manually() {
+  declare userAnswer=""
+  declare -i i=0
+  while (($# > 0)); do
+    echoT "$((++i))." "$1"
+    ask_user "Done?" userAnswer
+    if [[ "$userAnswer" != "true" ]]; then
+      echow "User aborted process"
+      return 1
+    fi
+    shift
+  done
+  echok "${i} manual steps"
 }

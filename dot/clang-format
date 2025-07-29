@@ -32,11 +32,11 @@ AlignConsecutiveMacros:
   AlignFunctionPointers: false
   PadOperators:    false
 AlignConsecutiveShortCaseStatements:
-  Enabled:         false
+  Enabled:         true
   AcrossEmptyLines: false
   AcrossComments:  false
   AlignCaseArrows: false
-  AlignCaseColons: false
+  AlignCaseColons: true
 AlignConsecutiveTableGenBreakingDAGArgColons:
   Enabled:         false
   AcrossEmptyLines: false
@@ -71,7 +71,7 @@ AllowShortCaseExpressionOnASingleLine: true
 AllowShortCaseLabelsOnASingleLine: true
 AllowShortCompoundRequirementOnASingleLine: true
 AllowShortEnumsOnASingleLine: true
-AllowShortFunctionsOnASingleLine: None
+AllowShortFunctionsOnASingleLine: InlineOnly
 AllowShortIfStatementsOnASingleLine: WithoutElse
 AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: false
@@ -174,7 +174,7 @@ JavaScriptWrapImports: true
 KeepEmptyLines:
   AtEndOfFile:     false
   AtStartOfBlock:  true
-  AtStartOfFile:   true
+  AtStartOfFile:   false
 LambdaBodyIndentation: Signature
 LineEnding:      DeriveLF
 MacroBlockBegin: ''
@@ -264,6 +264,7 @@ TableGenBreakInsideDAGArg: DontBreak
 TabWidth:        8
 UseTab:          Never
 VerilogBreakBetweenInstancePorts: true
+WrapNamespaceBodyWithEmptyLines: Always
 WhitespaceSensitiveMacros:
   - BOOST_PP_STRINGIZE
   - CF_SWIFT_NAME

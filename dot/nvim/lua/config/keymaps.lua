@@ -30,22 +30,6 @@ m.set({ "", "!", "l" }, "<F32>", "<C-F8>", { remap = true })
 -- │ Replacements / Changes                                                    │
 -- ╰───────────────────────────────────────────────────────────────────────────╯
 
--- INFO: We preserve replaced commands below prefix "<leader>ß"
--- TODO: Name this group something fitting
-
--- moved to <leader>ßL
-m.del("n", "<leader>L")
--- TODO How to get the short log?
-m.set("n", "<leader>ßL", "<cmd>Lazy<cr>", { remap = false, desc = "?Lazy log" })
-
--- changed to "<leader>L"
-m.del("n", "<leader>l")
-m.set("n", "<leader>L", "<cmd>Lazy<cr>", { remap = false, desc = "LazyVim" })
-
--- moved to <leader>ß:
-m.del("n", "<leader>:")
-m.set("n", "<leader>ß:", "<cmd>FzfLua command_history<cr>", { remap = false, desc = "Command History" })
-
 -- Replaced with our own (remains at <leader>ff)
 m.del("n", "<leader><leader>")
 
@@ -53,51 +37,56 @@ m.del("n", "<leader><leader>")
 -- │ Debug Adapter Protocol                                    │
 -- ╰───────────────────────────────────────────────────────────╯
 
-vim.keymap.set("n", "<f5>", function()
+m.set("n", "<f5>", function()
   require("dap").continue()
 end)
-vim.keymap.set("n", "<f6>", function()
+m.set("n", "<f6>", function()
   require("dap").step_over()
 end)
-vim.keymap.set("n", "<f7>", function()
+m.set("n", "<f7>", function()
   require("dap").step_into()
 end)
-vim.keymap.set("n", "<f8>", function()
+m.set("n", "<f8>", function()
   require("dap").step_out()
 end)
 -- <C-F7>, <C-F8> use the same function key as stepping in and out of a function
-vim.keymap.set("n", "<C-F7>", function()
+m.set("n", "<C-F7>", function()
   require("dap").down()
 end)
-vim.keymap.set("n", "<C-F8>", function()
+m.set("n", "<C-F8>", function()
   require("dap").up()
 end)
--- vim.keymap.set("n", "<leader>b", function()
+-- Terminating nvim-dap often leaves the virtual tesxt
+m.set("n", "<leader>dR", "<cmd>DapVirtualTextForceRefresh<cr>", {
+  remap = false,
+  desc = "Refresh DAP virtual text",
+})
+-- m.set("n", "<leader>b", function()
 --   require("dap").toggle_breakpoint()
 -- end)
--- vim.keymap.set("n", "<leader>b", function()
+-- m.set("n", "<leader>b", function()
 --   require("dap").set_breakpoint()
 -- end)
-vim.keymap.set("n", "<leader>dlp", function()
+m.set("n", "<leader>dL", function()
   require("dap").set_breakpoint(nil, nil, vim.fn.input("log point message: "))
-end)
--- vim.keymap.set("n", "<leader>dr", function()
+end, { remap = false, desc = "Log point message" })
+-- m.set("n", "<leader>dr", function()
 --   require("dap").repl.open()
 -- end)
--- vim.keymap.set("n", "<Leader>dl", function()
+-- m.set("n", "<Leader>dl", function()
 --   require("dap").run_last()
 -- end)
-vim.keymap.set({ "n", "v" }, "<Leader>dWh", function()
+m.set({ "n", "v" }, "<Leader>dWh", function()
   require("dap.ui.widgets").hover()
 end)
-vim.keymap.set({ "n", "v" }, "<Leader>dWp", function()
+m.set({ "n", "v" }, "<Leader>dWp", function()
   require("dap.ui.widgets").preview()
 end)
--- vim.keymap.set("n", "<Leader>df", function()
+-- m.set("n", "<Leader>df", function()
 --   local widgets = require("dap.ui.widgets")
 --   widgets.centered_float(widgets.frames)
 -- end)
--- vim.keymap.set('n', '<Leader>ds', function()
+-- m.set('n', '<Leader>ds', function()
 --   local widgets = require("dap.ui.widgets")
 --   widgets.centered_float(widgets.scopes)
 -- end)
@@ -106,16 +95,28 @@ end)
 -- │ Files                                                     │
 -- ╰───────────────────────────────────────────────────────────╯
 
-m.set({ "i", "x", "n", "s" }, "<C-S-s>", "<cmd>wa<cr><esc>", { desc = "Save modified Files" })
-
 -- "File switch" mappings
-m.set("n", "<leader>fsh", "<cmd>e %:p:r.hpp<cr>", { remap = false, desc = "Edit .hpp" })
-m.set("n", "<leader>fsc", "<cmd>e %:p:r.cpp<cr>", { remap = false, desc = "Edit .cpp" })
-m.set("n", "<leader>fsi", "<cmd>e %:p:r.ipp<cr>", { remap = false, desc = "Edit .inc" })
-m.set("n", "<leader>fst", "<cmd>e %:p:r.test<cr>", { remap = false, desc = "Edit .test" })
+m.set("n", "<leader>fsh", "<cmd>e %:p:r.hpp<cr>", { remap = false, desc = "Edit header file (.hpp)" })
+m.set("n", "<leader>fsc", "<cmd>e %:p:r.cpp<cr>", { remap = false, desc = "Edit source file (.cpp)" })
+m.set("n", "<leader>fsi", "<cmd>e %:p:r.ipp<cr>", { remap = false, desc = "Edit include file (.inc)" })
+m.set("n", "<leader>fst", "<cmd>e %:p:r.test<cr>", { remap = false, desc = "Edit test file (.test)" })
 
-m.set("n", "<F3>", "<cmd>bo cw|cN<cr>zvzz", { remap = false, desc = "quickfix previous" })
-m.set("n", "<F4>", "<cmd>bo cw|cn<cr>zvzz", { remap = false, desc = "quickfix next" })
+-- Catch error E553 (No more items) and jump to current entry instead.
+-- Especially useful when back jumping to the first (or only) error (like :cc)
+-- without needing another mapping, and without stepping next-and-back as
+-- workaround.
+m.set(
+  "n",
+  "<F3>",
+  "<cmd>bo cw|try|cN|catch /E553/ |cc|endtry | norm zvzz<cr>",
+  { remap = false, desc = "quickfix previous" }
+)
+m.set(
+  "n",
+  "<F4>",
+  "<cmd>bo cw|try|cn|catch /E553/ |cc|endtry | norm zvzz<cr>",
+  { remap = false, desc = "quickfix next" }
+)
 m.set("n", "<S-F3>", "<cmd>bo cw|cNf<cr>", { remap = false, desc = "quickfix file previous" })
 m.set("n", "<S-F4>", "<cmd>bo cw|cnf<cr>", { remap = false, desc = "quickfix file next" })
 m.set("n", "<C-F3>", "<cmd>bo cw|N<cr>", { remap = false, desc = "arg previous" })
@@ -141,13 +142,14 @@ m.set({ "", "!", "l", "t", "o" }, "Ä", "}", { remap = true })
 m.set({ "i" }, "ÖÖ", "{{", { remap = true }) -- for imap {{
 m.set({ "i" }, "ÄÄ", "}}", { remap = true }) -- for imap }}
 m.set({ "!", "l", "t" }, "ü", "_", { remap = true })
+-- Helps with when using caps for typing macros
+m.set({ "!", "l", "t" }, "Ü", "_", { remap = true })
 -- Quitting
 m.set("n", "<c-q>", ":q<cr>", { desc = "Close window hard" })
 m.set("n", "<leader>Q", ":sus<cr>", { remap = false, desc = "suspend" })
 m.set("n", "<leader>qQ", ":qa<cr>", { remap = false, desc = "Quit hard" })
 
--- nnoremap <leader>: :enew\|pu=execute(':help')<c-f>T:ve
-m.set("n", "<leader>:", ":enew|pu=execute(':help')<c-f>T:ve", { remap = false, desc = "Capture :command output" })
+m.set("n", "<leader>;", ":enew|pu=execute(':help')<c-f>T:ve", { remap = false, desc = "Capture :command output" })
 
 m.set("n", "<leader>qw", "<cmd>xa<cr>", { remap = false, desc = "Write & Quit" })
 
@@ -156,6 +158,7 @@ m.set("n", "<leader>qw", "<cmd>xa<cr>", { remap = false, desc = "Write & Quit" }
 -- TDOo <c-F12> reload vimrc/config?
 
 m.set("i", "<F1>", "<nop>", { remap = false }) -- Remove nvim default mapping
+-- Use ":h makeprg" in .nvim.lua of any given project
 m.set("n", "<F1>", "<cmd>make|bo cw<cr>", { remap = false })
 m.set("n", "<F2>", "<cmd>bo split term://./run.sh<cr>", { remap = false })
 
@@ -193,8 +196,8 @@ m.set("n", "<c-right>", "<cmd>vertical resize +10<cr>", { remap = false, desc = 
 m.set("n", "<c-down>", "<cmd>resize -10<cr>", { remap = false, desc = "Decrease window height" })
 m.set("n", "<c-up>", "<cmd>resize +10<cr>", { remap = false, desc = "Increase window height" })
 
-m.set({"n", "v"}, "<c-e>", "5<c-e>", { remap = false, desc = "Scroll view up" })
-m.set({"n", "v"}, "<c-y>", "5<c-y>", { remap = false, desc = "Scroll view down" })
+m.set({ "n", "v" }, "<c-e>", "5<c-e>", { remap = false, desc = "Scroll view up" })
+m.set({ "n", "v" }, "<c-y>", "5<c-y>", { remap = false, desc = "Scroll view down" })
 
 -- TODO: Bring back normal tabs in lazyvim
 m.set("n", "<A-e>", "<cmd>BufferLineMovePrev<cr>", { remap = false, desc = "Move buffer left" })
@@ -264,14 +267,13 @@ m.set("n", "<leader>d<space>", "gElcw<space><esc>", { remap = false, desc = "Shr
 
 m.set("i", "{{", "{<cr>}<esc>O", { remap = false, desc = "Open block line" })
 m.set("i", "{;", "{<cr>};<esc>O", { remap = false, desc = "Open block line with ;" })
+m.set("i", "{,", "{<cr>},<esc>O", { remap = false, desc = "Open block line with ," })
 m.set("i", "}}", "{<cr>}<left>", { remap = false, desc = "Open empty block line" })
 -- NOTE: This one got too annoying because we cannot close braces with  };
 --       anymore.
 -- TODO: The no-newline overloads are obsolete when using formatters. Consider
 --       removing them.
 -- m.set("i", "};", "{<cr>};<left><left>", { remap = false, desc = "Open empty block line with ;" })
-m.set("i", "{}", "{}<left>", { remap = false, desc = "Open empty block" })
-
 m.set("i", "<c-r>L", 'line(".")', { remap = false, expr = true, desc = "Lineno" })
 
 -- TODO Filetype specific
@@ -355,7 +357,7 @@ m.set("n", "<F22>", "<cmd>call JumpToString('^<<<<'..'<<<', 'n')<cr>", { remap =
 
 -- This allows marking with m and jumping with M. Recover normal behaviour of
 -- "M" in the new mappign "gM".
-m.set("n", "M", "'", { remap = false, desc = "jump to mark" })
+m.set("n", "M", "`", { remap = false, desc = "jump to mark" })
 m.set("n", "gM", "M", { remap = false, desc = "To Middle line of window" })
 
 -- ╭───────────────────────────────────────────────────────────╮
@@ -389,48 +391,69 @@ end, { remap = false, desc = "Diff toggle" })
 m.set({ "n" }, "<leader>pc", "<cmd>TSContextToggle<cr>", { remap = false, desc = "Toggle Treesitter-Context" })
 
 -- ── FzfLua ─────────────────────────────────────────────────
--- ß (fzf) Find file/buffer (<c-x>, <c-v>, <c-t> to split, vert, tab open them)
-m.set({ "n" }, "ßf", "<cmd>FzfLua files<cr>", { remap = false, desc = "Find file" })
--- Similar to <leader>,
-m.set({ "n" }, "ßb", "<cmd>FzfLua buffers<cr>", { remap = false, desc = "Find buffer" })
-m.set({ "n" }, "ßt", "<cmd>FzfLua btags<cr>", { remap = false, desc = "Search buffer tags" })
-m.set({ "n" }, "ßT", "<cmd>FzfLua tags<cr>", { remap = false, desc = "Search tags (.tags)" })
-m.set({ "n" }, "ßl", "<cmd>FzfLua lines<cr>", { remap = false, desc = "Search loaded buffers" })
-m.set({ "n" }, "ßß", "<cmd>FzfLua blines<cr>", { remap = false, desc = "Search buffer" })
-m.set({ "n" }, "ßg", "<cmd>FzfLua grep<cr>", { remap = false, desc = "Search (ripgrep)" })
-m.set({ "n" }, "ßG", "<cmd>FzfLua grep_project<cr>", { remap = false, desc = "Search project ripgrep (?)" })
-m.set({ "n" }, "ßL", "<cmd>FzfLua live_grep_glob<cr>", { remap = false, desc = "Search live (ripgrep)" })
-m.set({ "n" }, "ßc", "<cmd>FzfLua live_grep_resume<cr>", { remap = false, desc = "Continue FzfLua search" })
-m.set({ "n" }, "ßn", "<cmd>FzfLua live_grep_native<cr>", { remap = false, desc = "Search (native grep) (faster?)" })
-m.set({ "n" }, "ßs", "<cmd>FzfLua tags_grep_cword<cr>", { remap = false, desc = "Search cursor tag" })
-m.set({ "n" }, "ßw", "<cmd>FzfLua grep_cword<cr>", { remap = false, desc = "Search cursor word" })
-m.set({ "v" }, "<leader>ü", "<cmd>FzfLua grep_visual<cr>", { remap = false, desc = "Search visual selection" }) -- visual-ß is for surround already
-m.set({ "n" }, "ßr", "<cmd>FzfLua lsp_references<cr>", { remap = false, desc = "Search references" })
-m.set({ "n" }, "ßü", "<cmd>FzfLua lsp_document_symbols<cr>", { remap = false, desc = "Search document symbols" })
-m.set({ "n" }, "ßÜ", "<cmd>FzfLua lsp_workspace_symbols<cr>", { remap = false, desc = "Search workspace symbols" })
-m.set({ "n" }, "ßq", "<cmd>FzfLua quickfix<cr>", { remap = false, desc = "Search quickfix window" })
-m.set({ "n" }, "ßR", "<cmd>FzfLua resume<cr>", { remap = false, desc = "Resume fzf search" })
+-- F (fzf) Find file/buffer (<c-x>, <c-v>, <c-t> to split, vert, tab open them).
+-- We place all the things we like under <leader>f, mimicking LazyVim's
+-- <leader>f. Practically we use LazyVim mappings by activating LazyExtras
+-- editor.fzf (except the ones not startign with <leader> because we overwrite
+-- them here).
+m.set({ "i", "c", "l" }, "<c-f>", "<cmd>FzfLua complete_path<cr>", { remap = false, desc = "Complete path" })
+m.set({ "n" }, "<leader>Ff", "<cmd>FzfLua files<cr>", { remap = false, desc = "Find file" })
+m.set({ "n" }, "<leader>Fb", "<cmd>FzfLua buffers<cr>", { remap = false, desc = "Find buffer" })
+m.set({ "n" }, "<leader>Ft", "<cmd>FzfLua btags<cr>", { remap = false, desc = "Search buffer tags" })
+m.set({ "n" }, "<leader>FT", "<cmd>FzfLua tags<cr>", { remap = false, desc = "Search tags (.tags)" })
+m.set({ "n" }, "<leader>Fl", "<cmd>FzfLua lines<cr>", { remap = false, desc = "Search loaded buffers" })
+-- Double FF is simple easy to type. No mnemonic meaning.
+m.set({ "n" }, "<leader>FF", "<cmd>FzfLua blines<cr>", { remap = false, desc = "Search buffer" })
+m.set({ "n" }, "<leader>Fg", "<cmd>FzfLua grep<cr>", { remap = false, desc = "Search (ripgrep)" })
+m.set({ "n" }, "<leader>FG", "<cmd>FzfLua grep_project<cr>", { remap = false, desc = "Search project ripgrep (?)" })
+m.set({ "n" }, "<leader>FL", "<cmd>FzfLua live_grep_glob<cr>", { remap = false, desc = "Search live (ripgrep)" })
+m.set({ "n" }, "<leader>Fc", "<cmd>FzfLua live_grep_resume<cr>", { remap = false, desc = "Continue grep FzfLua" })
+m.set(
+  { "n" },
+  "<leader>Fn",
+  "<cmd>FzfLua live_grep_native<cr>",
+  { remap = false, desc = "Search (native grep) (faster?)" }
+)
+m.set({ "n" }, "<leader>Fs", "<cmd>FzfLua tags_grep_cword<cr>", { remap = false, desc = "Search cursor tag" })
+m.set({ "n" }, "<leader>Fw", "<cmd>FzfLua grep_cword<cr>", { remap = false, desc = "Search cursor word" })
+m.set({ "v" }, "<leader>ü", "<cmd>FzfLua tags_grep_visual<cr>", { remap = false, desc = "Search visual selection" }) -- visual-<leader>ß is for surround already
+m.set({ "n" }, "<leader>Fr", "<cmd>FzfLua lsp_references<cr>", { remap = false, desc = "Search references" })
+m.set(
+  { "n" },
+  "<leader>Fü",
+  "<cmd>FzfLua lsp_document_symbols<cr>",
+  { remap = false, desc = "Search document symbols" }
+)
+m.set(
+  { "n" },
+  "<leader>FÜ",
+  "<cmd>FzfLua lsp_workspace_symbols<cr>",
+  { remap = false, desc = "Search workspace symbols" }
+)
+m.set({ "n" }, "<leader>Fq", "<cmd>FzfLua quickfix<cr>", { remap = false, desc = "Search quickfix window" })
+m.set({ "n" }, "<leader>FR", "<cmd>FzfLua resume<cr>", { remap = false, desc = "Resume last FzfLua" })
 -- Remaps to more conventient key combinations:
-m.set({ "n" }, "<leader><leader>", "ßf", { remap = true, desc = "Find file" })
-m.set({ "n" }, "<leader><C-space>", "ßL", { remap = true, desc = "Search lines (ripgrep)" })
-m.set({ "n" }, "ü", "ßt", { remap = true, desc = "Search tags (buffer)" })
-m.set({ "n" }, "Ü", "ßT", { remap = true, desc = "Search tags (.tags)" })
-m.set({ "n" }, "<leader>ü", "ßü", { remap = true, desc = "Search document symbols" })
-m.set({ "n" }, "<leader>Ü", "ßÜ", { remap = true, desc = "Search workspace symbols" })
+m.set({ "n" }, "<leader><leader>", "<leader>Ff", { remap = true, desc = "Find file" })
+m.set({ "n" }, "<leader><C-space>", "<leader>FL", { remap = true, desc = "Search lines (ripgrep)" })
+m.set({ "n" }, "ü", "<leader>Ft", { remap = true, desc = "Search tags (buffer)" })
+m.set({ "n" }, "Ü", "<leader>FT", { remap = true, desc = "Search tags (.tags)" })
+-- The "g" modifier searches for the cursor word directly
+m.set({ "n" }, "gü", "<cmd>FzfLua tags_grep_cword<cr>", { remap = false, desc = "Search cursor tag" })
+m.set({ "n" }, "<leader>ü", "<leader>Fü", { remap = true, desc = "Search document symbols" })
+m.set({ "n" }, "<leader>Ü", "<leader>FÜ", { remap = true, desc = "Search workspace symbols" })
 
 -- TODO Name the <leader>i group "insert/edit text"
 m.set({ "n", "v" }, "<leader>ib", "<cmd>:CBclbox<cr>", { remap = false, desc = "Insert box header" })
 m.set({ "n", "v" }, "<leader>il", "<cmd>:CBclline<cr>", { remap = false, desc = "Insert line header" })
 
--- Noice
-m.set({ "n" }, "<leader>uH", "<cmd>NoiceHistory<cr>G", { remap = false, desc = "History" })
-
 -- Tagbar <C-F10>
 m.set("n", "<F34>", "<cmd>TagbarToggle<cr>", { remap = false, desc = "Tagbar" })
 
 -- Noice/Messages
+m.set({ "n" }, "<leader>uH", "<cmd>NoiceHistory<cr>G", { remap = false, desc = "History" })
 m.set("n", "<leader>mh", "<cmd>NoiceHistory<cr>G", { remap = false, desc = "Message history" })
 m.set("n", "<leader>ml", "<cmd>Noice last<cr>", { remap = false, desc = "Last message" })
+m.set("n", "<leader>uN", "<cmd>Noice disable<cr>", { remap = false, desc = "Noice disable" })
 
 -- ArgWrap
 m.set("n", "gS", ":ArgWrap<CR>", { remap = false, desc = "(Un)wrap args" })

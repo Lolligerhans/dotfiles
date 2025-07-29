@@ -153,7 +153,18 @@ errchot() { >&2 echot "$@"; }
 errchou() { >&2 echou "$@"; }
 errchow() { >&2 echow "$@"; }
 
-echoL() { echol "$text_brightblack$(date -Iseconds) $text_lightblue${FUNCNAME[1]} ${text_dim}${BASH_LINENO[0]}$text_normal" "$@"; }
+# Prefix time and line and echo the rest using $1
+# Local helper, do not use elsewhere.
+_echoInfo() {
+  (($# < 1)) && return 1 # Would be logic error
+  # The FUNCNAME and BASH_LINENO are essentially offset by two levels, so that
+  # the caller of, e.g., 'echoL' gets referenced, not the '_echoInfo' or 'echoL'
+  # contexts themselves.
+  # This means it is typically pointless to call this function elsewhere.
+  "$1" "${text_brightblack}$(date -Iseconds) ${text_lightblue}${FUNCNAME[2]} ${text_dim}${BASH_LINENO[1]}${text_normal}" "${@:2}"
+}
+echoL() { _echoInfo echol "$@"; }
+echoT() { _echoInfo echot "$@"; }
 
 function print_and_execute() {
   if [ "$#" -lt 1 ]; then

@@ -108,10 +108,13 @@ command_full_install() {
 # TODO: Move other commands install_xyz to install.sh and call them from here
 command_install() {
   set_args "--help --all --force \
+    --atkinson-mono-nerdfont \
     --cppreference \
     --diff-highlight \
     --difftastic \
+    --fira-nerdfont \
     --fzf \
+    --git \
     --jetbrains-mono-nerdfont \
     --mcfly \
     --mpk \
@@ -123,10 +126,13 @@ command_install() {
   eval "$get_args"
 
   declare -Ar install_functions=(
+    ["atkinson_mono_nerdfont"]="install_atkynsonmono_nerd_font"
     ["cppreference"]="install_cppreference"
     ["diff_highlight"]="install_diff_highlight"
     ["difftastic"]="install_difftastic"
+    ["fira_nerdfont"]="install_font_fira"
     ["fzf"]="install_fzf"
+    ["git"]="install_git"
     ["jetbrains_mono_nerdfont"]="install_jetbrains_mono_nerdfont"
     ["mcfly"]="install_mcfly"
     ["mpk"]="install_mpk"
@@ -140,6 +146,7 @@ command_install() {
   for arg in "${!install_functions[@]}"; do
     declare -n _arg="$arg" # Reference the variable created by set_args.
     if [[ "$all" == "true" || "$_arg" == "true" ]]; then
+      echol "Installing ${arg//_/-}..." | tee -a "$logfile"
       func="${install_functions[$arg]}"
       {
         may_fail exit_code -- "$func" --force="$force" -- "${argv[@]}"
@@ -159,6 +166,7 @@ command_symlink() {
     --bash-completion \
     --bash-gitcompletion \
     --bashrc \
+    --btop \
     --ctags \
     --gdbinit \
     --gitconfig \
@@ -173,7 +181,6 @@ command_symlink() {
     --vim-operatorhighlight \
     --vim-ftplugin \
     --vimrc \
-    --vundle \
     " "$@"
   eval "$get_args"
 
@@ -182,6 +189,7 @@ command_symlink() {
     ["bash_completion"]="symlink_bash_completion"
     ["bash_gitcompletion"]="symlink_bash_gitcompletion"
     ["bashrc"]="symlink_bashrc"
+    ["btop"]="symlink_btopconf"
     ["ctags"]="symlink_uctags"
     ["gdbinit"]="symlink_gdbinit"
     ["gitconfig"]="symlink_gitconfig"
@@ -275,6 +283,8 @@ command_show_manual() {
   echou "Manual: Terminal colours..."
   grep -e "terminal-bold" "$dotfiles/data/colours.txt" || true
   echou "Manual: (Re-)use old firefox profile (when restored from tarball): visit 'about:profiles'. You might need to sudo snap refresh firefox to get newest version."
+
+  manually "Install 'gnome-tweaks'" "Remap caps-lock to esc with shift-caps toggling actual caps lock (takes effect in gnome)" 'In /etc/default/keyboard, set XKBOPTIONS="caps:escape_shifted_capslock" (takes effect in tty)'
 }
 
 command_install_nala_legacy() {
@@ -361,6 +371,8 @@ command_install_collected_apt() {
       git-delta \
       g++-14 \
       libc++-dev \
+      htop \
+      btop \
       npm ||
       echoe "Installing apt packages failed"
 
@@ -428,7 +440,7 @@ command_load_font() {
 
   # Install
   declare -a files
-  files=("$dir"/*.ttf)
+  files=("$dir"/*.{ttf,otf})
   command mv -v "${files[@]}" ~/.local/share/fonts &>>"$logfile"
   echok $"Installed font $text_user$zip$text_normal"
 }

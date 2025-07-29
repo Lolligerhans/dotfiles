@@ -65,6 +65,11 @@ symlink_bashrc() {
   fi
 }
 
+symlink_btopconf() {
+  subcommand run "$dotfiles" deploy --yes --keep \
+    --file="$dotfiles/dot/btop.conf" --dir="${HOME}/.config/btop"
+}
+
 symlink_ectags() {
   errchoe "Deprecated because exuberant ctags is outdated. Use symlink_uctags instead."
   subcommand run "$dotfiles" deploy --yes --keep \

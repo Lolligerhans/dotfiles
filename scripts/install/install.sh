@@ -6,8 +6,22 @@
 # short. We keep 1 installation per function to allow calling them individually
 # from run.sh.
 
+install_atkynsonmono_nerd_font() {
+  # Install nerd font version of "Atkinson Hyperledgible"
+  declare -r link="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/AtkinsonHyperlegibleMono.zip"
+  declare -r checksumFile="checksums/atkinson.txt"
+  declare -r file="AtkinsonHyperlegibleMono.zip"
+
+  echol "Installing Atkinson Nerd Font"
+  pushd "${HOME}/Downloads/" || return
+  wget_verify_sha256_file "${link}" "${parent_path}/${checksumFile}"
+  popd || return
+  subcommand load_font --zip="${HOME}/Downloads/${file}"
+  echok "Installed Atkinson Nerd Font"
+}
+
 install_cppreference() {
-  declare -r download_link="https://github.com/PeterFeicht/cppreference-doc/releases/download/v20241110/html-book-20241110.tar.xz";
+  declare -r download_link="https://github.com/PeterFeicht/cppreference-doc/releases/download/v20241110/html-book-20241110.tar.xz"
   declare -r checksum_file="checksums/cppreference.txt"
   declare -r checksum_file_fullpath="${parent_path}/${checksum_file}"
   declare -r download_directory="${HOME}/Downloads/cppreference"
@@ -80,6 +94,19 @@ install_difftastic() {
   ls -alF /usr/local/bin | grep -ie difft
 }
 
+install_font_fira() {
+  declare -r link="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/FiraCode.zip"
+  declare -r checksumFile="checksums/fira.txt"
+  declare -r file="FiraCode.zip"
+
+  echol "Installing FiraCode Nerd Font"
+  pushd ~/Downloads/ || return
+  wget_verify_sha256_file "${link}" "${parent_path}/${checksumFile}"
+  popd || return
+  subcommand load_font --zip="$HOME/Downloads/${file}"
+  echok "Installed FiraCode Nerd Font"
+}
+
 install_fzf() {
   if which fzf >/dev/null; then
     echos "fzf (found)"
@@ -100,6 +127,32 @@ install_fzf() {
     errchon "Try installing an older fzf from apt instead: sudo apt install fzf"
     return "$ret" # Propagate error
   fi
+}
+
+install_gcc() {
+  abort "Too cumbersome to build manually stay with 14 from apt"
+  manually \
+    "Download https://ftp.gwdg.de/pub/misc/gcc/releases/gcc-15.1.0/gcc-15.1.0.tar.xz" \
+    "Verify checksum from https://ftp.gwdg.de/pub/misc/gcc/releases/gcc-15.1.0/" \
+    "Extract with tar using -J for the .xz compression, creating the gcc-someversion/ folder"
+  echok "Installed gcc 15"
+}
+
+install_git() {
+  echoL "Installing new git from ppa:git-core/ppa"
+
+  {
+    # On newer Ubunuts we needed a separate ppa with newer git for specific
+    # fixes. Ubuntu 25 already has a newer git already. Remove eventually.
+    # LATER: Remove when not used successfully long enough
+    if false; then
+      sudo add-apt-repository "ppa:git-core/ppa"
+    fi
+  }
+
+  sudo apt update
+  sudo apt install git
+  echok "Installed new git"
 }
 
 install_jetbrains_mono_nerdfont() {
@@ -155,26 +208,30 @@ install_nvim() {
   set_args "--force --" "$@"
   eval "$get_args"
 
-  echoL "Installing nvim0.10.3"
+  echoL "Installing neovim"
   show_variable force
 
-  if [[ "$force" != "true" ]] && which nvim >/dev/null; then
+  if [[ "$force" != "true" ]] && command which nvim >/dev/null; then
     echos "(found) not installing nvim"
     return
   fi
 
-  declare -r link='https://github.com/neovim/neovim-releases/releases/download/v0.10.3/nvim-linux64.deb'
-  echol "Installing nvim v0.10.0"
+  declare -r link="https://github.com/neovim/neovim-releases/releases/download/v0.11.1/nvim-linux-x86_64.deb"
+  declare filename
+  filename="$(command basename "$link")"
+  declare -r filename
+
   pushd ~/Downloads || return
-  wget -q --show-progress --https-only -c "$link"
+  command wget -q --show-progress --https-only -c "$link"
   declare check="false"
-  checksum_verify_sha256 check '813431b268053fdbf9248eec188a78e7e5904c79adfaf630bf25c56cf6192945  nvim-linux64.deb'
+  checksum_verify_sha256 check "8d4405e1b5912340eff4976da6a9bd44cc1f63cc049d749453391e70d9182ca1  $filename"
+
   if [[ "$check" != "true" ]]; then
-    mv -vf nvim-linux64.deb nvim-linux64.deb.bad
+    command mv -vf "$filename" "${filename}.bad"
     errchoe "Failed to verify checksum"
     return 1
   fi
-  sudo apt install ./nvim-linux64.deb || return
+  command sudo apt install ./"$filename" || return
   popd
 }
 

@@ -99,7 +99,8 @@ _wW_completion()
   declare IFS=$'\n';
 
   # keep the suggestions in a local variable
-  declare word_list="$(fc "-${flag}l" -50 | sed -e 's/^[[:blank:]]*//' -e 's/\t/ /g')";
+  declare word_list
+  word_list="$(fc "-${flag}l" -50 | sed -e 's/^[[:blank:]]*//' -e 's/\t/ /g')";
 
   # Block obsolete because better early processing
   #>&2 echo "WORDLIST [with whitespace] (${#word_list[@]}): [${word_list/+( )/_}]";

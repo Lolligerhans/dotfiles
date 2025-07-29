@@ -15,7 +15,9 @@ end
 ---@return boolean
 function File_exists(path)
   local f = io.open(path, "rb")
-  if f then f:close() end
+  if f then
+    f:close()
+  end
   return f ~= nil
 end
 
@@ -61,7 +63,7 @@ math.randomseed(os.time())
 ---@param n number Number of elements to select
 ---@return table # Table of n randomly selected elements
 function Select_n(some_table, n)
-  print("selecting from table with size: ", #some_table)
+  print("logo.lua: Selecting from table with size", #some_table)
   local selected = {}
   for _ = 1, n do
     local rand = math.random(#some_table)
@@ -96,7 +98,7 @@ end
 ---                      logos
 ---@return table # Table containing one entry per line [1, ... ,n]
 function Split_lines(logo_as_string)
---FIXME: I hope this syntax regex matches to confirm that we use newlines as
+  --FIXME: I hope this syntax regex matches to confirm that we use newlines as
   --       delimeter in the logo string.
   assert(logo_as_string ~= ".*\n.*")
   local result_table = {}
@@ -153,8 +155,7 @@ function Fixed_test_string(name)
 end
 
 -- We return a table with function usable for logo generation
-return
-{
+return {
   -- Returns a static logo
   simple = Get_raw_logo,
   -- Shows 2 random logos side-by-side

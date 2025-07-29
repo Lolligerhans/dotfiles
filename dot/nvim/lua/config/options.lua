@@ -6,7 +6,8 @@ local o = vim.opt
 -- │ LazyVim                                                                   │
 -- ╰───────────────────────────────────────────────────────────────────────────╯
 
-vim.g.autoformat = false;
+vim.g.autoformat = true
+vim.g.snacks_animate = false
 
 -- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Look/Display                                                              │
@@ -17,27 +18,26 @@ o.cursorlineopt = "both"
 o.cursorcolumn = true
 o.laststatus = 3
 o.number = true
-o.relativenumber = true;
+o.relativenumber = true
 
-o.showbreak = "↪";
-o.wrap = true;                               -- wrap long lines
-o.breakindent = true;                        -- indent wrapped lines
-o.breakindentopt = "min:20,shift:8,list:-1"; -- default ""
-o.linebreak = true;                          -- dont wrap within words
-o.smoothscroll = true;                       -- scrolling by screen line
+o.showbreak = "↪"
+o.wrap = true -- wrap long lines
+o.breakindent = true -- indent wrapped lines
+o.breakindentopt = "min:20,shift:8,list:-1" -- default ""
+o.linebreak = true -- dont wrap within words
+o.smoothscroll = true -- scrolling by screen line
 
 o.colorcolumn = { 81 }
 
 o.list = true
-o.listchars =
-{
+o.listchars = {
   -- extends = '…',
   -- precedes = '…',
-  conceal = '┊',
+  conceal = "┊",
   -- eol = '↲',
-  nbsp = '␣',
-  tab = '▸·',
-  trail = '▓',
+  nbsp = "␣",
+  tab = "▸·",
+  trail = "▓",
 }
 
 -- vimrc fillchars options
@@ -50,13 +50,11 @@ o.foldcolumn = "0"
 -- TODO terminal colors?
 
 -- FIXME Cursor highlight should be inverse but is not
-o.guicursor =
-"n-v-c:block,\z
-i-ci-ve:block,\z
-r-cr:block,\z
-o:block,\z
-a:blinkwait700-blinkoff400-blinkon250-inverse/reverse,\z
-sm:block-blinkwait175-blinkoff150-blinkon175"
+o.guicursor = "n-v-c:block,"
+  .. "i-ci-ve-o:block,"
+  .. "r-cr:hor20,"
+  .. "a:blinkwait700-blinkoff400-blinkon250-inverse/reverse,"
+  .. "sm:block-blinkwait175-blinkoff150-blinkon175"
 
 -- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Behaviour                                                                 │
@@ -64,8 +62,8 @@ sm:block-blinkwait175-blinkoff150-blinkon175"
 
 -- TODO: filetype plugin indent detection on
 --       treat .sh as bash, .test .inc as c++
-o.path:append { "**" }
-o.wildignore:append { "tags", "Session.vim", "Session_active.vim", ".git" }
+o.path:append({ "**" })
+o.wildignore:append({ "tags", "Session.vim", "Session_active.vim", ".git" })
 o.wildignorecase = true
 o.fileignorecase = true
 o.makeprg = "./run.sh build"
@@ -87,7 +85,7 @@ o.mouse = "a"
 o.fileformat = "unix"
 
 o.timeoutlen = 1000 -- For regular mappings
-o.ttimeoutlen = 50  -- Only for <esc> byte \x1b
+o.ttimeoutlen = 50 -- Only for <esc> byte \x1b
 
 -- TODO No idea how this would be done in lua here
 vim.cmd([[
@@ -121,13 +119,23 @@ o.sidescroll = 2
 o.shortmess = "finxltToO"
 
 o.sessionoptions = {
-  "blank", "buffers", "curdir", "folds", "help", "options", "tabpages", "winsize", "terminal"
+  "blank",
+  "buffers",
+  "curdir",
+  "folds",
+  "help",
+  "options",
+  "tabpages",
+  "winsize",
+  "terminal",
 }
 
 o.startofline = false
 
 -- No -uu option when using ripgrep
 o.grepprg = "rg --vimgrep" -- LazyVim default anyway
+
+o.allowrevins = true
 
 vim.g.netrw_liststyle = 3
 
@@ -138,12 +146,12 @@ vim.g.netrw_liststyle = 3
 o.digraph = false
 o.tabstop = 8
 o.expandtab = true
-o.softtabstop = 2            -- Pseudo-tab width. Keep tabstop at 8.
-o.shiftwidth = 2             -- Else uses tabstop
-o.smartindent = false        -- lazyvim: true
-o.cindent = true             -- lazyvimn : false
+o.softtabstop = 2 -- Pseudo-tab width. Keep tabstop at 8.
+o.shiftwidth = 2 -- Else uses tabstop
+o.smartindent = false -- lazyvim: true
+o.cindent = true -- lazyvimn : false
 o.smarttab = true
-o.textwidth = 80             -- lazyvim: 0
+o.textwidth = 80 -- lazyvim: 0
 -- FIXME: there appears an "o" in ':se fo?' too? something rests this
 o.formatoptions = "cr/qn1jl" -- :h fo-table
 -- The lua string eats one level of backslash \ escaping.
@@ -160,8 +168,14 @@ local arg1 = [[\%(param\|typedef\|property\|callback\)\s\+]]
 local target = [=[\s*[^[:space:]]\+\s]=] -- WORD
 local specific = [[\%(]] .. arg0 .. type .. [[\|]] .. arg1 .. type .. target .. [[\)]]
 local docblock = [[@\%(]] .. specific .. [[\|]] .. generic .. [[\)]]
-local todo = [[\%(TEST\|TODO\|NOTE\|FIXME\|HACK\|INFO\):\?]]
-o.formatlistpat = [[^\s*\(•\|◦\|·\|]] .. docblock .. [[\|-\s\%(\s*\w*:\)\?\|]] .. todo .. [[\|\d\+[\]:.)}\t ]\)\s*]]
+-- local todo = [[\%(TEST\|TODO\|NOTE\|FIXME\|HACK\|INFO\):\?]]
+-- Listing words not flexible enough. Detect by all caps word instead
+local todo = [[\%(\<\u\u\+\>\):\?]]
+o.formatlistpat = [[^\s*\(•\|◦\|·\|]]
+  .. docblock
+  .. [[\|-\s\%(\s*\w*:\)\?\|]]
+  .. todo
+  .. [[\|\d\+[\]:.)}\t ]\)\s*]]
 o.joinspaces = false
 
 -- TODO: Filetype mappings for our comment-preserving comment-out mappings.

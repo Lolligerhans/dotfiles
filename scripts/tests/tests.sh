@@ -297,6 +297,8 @@ colour_test() {
   done
   color {232..255}
 
+  test_black_and_white
+
   echou "Testing light pink"
   echo "${text_bold}${text_pink} [this]$text_normal is normal pink"
   echos "Testing light cyan"

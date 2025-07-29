@@ -222,6 +222,7 @@ return {
 
   -- add any tools you want to have installed below
   {
+    -- LATER: Consider moving to mason-org/mason
     "williamboman/mason.nvim",
     opts = {
       ensure_installed = {
@@ -291,62 +292,8 @@ return {
   },
 
   {
-    "nvim-treesitter/nvim-treesitter-context",
-    opts = {
-      enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
-      max_lines = 10, -- How many lines the window should span. Values <= 0 mean no limit.
-      min_window_height = 0, -- Minimum editor window height to enable context. Values <= 0 mean no limit.
-      line_numbers = true,
-      multiline_threshold = 20, -- Maximum number of lines to show for a single context
-      trim_scope = "outer", -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
-      mode = "topline", -- Line used to calculate context. Choices: 'cursor', 'topline'
-      -- Separator between context and content. Should be a single character string, like '-'.
-      -- When separator is set, the context will only show up when there are at least 2 lines above cursorline.
-      separator = nil,
-      zindex = 20, -- The Z-index of the context window
-      on_attach = nil, -- (fun(buf: integer): boolean) return false to disable attaching
-    },
-  },
-
-  {
     -- This plugin maps normal mode "gS" to split/join arguments over lines
     "FooSoft/vim-argwrap",
-  },
-
-  {
-    "kylechui/nvim-surround",
-    opts = {
-      -- Defaults (we use ß instead of s to keep flash):
-      --  insert = "<C-g>s",         -- ?
-      --  insert_line = "<C-g>S",    -- ?
-      --  normal = "ys",             -- Surround movement region
-      --  normal_cur = "yss",        -- Surround whole line
-      --  normal_line = "yS",        -- Surround movement region pad with \n
-      --  normal_cur_line = "ySS",   -- Surround whole line, on new lines
-      --  visual = "S",              -- Sourround selection
-      --  visual_line = "gS",        -- Surround selection, pad with \n
-      --  delete = "ds",             -- Delete inner most surrouding
-      --  change = "cs",             -- Change inner/previous sourrounding
-      --  change_line = "cS",        -- Change inner/previous, pad with \n
-      keymaps = {
-        insert = false,
-        insert_line = false,
-        normal = false, -- Use visual mode ß. Changes '<,'>.
-        normal_cur = "gßß", -- Use double to be consistent with "dd", "cc", etc.
-        normal_line = "gß",
-        normal_cur_line = false, -- Use visual mode ßß. Changes '<'>.
-        visual = "ß",
-        visual_line = "ßß",
-        delete = "dß",
-        change = "cß",
-        change_line = "cßß",
-      },
-      -- surrounds =     -- Defines surround keys and behavior
-      -- aliases =       -- Defines aliases
-      -- highlight =     -- Defines highlight behavior
-      -- move_cursor =   -- Defines cursor behavior
-      -- indent_lines =  -- Defines line indentation behavior
-    },
   },
 
   -- List:

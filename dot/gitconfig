@@ -25,6 +25,12 @@
 
 [alias]
 
+	# Delete branch and remote tracking branch. The 2nd argument can be used to
+	# specify a remote other than "origin".
+	#   git rmb my-branch
+	#   git rmb my-branch upstream
+	rmb = "!_git_rmb() { git branch -d \"$1\"; git push --delete \"${2:-origin}\" \"$1\"; }; _git_rmb"
+
 	# Shorthands
 	bi = bisect
 	br = branch

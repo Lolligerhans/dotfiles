@@ -19,18 +19,16 @@
 --     au! BufRead,BufNewFile *.inc setfiletype cpp
 --     au! BufRead,BufNewFile *.test setfiletype cpp
 --   augroup END
-vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" },
-  {
-    pattern = { "inc", "test" },
-    callback = function()
-      vim.filetype:set("cpp")
-    end,
-  })
+vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+  pattern = { "inc", "test" },
+  callback = function()
+    vim.filetype:set("cpp")
+  end,
+})
 
 -- Thwart ftplugins overwriting our formatoptions
-vim.api.nvim_create_autocmd("FileType",
-  { command = "set formatoptions-=o", })
+vim.api.nvim_create_autocmd("FileType", { command = "set formatoptions-=o" })
 
 -- Start :terminal buffers in insert mode
 -- autocmd TermOpen * startinsert
-vim.api.nvim_create_autocmd("TermOpen", { pattern = "*", command = "startinsert" })
+vim.api.nvim_create_autocmd("TermOpen", { pattern = "term://*", command = "startinsert" })

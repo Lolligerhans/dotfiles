@@ -2,7 +2,7 @@
 
 # version 0.0.0
 
-# Copied stuff from online. DO not care to shellcheck until we write our own.
+# Copied stuff from online. Do not care to shellcheck until we write our own.
 # shellcheck disable=all
 
 true_colour_test() {
@@ -84,4 +84,22 @@ true_colour_test() {
     rainbowColor $i
   done
   resetOutput
+}
+
+# $1 name
+# $2 Colour ansi sequence to be used
+# $3 (optional) modifier
+show_colour_helper() {
+  echo "$text_normal$text_invert${3:-""}${2}" "          $text_normal$1"
+}
+
+test_black_and_white() {
+  show_colour_helper "dim black" "$text_black" "$text_dim"
+  show_colour_helper "black" "$text_black"
+  show_colour_helper "dim bright black" "$text_brightblack" "$text_dim"
+  show_colour_helper "bright black" "$text_brightblack"
+  show_colour_helper "dim white" "$text_white" "$text_dim"
+  show_colour_helper "dim bright white" "$text_brightwhite" "$text_dim"
+  show_colour_helper "white" "$text_white"
+  show_colour_helper "bright white" "$text_brightwhite"
 }

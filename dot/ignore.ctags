@@ -5,4 +5,12 @@
 # Directories should NOT end in "/". Example:
 #     data
 #     test/whatever
+#     json/*
+# Note: To ignore json/ but not src/json/ use the pattern "json/*". The pattern
+#       "json" would ignore both. Invalid is "/json". Invalid is "json/".
+
+# Use the file named ".ctagsignore" within the project to get exclude patterns.
+# Slight disadvantage in that the file must exist. Once we no longer use
+# exuberant-ctags anywhere we can probably move to the universal-ctags way to
+# name ignore stuff.
 --exclude=@.ctagsignore

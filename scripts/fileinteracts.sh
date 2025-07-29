@@ -102,7 +102,7 @@ same_file_linked() {
 # $1  (in)  link
 # $2  (in)  path to checksum file
 wget_verify_sha256_file() {
-  if (( "$#" != 2 )); then
+  if (("$#" != 2)); then
     abort "Invalid argumetns: $*"
   fi
 
@@ -165,7 +165,7 @@ wget_verify_sha256() {
   echok Got: "$filename"
 }
 
-# $1  (out)  Output variable (set to "true" or "false")
+# $1  (out)  Output variable (set to "true" on success)
 # $2  (in)   sha256sum test string (e.g., "b94d2...7b99 test.txt")
 # This function allows writing the result of sha256sum -c into a variable
 # (instead of returning 0 or 1).
@@ -178,10 +178,12 @@ checksum_verify_sha256() {
   if [[ "$-" != *e* ]]; then
     errchoe "${FUNCNAME[0]} needs set -e"
     abort "Need set -e to continue"
+    return 1 # In case abort needs set -e, too as well
   fi
   if ! command sha256sum --version &>/dev/null; then
     errchoe "${FUNCNAME[0]} requires sha256sum"
     abort "Need sha256sum to continue"
+    return 1
   fi
 
   declare -n _vcs_934712384_="${1}"

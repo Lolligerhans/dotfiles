@@ -2,11 +2,9 @@
 //
 // TODO: Brief explanation.
 
-// TODO: Add include guard
 #ifndef INCLUDE_GUARD
 #define INCLUDE_GUARD
 
-// TODO: Provide namespace
 namespace NAMESPACE_
 {
 

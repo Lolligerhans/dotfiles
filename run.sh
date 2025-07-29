@@ -50,10 +50,17 @@ declare -r stick_name="UBUNTU_STIC"
 declare -r restoration_tmp_path="/tmp/restoration_tmp"
 declare -r restoration_stick_path="/media/${USER}/${stick_name}/MY_BACKUP/"
 declare -ar restoration_files=(
+  # I think the restoratino process is such that all paths MSUT be withing
+  # $HOME, including $dotfiles.
+  # TODO: Verify this need.
   "${dotfiles}"
   "${HOME}/.ssh"/id*
   "${HOME}/.ssh/known_hosts"
   "${HOME}/snap/firefox/common/.mozilla/firefox/"
+  "${HOME}/Documents/behoerden/"
+  "${HOME}/Documents/jobs/"
+  "${HOME}/Documents/books/"
+  "${HOME}/.bash_aliases_local"
 )
 declare -r update_alternatives_default_link="/usr/bin"
 
@@ -1143,7 +1150,7 @@ DESCRIPTION
   --path instead (3). This can make it easier to add binaries already accessible
   through \$PATH.
 OPTIONS
-  --path=pth: Set path to the alternative binary (/usr/bin/gcc-10). When now
+  --path=pth: Set path to the alternative binary (/usr/bin/gcc-10). When not
     starting with '/', filter through 'which' before using.
   --name=nme: Name, as required by update-alternatives. If not given, trailing
     simple version string is removed from --path and the basename of the result

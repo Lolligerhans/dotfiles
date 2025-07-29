@@ -43,6 +43,7 @@ readonly text_nounderline="$(tput rmul)"
 #declare text_user=$'\x1b[38;2;240;192;144m'
 #declare text_user=$'\x1b[38;2;102;153;255m'
 #rgb(240, 192, 144)
+readonly text_black="$(tput setaf 0)"
 readonly text_blue="$(tput setaf 4)"
 readonly text_brightblack="$(tput setaf 8)"
 readonly text_green="$(tput setaf 2)"

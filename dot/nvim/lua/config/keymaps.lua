@@ -25,6 +25,7 @@ m.set({ "", "!", "l" }, "<F29>", "<C-F5>", { remap = true })
 m.set({ "", "!", "l" }, "<F30>", "<C-F6>", { remap = true })
 m.set({ "", "!", "l" }, "<F31>", "<C-F7>", { remap = true })
 m.set({ "", "!", "l" }, "<F32>", "<C-F8>", { remap = true })
+-- m.set({ "", "!", "l" }, "<A-ß>", "<A-Bslash>", { remap = true }) -- Did not work
 
 -- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Replacements / Changes                                                    │
@@ -181,7 +182,7 @@ m.set("n", "<leader>ces", "m`*<cmd>g//-2,+2d<cr>``", { remap = false, desc = "Co
 m.set("t", "<esc><esc>", "<c-/><c-n>", { remap = false })
 
 -- ╭───────────────────────────────────────────────────────────────────────────╮
--- │ Windows, tabs and viewiing                                                │
+-- │ Windows, tabs and viewing                                                 │
 -- ╰───────────────────────────────────────────────────────────────────────────╯
 
 -- ── Jumping and tags ───────────────────────────────────────
@@ -400,6 +401,11 @@ end, { remap = false, desc = "Diff toggle" })
 --│ Plugin control                                                             │
 --╰────────────────────────────────────────────────────────────────────────────╯
 
+-- ── hiphish/rainbow-delimiters.nvim ────────────────────────
+m.set({ "n" }, "<leader>uR", function()
+  require("rainbow-delimiters").toggle(0)
+end, { remap = false, desc = "Toggle rainbow-delimiters" })
+
 m.set({ "n" }, "<leader>pc", "<cmd>TSContextToggle<cr>", { remap = false, desc = "Toggle Treesitter-Context" })
 
 -- ── FzfLua ─────────────────────────────────────────────────
@@ -496,7 +502,8 @@ local asDigraph = function(digraph, code, _description)
   vim.cmd("digraph " .. digraph .. " " .. code)
 end
 
--- Recover digraph overwritten by LazyVim
+-- Recover digraph overwritten by LazyVim. Specifically only for insert mode,
+-- not other language modes. This keeps ':h /_CTRL-L'. Use <C-k> in other modes.
 m.set("i", "<c-l>", "<c-k>", { remap = false, desc = "digraph" })
 
 ---Map any text in input mode after double <C-l>

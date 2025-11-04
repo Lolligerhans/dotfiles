@@ -29,8 +29,6 @@ o.breakindentopt = "min:20,shift:8,list:-1" -- default ""
 o.linebreak = true -- dont wrap within words
 o.smoothscroll = true -- scrolling by screen line
 
-o.colorcolumn = { 81 }
-
 o.list = true
 o.listchars = {
   -- extends = '…',
@@ -121,22 +119,29 @@ o.sidescroll = 2
 o.shortmess = "finxltToO"
 
 o.sessionoptions = {
-  "blank",
+  -- "blank",
   "buffers",
   "curdir",
   "folds",
+  "globals",
   "help",
+  "localoptions",
   "options",
+  "resize",
   "tabpages",
   "winsize",
   "terminal",
 }
 
+-- When true, some commands reset the cursor position to the start of the line.
+-- For example shift <<, scrolling CTRL-d, indent ==. When false, try staying in
+-- the same solumn.
 o.startofline = false
 
 -- No -uu option when using ripgrep
 o.grepprg = "rg --vimgrep" -- LazyVim default anyway
 
+-- Enable reverse insert mode with i_CTRL-_
 o.allowrevins = true
 
 vim.g.netrw_liststyle = 3
@@ -154,13 +159,17 @@ o.smartindent = false -- lazyvim: true
 o.cindent = true -- lazyvimn : false
 o.smarttab = true
 o.textwidth = 80 -- lazyvim: 0
--- FIXME: there appears an "o" in ':se fo?' too? something rests this
+o.colorcolumn = { 81, "+1" }
 o.formatoptions = "cr/qn1jl" -- :h fo-table
--- The lua string eats one level of backslash \ escaping.
--- Generic is either of these two doc-block-like formats:
+
+-- Prepare "formatlistpat" to format comments with stuff that looks like
+-- doc-block or similar. Use \%() instead of \() because neovim allows only 10
+-- capture groups.
+--
+-- 'generic' is either of these two doc-block-like formats:
 --    @word
 --    @word word:
--- Specific uses actual doc-block keywords (with optional type):
+-- 'specific' uses actual doc-block keywords (with optional type):
 --    @return {type}
 --    @param {type} word
 local generic = [[\w\+\%(\s\+\w\+:\)\?\s]]
@@ -170,8 +179,10 @@ local arg1 = [[\%(param\|typedef\|property\|callback\)\s\+]]
 local target = [=[\s*[^[:space:]]\+\s]=] -- WORD
 local specific = [[\%(]] .. arg0 .. type .. [[\|]] .. arg1 .. type .. target .. [[\)]]
 local docblock = [[@\%(]] .. specific .. [[\|]] .. generic .. [[\)]]
+-- Listing words not flexible enough. Detect by all caps word instead. A CAPS
+-- word is two or more caps letters. Optional colon : afterwards. Named 'todo'
+-- because originally meant for // TODO comments.
 -- local todo = [[\%(TEST\|TODO\|NOTE\|FIXME\|HACK\|INFO\):\?]]
--- Listing words not flexible enough. Detect by all caps word instead
 local todo = [[\%(\<\u\u\+\>\):\?]]
 o.formatlistpat = [[^\s*\(•\|◦\|·\|]]
   .. docblock

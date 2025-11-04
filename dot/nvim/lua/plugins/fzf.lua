@@ -5,15 +5,38 @@ return {
     dependencies = { "nvim-tree/nvim-web-devicons" },
 
     opts = {
-      btags = {
-        fzf_opts = {
-          ["--no-hscroll"] = true,
-        },
-      },
+
+      -- BUG: I believe when I turn the default no-hscroll option on, some of
+      --      the fallbacks for lsp_workspace_symbols are no longer included.
+      --      Not sure what is going on but surprising.
+      -- btags = {
+      --   fzf_opts = {
+      --     ["--no-hscroll"] = true,
+      --   },
+      -- },
+
       tags = {
         fzf_opts = {
           ["--no-hscroll"] = true,
           -- ["--wrap"] = true,
+        },
+      },
+      lsp_workspace_symbols = {
+        fzf_opts = {
+          -- I think when no matches are found it has a fallback including file
+          -- paths. The fallback ignores this option, maybe we would need to set
+          -- it for the fallback'd-to command?
+          ["--no-hscroll"] = true,
+        },
+      },
+      lsp_live_workspace_symbols = {
+        fzf_opts = {
+          ["--no-hscroll"] = true,
+        },
+      },
+      lsp_document_symbols = {
+        fzf_opts = {
+          ["--no-hscroll"] = true,
         },
       },
     },

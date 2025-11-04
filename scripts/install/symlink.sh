@@ -5,12 +5,15 @@
 
 symlink_bash_aliases() {
   echo "bash_aliases..."
+  # Our dotfile uses .sh file extension to convince universal-ctags to generate
+  # tags, but the link is named ".bash_aliases" because its stock Ubuntu default
+  # and we do some 'sed'in and grepping for it in 'symlink_bashrc()'.
   declare -r path="$HOME/.bash_aliases"
   if [ -f "$path" ]; then
     echo "skip"
   else
     echo "installing..."
-    ln -v -s "$dotfiles/dot/bash_aliases" "$path" &&
+    command ln -v -s "$dotfiles/dot/bash_aliases.sh" "$path" &&
       echo "done"
   fi
 }
@@ -51,9 +54,11 @@ symlink_bashrc() {
   # the file before it is overwritten by our dot/bashrc_personal.
   sed -i -e '/HISTSIZE/ s/^[^#]/:; # [history handled by dotfiles] &/' "$brcp"
   sed -i -e '/HISTFILESIZE/ s/^[^#]/:; # [history handled by dotfiles] &/' "$brcp"
+
   # Prevent sourcing of .bash_aliases. Hope to prevent sourcing the aliases
   # symlink before our dopt/bashrc_personal has sourced dot/git-completion.bash.
   sed -i -e '/\(\.\|source\) .*\.bash_aliases/ s/^[^#]/:; # [aliases handled by dotfiles] &/' "$brcp"
+
   if grep -q -F "$brcl" "$brcp"; then
     echo "skip"
   else

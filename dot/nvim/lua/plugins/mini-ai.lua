@@ -22,7 +22,7 @@ return {
   {
     -- NOTE: Was moved onGitHub to nvim-mini/mini.nvim, but LazyVim still uses
     --       this repo. Once LazyVim moves, update the URL.
-    "https://github.com/echasnovski/mini.ai",
+    "https://github.com/nvim-mini/mini.ai",
     opts = {
       -- local gen_spec = require("mini.ai").gen_spec
       -- opts.custom_textobjects['B'] = gen_spec.argument({ brackets = { "%b[]", "%b{}" }, })

@@ -1093,7 +1093,7 @@ DESCRIPTION
   2) Create a new alias NAME.
   3) Delete alias NAME.
   Manages aliases in dot/bash_aliases_local. This is meaant for local alises
-  that would be misplaced in the regular dot/bash_aliases, but useful on
+  that would be misplaced in the regular dot/bash_aliases.sh, but useful on
   a specific machine.
 OPTIONS
   --name: Name of the new alias command

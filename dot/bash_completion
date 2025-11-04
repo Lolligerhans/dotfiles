@@ -11,21 +11,21 @@ _supercd_completion() {
   # If the -not -path does not stop 'find' from loading large ".git" and similar
   # directories, we could also try using only "*" — without quotes — as path
   # instead of ".". That way at least it doesnt search "./.git".
-  declare -a list;
-  IFS=$'\n' list=(\
-    $(find . -maxdepth 3 -type d -not -path '*/.*' -iregex ".*${COMP_WORDS[1]}.*")\
-    );
-    #grep ---color=auto -e "git")\
+  declare -a list
+  IFS=$'\n' list=(
+    $(find . -maxdepth 3 -type d -not -path '*/.*' -iregex ".*${COMP_WORDS[1]}.*")
+  )
+  #grep ---color=auto -e "git")\
 
   #>&2 printf "\n[list] {%s}\n" "${list[*]}";
 
-  COMPREPLY=("${list[@]#+(./)}");
+  COMPREPLY=("${list[@]#+(./)}")
 
   #>&2 printf "\n[reply] {%s}\n" "${COMPREPLY[*]}";
 }
-# These match the names in .bash_aliases
-complete -F _supercd_completion "supercd";
-complete -F _supercd_completion ",";
+# These match the names in bash_aliases.sh
+complete -F _supercd_completion "supercd"
+complete -F _supercd_completion ","
 
 # ╭────────────────────────────────────────────────────────────────────────────╮
 # │ Runscripts                                                                 │

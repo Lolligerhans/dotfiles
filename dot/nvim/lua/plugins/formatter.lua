@@ -6,6 +6,10 @@ return {
       cpp = { "clang-format" },
       javascript = { "clang-format" },
       -- java = { "google-java-format" },
+
+      -- NOTE: markdown-toc us used by adding the comment <!-- toc -->
+      --      verbatim in a markdown file (:normal gcotoc\<esc>).
+
     },
   },
 }

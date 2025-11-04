@@ -12,5 +12,5 @@ shopt -s expand_aliases
 
 # shellcheck source=dot/bash_completion
 source "$HOME/.bash_completion"
-# shellcheck source=dot/bash_aliases
-source "$HOME/.bash_aliases"
+# shellcheck source=dot/bash_aliases.sh
+source "$HOME/.bash_aliases.sh"

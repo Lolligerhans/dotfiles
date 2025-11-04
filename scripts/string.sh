@@ -17,9 +17,9 @@ _sourced_files["$tag"]=""
 # │ 🗀 Dependencies       │
 # ╰──────────────────────╯
 # ✔ Ensure versions with satisfy_version
-satisfy_version "$dotfiles/scripts/boilerplate.sh" "0.0.0";
+satisfy_version "$dotfiles/scripts/boilerplate.sh" "0.0.0"
 # ✔ Source versioned dependencies with load_version
-load_version "$dotfiles/scripts/version.sh" "0.0.0";
+load_version "$dotfiles/scripts/version.sh" "0.0.0"
 #load_version "$dotfiles/scripts/assert.sh"
 #load_version "$dotfiles/scripts/bash_meta.sh"
 #load_version "$dotfiles/scripts/cache.sh"
@@ -27,7 +27,6 @@ load_version "$dotfiles/scripts/version.sh" "0.0.0";
 #load_version "$dotfiles/scripts/fileinteracts.sh"
 #load_version "$dotfiles/scripts/git_utils.sh"
 #load_version "$dotfiles/scripts/progress_bar.sh"
-#load_version "$dotfiles/scripts/nyx/nyx.sh"
 #load_version "$dotfiles/scripts/setargs.sh"
 #load_version "$dotfiles/scripts/termcap.sh"
 #load_version "$dotfiles/scripts/userinteracts.sh"

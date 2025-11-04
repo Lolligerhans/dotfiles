@@ -9,6 +9,10 @@ return {
     "MeanderingProgrammer/render-markdown.nvim",
     opts = {
       render_modes = { "n", "c", "t", "i" },
+      -- We do not have utftex and latex2text installed. render-markdown.nvim
+      -- complains in checkhealth and advises to disable it. We don't need it so
+      -- we just disable it.
+      latex = { enabled = false },
     },
   },
 }

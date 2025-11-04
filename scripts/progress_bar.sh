@@ -89,10 +89,10 @@ progress_push() {
     box_up="╭${box_down}╮"
     box_down="╰${box_down}╯"
     str="│$str│"
-    printf "%s\n%s\n%s\n" "$box_up" "$str" "$box_down"
+    printf -- "%s\n%s\n%s\n" "$box_up" "$str" "$box_down"
     _progress_box_hight=3
   else
-    printf "%s\n" "$str"
+    printf -- "%s\n" "$str"
     _progress_box_hight=1
   fi
 }
@@ -107,19 +107,19 @@ progress_update() {
 # Remove line of progress bar
 progress_pop() {
   __progress_go_back
-  printf "%s" "${term_erase_forward}"
+  printf -- "%s" "${term_erase_forward}"
 }
 # Move back to start of progress print
 __progress_go_back() {
-  printf "%s" "$(repeat_string "$_progress_box_hight" "${term_up}")"
+  printf -- "%s" "$(repeat_string "$_progress_box_hight" "${term_up}")"
 }
 
 progress_detached() {
   for i in $(seq 0 100); do
     echo "Statement $i"
-    printf "%s" "${term_save_cursor}${term_last_line}"
-    printf "%s" "$(progress_bar_string "$i" 20) $i%"
-    printf "%s" "${term_restore_cursor}"
+    printf -- "%s" "${term_save_cursor}${term_last_line}"
+    printf -- "%s" "$(progress_bar_string "$i" 20) $i%"
+    printf -- "%s" "${term_restore_cursor}"
     sleep 0.01
   done
   echo

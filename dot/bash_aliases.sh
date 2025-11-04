@@ -61,6 +61,17 @@ _toggle_delta_side_by_side() {
 # 'bashrc_personal'.
 __git_complete g __git_main
 
+# Returns the name of the default branch. The "default branch" concept is a bit
+# shoehorned onto git, so we infer it by the remote HEAD. Works for GitHub.
+#
+# $1: Remote name. defaults to "origin"
+# output: "master" or "main" or similar
+function __dot_default_branch() {
+  # origin/master                                             → master
+  # origin/main                                               → main
+  git symbolic-ref "refs/remotes/${1:-"origin"}/HEAD" --short | sed 's|.*/||'
+}
+
 # HACK: Need an extra echo because for some reason git decides not to end with
 #       a newline when using --no-pager.
 alias s='git --no-pager q-f; git qsl; git --no-pager s; echo; git q-b;'
@@ -102,9 +113,9 @@ alias cop='git co -p'
 alias di='git di'
 alias dis='git dis'
 alias die='git die'
-alias dim='git di master'
-alias dims='git di master --stat'
-alias dime='git di master --no-ext-diff'
+alias dim='git di "$(__dot_default_branch)"'
+alias dims='git di "$(__dot_default_branch)" --stat'
+alias dime='git di "$(__dot_default_branch)" --no-ext-diff'
 alias dip='git di @{push}'
 alias diu='git di @{upstream}'
 

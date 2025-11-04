@@ -163,6 +163,7 @@ _echoInfo() {
   # This means it is typically pointless to call this function elsewhere.
   "$1" "${text_brightblack}$(date -Iseconds) ${text_lightblue}${FUNCNAME[2]} ${text_dim}${BASH_LINENO[1]}${text_normal}" "${@:2}"
 }
+echoK() { _echoInfo echok "$@"; }
 echoL() { _echoInfo echol "$@"; }
 echoT() { _echoInfo echot "$@"; }
 

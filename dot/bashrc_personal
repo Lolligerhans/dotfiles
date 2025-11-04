@@ -1,28 +1,31 @@
 #!/bin/false
 
-# Add some environment paths
-  # CUDA
-  #export PATH="${PATH}:/usr/local/cuda/bin";
-  #export LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}";
+# ╭────────────────────────────────────────────────────────────╮
+# │ PATH                                                       │
+# ╰────────────────────────────────────────────────────────────╯
 
-  # NOTE Tilde notation works here despite not being expanded in the string
-  export PATH="$PATH:~/.local/bin";
-  #?
-  export PATH="$PATH:~/.local/lib/python3.9/site-packages";
+# CUDA
+#export PATH="${PATH}:/usr/local/cuda/bin";
+#export LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}";
 
-  # openssl
-  export PATH="${PATH}:/usr/bin/openssl/apps";
+# NOTE Tilde notation works here despite not being expanded in the string
+export PATH="$PATH:~/.local/bin"
+#?
+export PATH="$PATH:~/.local/lib/python3.9/site-packages"
 
-  # Path for git diff-highlight
-  export PATH="${PATH}:/usr/share/doc/git/contrib/diff-highlight";
+# openssl
+export PATH="${PATH}:/usr/bin/openssl/apps"
 
-  # Path to start IDEA from
-  export PATH="${PATH}:${HOME}/Downloads/idea-IDE/bin"; # Written in command_install_idea
+# Path for git diff-highlight
+export PATH="${PATH}:/usr/share/doc/git/contrib/diff-highlight"
 
-  export PATH="${PATH}:${HOME}/.cargo/bin";
+# Path to start IDEA from
+export PATH="${PATH}:${HOME}/Downloads/idea-IDE/bin" # Written in command_install_idea
 
-  # homebrew
-  #eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)";
+export PATH="${PATH}:${HOME}/.cargo/bin"
+
+# homebrew
+#eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)";
 
 # Start program 'thefuck'
 #  eval $(thefuck --alia)
@@ -32,152 +35,165 @@
 # to allow <C-s> and <C-q> in terminal (vim)
 stty -ixon
 
-shopt -s autocd;
-shopt -s globstar;
-shopt -s nullglob;
+shopt -s autocd
+shopt -s globstar
+shopt -s nullglob
 
-declare -x HISTSIZE=; # Unlimited
-declare -x HISTFILE=~/.local/share/bash_history;
-declare -x HISTFILESIZE=; # Unlimited
-declare -x HISTCONTROL='ignoreboth';
-shopt -s histappend;
+declare -x HISTSIZE= # Unlimited
+declare -x HISTFILE=~/.local/share/bash_history
+declare -x HISTFILESIZE= # Unlimited
+declare -x HISTCONTROL='ignoreboth'
+shopt -s histappend
 
-# Bash prompt with git branch
-  source ~/dotfiles/extern/git-prompt.sh;
-  # Unstaged: *
-  # staged: +
-  GIT_PS1_SHOWDIRTYSTATE=1
-  # Stashed: $
-  GIT_PS1_SHOWSTASHSTATE=1
-  # Untracked file: %
-  GIT_PS1_SHOWUNTRACKEDFILES=1
-  # Head behind upstream: <
-  # Head ahead of upstream: >
-  # Diverge: <>
-  # Same: =
-  GIT_PS1_SHOWUPSTREAM="auto";
-  # Separater branch from symbols with this separator
-  #GIT_PS1_STATESEPARATOR=":"; # Default: space
-  # Show sparse checkout with symbol instead
-  #GIT_PS1_COMPRESSSPARSESTATE
-  #GIT_PS1_OMITSPARSESTATE
-  # Add "|CONFLICT" to the prompt when there are conflicts
-  GIT_PS1_SHOWCONFLICTSTATE="yes";
-  # Describe detached HEAD with specific info (doesnt seem to work)
-  #GIT_PS1_DESCRIBE_STYLE="branch";
-  # Colored hint about directory state
-  GIT_PS1_SHOWCOLORHINTS=1
-  # Do not emit prompt when inside ignored directory
-  GIT_PS1_HIDE_IF_PWD_IGNORED=0;
+# ╭────────────────────────────────────────────────────────────╮
+# │ Bash prompt with git branch                                │
+# ╰────────────────────────────────────────────────────────────╯
+source ~/dotfiles/extern/git-prompt.sh
+# Unstaged: *
+# staged: +
+GIT_PS1_SHOWDIRTYSTATE=1
+# Stashed: $
+GIT_PS1_SHOWSTASHSTATE=1
+# Untracked file: %
+GIT_PS1_SHOWUNTRACKEDFILES=1
+# Head behind upstream: <
+# Head ahead of upstream: >
+# Diverge: <>
+# Same: =
+GIT_PS1_SHOWUPSTREAM="auto"
+# Separater branch from symbols with this separator
+#GIT_PS1_STATESEPARATOR=":"; # Default: space
+# Show sparse checkout with symbol instead
+#GIT_PS1_COMPRESSSPARSESTATE
+#GIT_PS1_OMITSPARSESTATE
+# Add "|CONFLICT" to the prompt when there are conflicts
+GIT_PS1_SHOWCONFLICTSTATE="yes"
+# Describe detached HEAD with specific info (doesnt seem to work)
+#GIT_PS1_DESCRIBE_STYLE="branch";
+# Colored hint about directory state
+GIT_PS1_SHOWCOLORHINTS=1
+# Do not emit prompt when inside ignored directory
+GIT_PS1_HIDE_IF_PWD_IGNORED=0
 
-  # TODO Read diff --numstat with read command, add lines and print 10+-20 with colours and variable amount of + and -
-  source ~/dotfiles/scripts/termcap.sh;
-  #declare -r _before_git_ps1='\[${text_bdy}\]\D{%F} \[${text_bly}\]\A\[${text_normal}\] \[${text_gray}\]\u@\H\[${text_normal}\]\n\[${text_italic}\]\[${text_blb}\]\w\[${text_normal}\]';
-  #declare -r _after_git_ps1=' $(((\j!=0))&&printf "\[${text_bc}\][\[${text_blc}\]\j\[${text_bc}\]]\[${text_normal}\] ")\[${text_normal}\]\[${text_normal}\]\[${text_bold}\]$( (($_ret!=0)) && printf "\[${text_red}\]")\$›\[${text_normal}\]';
-  # Termcap for bold text has a fallthrough in the __git_ps1 format string
+# TODO Read diff --numstat with read command, add lines and print 10+-20 with colours and variable amount of + and -
+source ~/dotfiles/scripts/termcap.sh
+#declare -r _before_git_ps1='\[${text_bdy}\]\D{%F} \[${text_bly}\]\A\[${text_normal}\] \[${text_gray}\]\u@\H\[${text_normal}\]\n\[${text_italic}\]\[${text_blb}\]\w\[${text_normal}\]';
+#declare -r _after_git_ps1=' $(((\j!=0))&&printf "\[${text_bc}\][\[${text_blc}\]\j\[${text_bc}\]]\[${text_normal}\] ")\[${text_normal}\]\[${text_normal}\]\[${text_bold}\]$( (($_ret!=0)) && printf "\[${text_red}\]")\$›\[${text_normal}\]';
+# Termcap for bold text has a fallthrough in the __git_ps1 format string
 #  PROMPT_COMMAND='declare _ret="$?" _base="$(basename "$(git rev-parse --show-toplevel)")"; __git_ps1 "$_before_git_ps1" "$_after_git_ps1" " (\[${text_bdiw}\]$(git config --get user.name)\[$text_normal${text_blg}\]⎇  %s)"';
 
-  PROMPT_COMMAND='_prompt_command_wrapper';
-  _prompt_command_wrapper()
-  {
-    # Get return value first so it is the return value of the last user command
-    declare -gi _prompt_ret="$?";
+PROMPT_COMMAND='_prompt_command_wrapper'
+_prompt_command_wrapper() {
+  # Get return value first so it is the return value of the last user command
+  declare -gi _prompt_ret="$?"
 
-    # Working dir
-    declare -g _pwd_dir="${PWD/#"${HOME}"/"~"}";  # == "~/example/dir"
-    [[ "${_pwd_dir}" == "~" ]] && _pwd_dir="~/";  # We match '/' so it must be there
-    declare -g _pwd_name="${_pwd_dir##*/}";       # == "dir"
-    _pwd_dir="${_pwd_dir%/*}";                    # == "~/example"
-#    1>&2 echo "DEBUG: _pwd=\"${_pwd}\" _pwd_dir=\"${_pwd_dir}\" _pwd_name=\"${_pwd_name}\"";
+  # Working dir
+  declare -g _pwd_dir="${PWD/#"${HOME}"/"~"}" # == "~/example/dir"
+  [[ "${_pwd_dir}" == "~" ]] && _pwd_dir="~/" # We match '/' so it must be there
+  declare -g _pwd_name="${_pwd_dir##*/}"      # == "dir"
+  _pwd_dir="${_pwd_dir%/*}"                   # == "~/example"
+  #    1>&2 echo "DEBUG: _pwd=\"${_pwd}\" _pwd_dir=\"${_pwd_dir}\" _pwd_name=\"${_pwd_name}\"";
 
-    # Add git repo
-    declare -g _git_col="";
-    declare -g _git_repo="$(git rev-parse --show-toplevel 2> /dev/null)";
-    if [[ -n "$_git_repo" ]]; then
-      if [[ "$_git_repo" == "$(pwd)" ]]; then
-        _git_repo="";
-      else
-        _git_repo=" $(basename "$_git_repo")";
-        # Light blue italic text
-        _git_col="${text_ib}";
-      fi
-    fi
-
-    # Add virtual env
-    if [[ -n "$VIRTUAL_ENV" ]]; then
-      declare -g _venv_dir="$(dirname "$VIRTUAL_ENV")"; # TODO use bash internals
-      declare -g _venv_base="$(basename "$VIRTUAL_ENV")";
+  # Add git repo
+  declare -g _git_col=""
+  declare -g _git_repo="$(git rev-parse --show-toplevel 2>/dev/null)"
+  if [[ -n "$_git_repo" ]]; then
+    if [[ "$_git_repo" == "$(pwd)" ]]; then
+      _git_repo=""
     else
-      :;
-      #declare -g _venv_base='';
-      #declare -g _venv_dir='';
+      _git_repo=" $(basename "$_git_repo")"
+      # Light blue italic text
+      _git_col="${text_ib}"
     fi
+  fi
 
-    # Add 'dirs' count
-    declare -g _dirs_count="$(dirs -0 -v)"; # == " 2 /home/example"
-    _dirs_count="${_dirs_count/ [^0-9]*/}";  # == "2"
+  # Add virtual env
+  if [[ -n "$VIRTUAL_ENV" ]]; then
+    declare -g _venv_dir="$(dirname "$VIRTUAL_ENV")" # TODO use bash internals
+    declare -g _venv_base="$(basename "$VIRTUAL_ENV")"
+  else
+    :
+    #declare -g _venv_base='';
+    #declare -g _venv_dir='';
+  fi
 
-    # Command counters and bash version
-    #  \[${text_dim}\]\! \# \s\V\[${text_normal}\] (\l)
+  # Add 'dirs' count
+  declare -g _dirs_count="$(dirs -0 -v)" # == " 2 /home/example"
+  _dirs_count="${_dirs_count/ [^0-9]*/}" # == "2"
 
-    # TODO Move this out of funciton. Is static anyway
-    declare -r _new_before_git_ps1='\[${text_bdy}\]\D{%F} \[${text_bly}\]\A\[${text_normal}\]$([[ -n "$VIRTUAL_ENV" ]] && printf " \[${text_purple}\]${_venv_dir}/\[${text_normal}${text_blp}\]${_venv_base}\[${text_normal}\]")\[${text_dim}\] \u ⌂ \H\[${text_normal}\]\n\[${text_italic}${text_blue}\]${_pwd_dir}/\[${text_blb}\]${_pwd_name}\[${text_normal}\]$(((_dirs_count!=0))&&printf " %s" "\[${text_bb}\]<\[${text_blb}\]$((_dirs_count+1))\[${text_bb}\]>\[${text_normal}\]")';
-    declare -r _new_after_git_ps1=' $(((\j!=0))&&printf "\[${text_bc}\][\[${text_blc}\]\j\[${text_bc}\]]\[${text_normal}\] ")\[${text_normal}\]\[${text_normal}\]\[${text_brightwhite}${text_dim}\]\! \[${text_normal}${text_brightblack}\]\# $( (($_prompt_ret!=0)) && printf "\[${text_br}\]($((${_prompt_ret}))) " || printf "\[${text_bg}\]")\$›\[$text_normal\] ';
-    declare -r _new_git_ps1_format=' (\[${text_dim}$text_white\]$(git config --get user.name)\[${text_normal}\]\[${_git_col}\]$_git_repo\[$text_green\]⎇\[${text_normal}\]  %s)';
-#    declare _ret="$?";
-    # Termcap for bold text has a fallthrough in the __git_ps1 format string
-    __git_ps1 "$_new_before_git_ps1" "$_new_after_git_ps1" "$_new_git_ps1_format";
+  # Command counters and bash version
+  #  \[${text_dim}\]\! \# \s\V\[${text_normal}\] (\l)
 
-    # if [[ "${IFS}" != $' \t\n' ]] || (( RANDOM%10 == 0 )); then
-    #   declare col;
-    #   if [[ "${IFS}" != $' \t\n' ]]; then
-    #     col="${text_blr}";
-    #   else
-    #     col="${text_dim}";
-    #   fi
-    #   echo
-    #   echo "${col}Prompt: Currently ${IFS@A}${text_normal}";
-    #   echo
-    # fi
-  }
+  # TODO Move this out of funciton. Is static anyway
+  declare -r _new_before_git_ps1='\[${text_bdy}\]\D{%F} \[${text_bly}\]\A\[${text_normal}\]$([[ -n "$VIRTUAL_ENV" ]] && printf " \[${text_purple}\]${_venv_dir}/\[${text_normal}${text_blp}\]${_venv_base}\[${text_normal}\]")\[${text_dim}\] \u ⌂ \H\[${text_normal}\]\n\[${text_italic}${text_blue}\]${_pwd_dir}/\[${text_blb}\]${_pwd_name}\[${text_normal}\]$(((_dirs_count!=0))&&printf " %s" "\[${text_bb}\]<\[${text_blb}\]$((_dirs_count+1))\[${text_bb}\]>\[${text_normal}\]")'
+  declare -r _new_after_git_ps1=' $(((\j!=0))&&printf "\[${text_bc}\][\[${text_blc}\]\j\[${text_bc}\]]\[${text_normal}\] ")\[${text_normal}\]\[${text_normal}\]\[${text_brightwhite}${text_dim}\]\! \[${text_normal}${text_brightblack}\]\# $( (($_prompt_ret!=0)) && printf "\[${text_br}\]($((${_prompt_ret}))) " || printf "\[${text_bg}\]")\$›\[$text_normal\] '
+  declare -r _new_git_ps1_format=' (\[${text_dim}$text_white\]$(git config --get user.name)\[${text_normal}\]\[${_git_col}\]$_git_repo\[$text_green\]⎇\[${text_normal}\]  %s)'
+  #    declare _ret="$?";
+  # Termcap for bold text has a fallthrough in the __git_ps1 format string
+  __git_ps1 "$_new_before_git_ps1" "$_new_after_git_ps1" "$_new_git_ps1_format"
+
+  # if [[ "${IFS}" != $' \t\n' ]] || (( RANDOM%10 == 0 )); then
+  #   declare col;
+  #   if [[ "${IFS}" != $' \t\n' ]]; then
+  #     col="${text_blr}";
+  #   else
+  #     col="${text_dim}";
+  #   fi
+  #   echo
+  #   echo "${col}Prompt: Currently ${IFS@A}${text_normal}";
+  #   echo
+  # fi
+}
 
 # The other bash prompt parts
-  # After the input
-  PS0="\[$text_normal\]";
-  # Secondary prompt
-  PS2="\[$text_user\]›\[${text_normal}\]";
-  # Select prompt
-  declare -x PS3="${text_user_hard}№›${text_normal} ";
+# After the input
+PS0="\[$text_normal\]"
+# Secondary prompt
+PS2="\[$text_user\]›\[${text_normal}\]"
+# Select prompt
+declare -x PS3="${text_user_hard}№›${text_normal} "
 
-source -- ~/.bash_aliases;
-source -- ~/.bash_aliases_local || true; # Dynamically created by dotfiles/run.sh
+# ╭────────────────────────────────────────────────────────────╮
+# │ Aliases                                                    │
+# ╰────────────────────────────────────────────────────────────╯
 
-if command -v mcfly &> /dev/null; then
-  # Doing this twice leads to errors!
-  eval -- "$(mcfly init bash)";
-fi
-
-# Env
-declare -gx RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep.conf";
+source -- ~/.bash_aliases
+source -- ~/.bash_aliases_local || true # Dynamically created by dotfiles/run.sh
 
 # ╭────────────────────────────────────────────────────────────╮
 # │ Programs                                                   │
 # ╰────────────────────────────────────────────────────────────╯
 
+# ── mcfly bash history search ─────────────────────────────────
+if command -v mcfly &>/dev/null; then
+  # Doing this twice leads to errors!
+  eval -- "$(mcfly init bash)"
+fi
+
+# ── ripgrep ───────────────────────────────────────────────────
+declare -gx RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep.conf"
+
 # ── Delta (git-deltaa) ────────────────────────────────────────
 # Start out enabled, toggle using an alias by setting to "+" instead.
-declare -x DELTA_FEATURES="+side-by-side";
+declare -x DELTA_FEATURES="+side-by-side"
+
+# ╭────────────────────────────────────────────────────────────╮
+# │ Caps Lock Remap                                            │
+# ╰────────────────────────────────────────────────────────────╯
+
+# Maps CAPS_LOCK presses to produce ESC effect instead. Pressing SHIFT-CAPS_LOCK
+# produces the regular CAPS_LOCK effect.
+
+# On Ubuntu <= 24: Activatd through dot/bashrc_personal when opening terminal
+# for the first time.
+#command setxkbmap -option -option caps:escape_shifted_capslock
+
+# Ony Ubuntu 25: For Wayland use "gnome-tweaks" applicaiton to configure.
+# Note: writing /etc/default/keyboard only affects tty for some reason.
 
 # ╭────────────────────────────────────────────────────────────╮
 # │                                                            │
 # ╰────────────────────────────────────────────────────────────╯
-
-# Maps CAPS_LOCK presses to produce ESC effect instead. Pressing SHIFT-CAPS_LOCK
-# produces the regular CAPS_LOCK effect. The effect is system-wide, opening any
-# bash terminal will (re-)activate it.
-# Ony Ubuntu 25 with wayland use "gnome-tweaks" instead (writing
-# /etc/default/keyboard only affects tty for some reason).
-#command setxkbmap -option -option caps:escape_shifted_capslock
 
 # This would remap ü to _ system wide. But does not map Ü. Maybe we later map
 # both. May be annoying to type them afterwards. I think setxkbmap cannot do

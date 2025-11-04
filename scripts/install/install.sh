@@ -216,7 +216,7 @@ install_nvim() {
     return
   fi
 
-  declare -r link="https://github.com/neovim/neovim-releases/releases/download/v0.11.1/nvim-linux-x86_64.deb"
+  declare -r link="https://github.com/neovim/neovim-releases/releases/download/v0.11.4/nvim-linux-x86_64.deb"
   declare filename
   filename="$(command basename "$link")"
   declare -r filename
@@ -224,7 +224,7 @@ install_nvim() {
   pushd ~/Downloads || return
   command wget -q --show-progress --https-only -c "$link"
   declare check="false"
-  checksum_verify_sha256 check "8d4405e1b5912340eff4976da6a9bd44cc1f63cc049d749453391e70d9182ca1  $filename"
+  checksum_verify_sha256 check "31c064bfce880426a739eae598b9216e83c16598dde07fbc5892fd27e8fdf53a  $filename"
 
   if [[ "$check" != "true" ]]; then
     command mv -vf "$filename" "${filename}.bad"

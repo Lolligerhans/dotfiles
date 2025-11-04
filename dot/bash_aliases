@@ -9,7 +9,10 @@
 # │ Aliases to replace their original command                  │
 # ╰────────────────────────────────────────────────────────────╯
 
-alias python="python3"
+# Decide later which one we want
+alias python='python3'
+alias py='python3'
+alias p3='python3'
 
 # ╭────────────────────────────────────────────────────────────╮
 # │ Runscripts                                                 │
@@ -211,6 +214,17 @@ alias svg='eog'
 # ╭────────────────────────────────────────────────────────────╮
 # │ system                                                     │
 # ╰────────────────────────────────────────────────────────────╯
+
+alias ven='source ./venv/bin/activate'
+
+# Activate a python virtual environment
+# $1 (optional): Path to venv. Has a default value.
+function venv() {
+  declare -r path="${1:?"./venv/bin/activate"}"
+  # shellcheck disable=SC1090 # No static path that could be checked
+  # FIXME: Returns nonzero (?)
+  source "$path"
+}
 
 alias bat="batcat"
 alias iftop='sudo iftop -c $HOME/.iftoprc'
@@ -518,6 +532,7 @@ alias Dot='pushd ~/dotfiles'
 alias DOT='Dotr; Dot'
 alias dotr='cd ~/workspace/dotfiles-repo'
 alias Dotr='pushd ~/workspace/dotfiles-repo'
+alias des='cd ~/Desktop'
 alias muse='cd ~/Documents/MuseScore4/Scores'
 
 alias fin='find . -iname'

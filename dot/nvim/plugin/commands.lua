@@ -9,7 +9,6 @@
 -- vim.cmd([[echo "functions.lua: Now loading"]])
 
 vim.api.nvim_create_user_command("Dig", [[lua require("functions/digraphs").dig()]], {})
-
--- vim.api.nvim_create_user_command("Put", function(opts)
---   require("functions/digraphs").put(opts.fargs[1])
--- end, { nargs = 1 })
+vim.api.nvim_create_user_command("Put", function(args)
+  require("functions/digraphs").put(args["args"])
+end, { nargs = "?" })

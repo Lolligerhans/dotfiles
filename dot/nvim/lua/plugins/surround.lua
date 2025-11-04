@@ -19,8 +19,8 @@ return {
         insert_line = false,
         normal = "ß",
         normal_cur = "ßß", -- Use double ßß to be consistent with "dd", etc.
-        normal_line = "gßß", -- (Consider visual mode ßß)
-        normal_cur_line = "gß", -- (Consider visual-line mode ß)
+        normal_line = "gß", -- (Consider visual mode ßß)
+        normal_cur_line = "gßß", -- (Consider visual-line mode ß)
         visual = "ß",
         visual_line = "ßß",
         delete = "dß",

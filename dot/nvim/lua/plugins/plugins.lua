@@ -244,19 +244,18 @@ return {
 
   {
     "folke/snacks.nvim",
-    ---@type snacks.Config
-    opts = {
-      dashboard = {
-        -- your dashboard configuration comes here
-        -- or leave it empty to use the default settings
-        -- refer to the configuration section below
-        preset = {
-          header = require("plugins/util/logo").random("pieces"),
-          -- header = [[
-          --         I am a happy header]],
-        },
-      },
-    },
+    ---@param _ any
+    ---@param opts type snacks.Config
+    opts = function(_, opts)
+      opts.dashboard.preset.header = require("plugins/util/logo").random("pieces")
+      table.insert(
+        opts.dashboard.preset.keys,
+        { icon = " ", key = "h", desc = "LazyHealth", action = ":LazyHealth" }
+      )
+    end,
+    -- opts = {
+    --   dashboard = {},
+    -- },
   },
 
   -- ╭───────────────────────────────────────────────────────────────────────────╮
@@ -289,11 +288,6 @@ return {
 
   {
     "preservim/tagbar",
-  },
-
-  {
-    -- This plugin maps normal mode "gS" to split/join arguments over lines
-    "FooSoft/vim-argwrap",
   },
 
   -- List:

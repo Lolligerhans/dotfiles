@@ -5,8 +5,6 @@
 # Our vim
 .nvimrc
 .vimrc
-Session.vim
-Session_active.vim
 
 # Our tags
 tags

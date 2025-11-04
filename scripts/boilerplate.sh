@@ -338,15 +338,16 @@ command_print_commands() {
   return 0
 }
 
-# Completion verifier
-# Takes name of a command WITHOUT prefix "command_" and outputs "true" when
-# a help string exists, "false" otherwise.
-# This is based on the convention that commmands use set_args fully when they
-# specify a help string. It is needed to know if a function can safely be called
-# with --completion without having to try the function itself.
-# TODO Not used anywhere (!?)
+# Test if a command can be called with "--autocomplete" as argument. Dy
+# convention, commands opt in to this behaviour by having defined a help string
+# to be used with set_args, since set_args also handles the --autocomplete
+# argument.
 command_has_completion() {
-  declare -r cmd="${1:?"FUNCNAME: Missing input parameter 1"}"
+  declare cmd="${1:?"FUNCNAME: Missing name of the command to check"}"
+  # Indication an option with starting dash "-" by convention
+  if [[ "${cmd:0:1}" == "-" ]]; then cmd="default"; fi
+  declare -r cmd
+
   if [[ -v "${cmd}_help_string" ]]; then
     printf -- "true"
   else
@@ -366,8 +367,11 @@ function subcommand() {
     command_default
 
   elif [[ "${1:0:1}" == "-" ]]; then
-    # Allow only passing "--help" (and other options) by implying default
-    # command. Is more intuitive. We cannot start our command names with a dash.
+    # Interpret starting dashes as options (see: set_args) to the 'default'
+    # command. This allows omitting a command and only passing options like
+    # "--help" to the runscript.
+    # In return we cannot start our command names with a dash.
+    # The 'command_has_completion' helper uses the same convention.
     command_default "${@:1}"
 
   elif [[ "$(type -t "command_$1")" == "function" ]]; then

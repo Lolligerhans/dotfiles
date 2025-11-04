@@ -13,6 +13,8 @@ vim.g.snacks_animate = false
 -- │ Look/Display                                                              │
 -- ╰───────────────────────────────────────────────────────────────────────────╯
 
+o.scrolloff = 9 -- At most 9 lineas above/below the cursor when scrolling
+
 o.cursorline = true
 o.cursorlineopt = "both"
 o.cursorcolumn = true
@@ -63,7 +65,7 @@ o.guicursor = "n-v-c:block,"
 -- TODO: filetype plugin indent detection on
 --       treat .sh as bash, .test .inc as c++
 o.path:append({ "**" })
-o.wildignore:append({ "tags", "Session.vim", "Session_active.vim", ".git" })
+o.wildignore:append({ "tags", ".git" })
 o.wildignorecase = true
 o.fileignorecase = true
 o.makeprg = "./run.sh build"

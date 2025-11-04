@@ -458,8 +458,7 @@ generate_single_ssh_keypair() {
   declare file="$f"
 
   declare comment=""
-  # FIXME I think this _C and $C stuff does not work as intended
-  [[ "$C" != "false" ]] && comment="-C $C"
+  if [[ "$C" != "false" ]]; then comment="-C $C"; fi
 
   # TODO Use $silent?
 
@@ -476,9 +475,9 @@ generate_single_ssh_keypair() {
   pushd ~/.ssh/
   errchoi "Creating ssh key pair [$@]"
   # shellcheck disable=SC2086
-  ssh-keygen -N "" -t "$type" -f "$file" $comment # Split words in $comment
+  command ssh-keygen -N "" -t "$type" -f "$file" $comment # Split words in $comment
   # shellcheck disable=SC2010
-  ls -alF | grep --color=auto -F "$file"
+  command ls -alF | grep --color=auto -F "$file"
   popd
 }
 

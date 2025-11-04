@@ -901,6 +901,7 @@ command_info() {
   fi
   if [[ "$inet" == "true" ]]; then
     { print_and_execute sudo netstat -ltnp; } >>"$info_path"
+    { print_and_execute ifconfig; } >>"$info_path"
   fi
 
   batcat "$info_path"

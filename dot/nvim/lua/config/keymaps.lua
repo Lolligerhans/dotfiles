@@ -30,8 +30,15 @@ m.set({ "", "!", "l" }, "<F32>", "<C-F8>", { remap = true })
 -- │ Replacements / Changes                                                    │
 -- ╰───────────────────────────────────────────────────────────────────────────╯
 
--- Replaced with our own (remains at <leader>ff)
-m.del("n", "<leader><leader>")
+-- Replaced with our own in fzf.lua (remains at <leader>ff). If we were to
+-- delete it here, that would overwrite the plugin keymap, too!
+-- m.del("n", "<leader><leader>")
+
+-- ╭───────────────────────────────────────────────────────────╮
+-- │ Build and Run                                             │
+-- ╰───────────────────────────────────────────────────────────╯
+
+m.set("n", "<leader>cE", "<cmd>%source<cr>", { remap = false, desc = "Soruce current buffer" })
 
 -- ╭───────────────────────────────────────────────────────────╮
 -- │ Debug Adapter Protocol                                    │
@@ -59,7 +66,7 @@ end)
 -- Terminating nvim-dap often leaves the virtual tesxt
 m.set("n", "<leader>dR", "<cmd>DapVirtualTextForceRefresh<cr>", {
   remap = false,
-  desc = "Refresh DAP virtual text",
+  desc = "Refresh virtual text",
 })
 -- m.set("n", "<leader>b", function()
 --   require("dap").toggle_breakpoint()
@@ -127,18 +134,16 @@ m.set("n", "<C-F4>", "<cmd>bo cw|n<cr>", { remap = false, desc = "arg next" })
 -- ╰───────────────────────────────────────────────────────────────────────────╯
 
 -- FIXME: None of these mappings work with flash.nvim
--- FIXME: Using only the single-letter mappings does not enable using
---        double-bracket movements in operator-pending mode.
 -- FIXME: None of these work in "replace-pending" mode
 
 -- Try mapping öäÖÄ to produce []{} always, except for i_CTRL-V
 -- m.set({ "", "!", "l" }, "<c-c>", "<esc>", { desc = "[Esc]" })
 m.set({ "", "!", "l", "t", "o" }, "ö", "[", { remap = true })
+m.set({ "", "!", "l", "t", "o" }, "ä", "]", { remap = true })
 m.set({ "", "!", "l", "t", "o" }, "Ö", "{", { remap = true })
+m.set({ "", "!", "l", "t", "o" }, "Ä", "}", { remap = true })
 m.set({ "", "!", "l", "t", "o" }, "öö", "[[", { remap = true })
 m.set({ "", "o" }, "ää", "]]", { remap = true })
-m.set({ "", "!", "l", "t", "o" }, "ä", "]", { remap = true })
-m.set({ "", "!", "l", "t", "o" }, "Ä", "}", { remap = true })
 m.set({ "i" }, "ÖÖ", "{{", { remap = true }) -- for imap {{
 m.set({ "i" }, "ÄÄ", "}}", { remap = true }) -- for imap }}
 m.set({ "!", "l", "t" }, "ü", "_", { remap = true })
@@ -149,7 +154,13 @@ m.set("n", "<c-q>", ":q<cr>", { desc = "Close window hard" })
 m.set("n", "<leader>Q", ":sus<cr>", { remap = false, desc = "suspend" })
 m.set("n", "<leader>qQ", ":qa<cr>", { remap = false, desc = "Quit hard" })
 
-m.set("n", "<leader>;", ":enew|pu=execute(':help')<c-f>T:ve", { remap = false, desc = "Capture :command output" })
+-- This trick allowing to capture the output of a command is now moved to the
+-- new usercommand 'Put'. Try it out using ':Put ls'. It does the same as our
+-- userdefined ':Dig', but allowing to specify the executed command flexibly.
+-- NOTE We needed to do this to free the "<leader>;" keybind for buffer lines
+--      search, good synergy with the LazyVim default <leader>, which searches
+--      the buffer list.
+-- m.set("n", "<leader>;", ":enew|pu=execute(':help')<c-f>T:ve", { remap = false, desc = "Capture :command output" })
 
 m.set("n", "<leader>qw", "<cmd>xa<cr>", { remap = false, desc = "Write & Quit" })
 
@@ -159,7 +170,7 @@ m.set("n", "<leader>qw", "<cmd>xa<cr>", { remap = false, desc = "Write & Quit" }
 
 m.set("i", "<F1>", "<nop>", { remap = false }) -- Remove nvim default mapping
 -- Use ":h makeprg" in .nvim.lua of any given project
-m.set("n", "<F1>", "<cmd>make|bo cw<cr>", { remap = false })
+m.set("n", "<F1>", "<cmd>cclose<cr><cmd>make|bo cw<cr>", { remap = false })
 m.set("n", "<F2>", "<cmd>bo split term://./run.sh<cr>", { remap = false })
 
 -- Delete errors for Shellcheck error code under cursor
@@ -331,7 +342,8 @@ m.set({ "n", "v" }, "gwW", "<cmd>s/.\\{80}\\zs/\\r/g<cr>", { remap = false, desc
 -- m.set("n", "<c-h>", "<cmd>bN<cr>", { remap = false, desc = "Tab before" })
 -- m.set("n", "<c-l>", "<cmd>bn<cr>", { remap = false, desc = "Tab next" })
 
--- Traverse changelist with <A-i> and <A-o>. Similar to the jumplist.
+-- Traverse changelist with <A-I> and <A-O> (Alt + capital A/O). Similar to the
+-- jumplist.
 m.set("n", "<A-O>", "g;", { remap = false, desc = "Previous change" })
 m.set("n", "<A-I>", "g,", { remap = false, desc = "Next change" })
 
@@ -397,10 +409,23 @@ m.set({ "n" }, "<leader>pc", "<cmd>TSContextToggle<cr>", { remap = false, desc =
 -- editor.fzf (except the ones not startign with <leader> because we overwrite
 -- them here).
 m.set({ "i", "c", "l" }, "<c-f>", "<cmd>FzfLua complete_path<cr>", { remap = false, desc = "Complete path" })
+m.set({ "n" }, "<leader>Fa", "<cmd>FzfLua global<cr>", { remap = false, desc = "Find anything" })
 m.set({ "n" }, "<leader>Ff", "<cmd>FzfLua files<cr>", { remap = false, desc = "Find file" })
 m.set({ "n" }, "<leader>Fb", "<cmd>FzfLua buffers<cr>", { remap = false, desc = "Find buffer" })
-m.set({ "n" }, "<leader>Ft", "<cmd>FzfLua btags<cr>", { remap = false, desc = "Search buffer tags" })
-m.set({ "n" }, "<leader>FT", "<cmd>FzfLua tags<cr>", { remap = false, desc = "Search tags (.tags)" })
+-- m.set({ "n" }, "<leader>Ft", "<cmd>FzfLua btags<cr>", { remap = false, desc = "Search buffer tags" })
+m.set(
+  { "n" },
+  "<leader>Ft",
+  -- "<cmd>FzfLua btags<cr>",
+  function()
+    require("fzf-lua").btags()
+  end,
+  { remap = false, desc = "Search buffer tags" }
+)
+-- m.set({ "n" }, "<leader>FT", "<cmd>FzfLua tags<cr>", { remap = false, desc = "Search tags (.tags)" })
+m.set({ "n" }, "<leader>FT", function()
+  require("fzf-lua").tags()
+end, { remap = false, desc = "Search tags (.tags)" })
 m.set({ "n" }, "<leader>Fl", "<cmd>FzfLua lines<cr>", { remap = false, desc = "Search loaded buffers" })
 -- Double FF is simple easy to type. No mnemonic meaning.
 m.set({ "n" }, "<leader>FF", "<cmd>FzfLua blines<cr>", { remap = false, desc = "Search buffer" })
@@ -433,12 +458,14 @@ m.set(
 m.set({ "n" }, "<leader>Fq", "<cmd>FzfLua quickfix<cr>", { remap = false, desc = "Search quickfix window" })
 m.set({ "n" }, "<leader>FR", "<cmd>FzfLua resume<cr>", { remap = false, desc = "Resume last FzfLua" })
 -- Remaps to more conventient key combinations:
-m.set({ "n" }, "<leader><leader>", "<leader>Ff", { remap = true, desc = "Find file" })
 m.set({ "n" }, "<leader><C-space>", "<leader>FL", { remap = true, desc = "Search lines (ripgrep)" })
+-- Synergizes with LazyVim's <leader>, for searching the buffer list
+m.set({ "n" }, "<leader>;", "<leader>FF", { remap = true, desc = "Search buffer lines" })
 m.set({ "n" }, "ü", "<leader>Ft", { remap = true, desc = "Search tags (buffer)" })
 m.set({ "n" }, "Ü", "<leader>FT", { remap = true, desc = "Search tags (.tags)" })
 -- The "g" modifier searches for the cursor word directly
 m.set({ "n" }, "gü", "<cmd>FzfLua tags_grep_cword<cr>", { remap = false, desc = "Search cursor tag" })
+-- Prefixing tag searches with <leader> uses LSP document/workspace symbols instead of ctags / .tags
 m.set({ "n" }, "<leader>ü", "<leader>Fü", { remap = true, desc = "Search document symbols" })
 m.set({ "n" }, "<leader>Ü", "<leader>FÜ", { remap = true, desc = "Search workspace symbols" })
 
@@ -454,9 +481,6 @@ m.set({ "n" }, "<leader>uH", "<cmd>NoiceHistory<cr>G", { remap = false, desc = "
 m.set("n", "<leader>mh", "<cmd>NoiceHistory<cr>G", { remap = false, desc = "Message history" })
 m.set("n", "<leader>ml", "<cmd>Noice last<cr>", { remap = false, desc = "Last message" })
 m.set("n", "<leader>uN", "<cmd>Noice disable<cr>", { remap = false, desc = "Noice disable" })
-
--- ArgWrap
-m.set("n", "gS", ":ArgWrap<CR>", { remap = false, desc = "(Un)wrap args" })
 
 -- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Digraphs / Symbols                                                        │

@@ -2,6 +2,13 @@
 
 # version 0.0.0
 
+# FIXME: There appears to be a bug when running
+#     set_args "--test=default --help --"
+# and invoking as
+#     command_example -- --help
+# where "--help" should be the value for the defaulted --test as if provided as
+# "--test=--help". But the special case for --help is executed instead.
+
 # Allow && || for debugging:
 # shellcheck disable=2015
 

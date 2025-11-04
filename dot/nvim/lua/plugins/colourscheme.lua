@@ -3,8 +3,7 @@
 -- catppuccin
 -- https://github.com/morhetz/gruvbox
 
-return
-{
+return {
   -- { "morhetz/gruvbox" },
   -- {
   --   "navarasu/onedark.nvim",

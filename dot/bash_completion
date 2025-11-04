@@ -3,8 +3,7 @@
 # NOTE: This file is sourced by bash automatically from ~/.bash_completion. If
 #       that did not happen we could source it manually over bashrc.
 
-_supercd_completion()
-{
+_supercd_completion() {
   if ((${#COMP_WORDS[@]} != 2)); then return; fi
 
   #>&2 printf "\n[command] find . -maxdepth 2 -type d -iregex %s\n" ".*${COMP_WORDS[1]}.*";
@@ -32,82 +31,96 @@ complete -F _supercd_completion ",";
 # │ Runscripts                                                                 │
 # ╰────────────────────────────────────────────────────────────────────────────╯
 
-# Bash completion for default runscripts (and its aliased uses)
-#   ~/dotfiles/scripts/run_script.sh
-_runscript_completion()
-{
-  declare -r path="${1:-"./run.sh"}";
-  declare -r params_cmd="${2:-""}";
-  declare IFS=$'\n';
-  if (( "${#COMP_WORDS[@]}" == 2 )); then
-    COMPREPLY=($(compgen -W "$(2>/dev/null "$path" "print_commands")" -- "${COMP_WORDS[1]}"));
+_runscript_completion() {
+  # NOTE:We made sure that the runscript boilerplate outputs on stderr only.
+  #      Therefore we can cleanly capture command outputs by suppressing stderr
+  #      and capturing stdin.
 
-    # Add --parameter completion if requested (used for the help alias)
-    if [[ -n "$params_cmd" ]]; then
-      COMPREPLY+=($(compgen -W "$(2>/dev/null "$path" "$params_cmd" "--autocomplete")" -- "${COMP_WORDS[-1]}"));
-    fi
-  else
-  # Replace 'else' with contition if completion can be called with 1 or fewer words:
-  #elif(( "$#COMP_WORDS[@]}" > 2 )); then
-
-    if [[ -n "$params_cmd" ]]; then
-      # Spacial case for help command: Complete second arg with --params ONLY, no
-      # fallbacks.
-      COMPREPLY=($(compgen -W "$(2>/dev/null "$path" "$params_cmd" "--autocomplete")" -- "${COMP_WORDS[-1]}"));
-    else
-      # Normal case:
-      # Complete as parameter when startign with dash "-" and possible. Else
-      # complete with readline default.
-      if [[ -z "${COMP_WORDS[-1]}" ]]; then
-        COMPREPLY=($(compgen -o default));
-      else
-        # FIXME This is dangerous when the command doesnt expect this and is just
-        # executed. Instead, test if the command has a help_string and only THEN
-        # generate autocompletion.
-        if [[ "$(2>/dev/null "$path" has_completion "${COMP_WORDS[1]}")" == "true" ]]; then
-          # 1>&2 "DOING completion for ${COMP_WORDS[1]}";
-          COMPREPLY=($(compgen -o default -W "$(2>/dev/null "$path" "${COMP_WORDS[1]}" "--autocomplete")" -- "${COMP_WORDS[-1]}"));
-        else
-          # TODO Use default completion in this case
-
-          # Avoid calling commands that dont expect to e queried for completion
-          # information. By convention, help strings are only present with
-          # available completion.
-          1>&2 printf "\n%s\n" "dot/bash_completion: Suppressing completion for command ${COMP_WORDS[1]} without help-string";
-        fi
-        # TODO Complete non-option parameters with paths and files after equals ign "=".
-      fi
-    fi
+  declare -r path="${1:-"./run.sh"}"
+  declare -r runscript_command="${COMP_WORDS[1]:-""}"
+  declare -r to_be_completed="${COMP_WORDS[$COMP_CWORD]}"
+  declare gen_command="$runscript_command"
+  if [[ "${runscript_command:0:1}" == "-" ]]; then
+    gen_command="default"
   fi
+  declare -r gen_command
+  declare has_completion=""
+  # TODO: Move the has_completion command from a command to a function. We do
+  #       not want to autocomplete it or users to call it, generally.
+  has_completion="$(2>/dev/null "$path" "has_completion" "${gen_command}")"
+  declare -r has_completion
+
+  declare IFS=$'\n'
+
+  # Case 1: Complete explicit command arguments. Arguments always start with
+  # a dash.
+  if [[ "${to_be_completed:0:1}" == "-" ]]; then
+    if [[ "$has_completion" == "true" ]]; then
+      COMPREPLY=($(compgen -o default -W "$(2>/dev/null "$path" "$gen_command" "--autocomplete")" -- "${to_be_completed}"))
+    else
+      # NOTE: Important to prevent running a command by accident from the
+      #       completion script.
+      1>&2 echo "bash_completion: No completion available for command '$gen_command'"
+    fi
+    return
+  fi
+
+  # Case 2: Completing the command itself
+  if ((COMP_CWORD == 1)); then
+    COMPREPLY=($(compgen -W "$(2>/dev/null "$path" "print_commands")" -- "${to_be_completed}"))
+    return
+  fi
+
+  if [[ "$runscript_command" == "help" ]]; then
+    # The "help" command gets special treatment by always completing by
+    # abailable command names.
+    COMPREPLY=($(compgen -W "$(2>/dev/null "$path" "print_commands")" -- "${to_be_completed}"))
+    return
+  fi
+
+  if [[ -z "${to_be_completed}" ]]; then
+    COMPREPLY=($(compgen -o default))
+    return
+  fi
+
+  # Users need to type the first dash manually to enable options completion
+  if [[ "$has_completion" == "true" ]]; then
+    COMPREPLY=($(compgen -o default -W "$(2>/dev/null "$path" "$gen_command" "--autocomplete")" -- "${to_be_completed}"))
+  else
+    1>&2 echo "bash_completion: No completion available for command '$gen_command'"
+    COMPREPLY=($(compgen -o default -- "$to_be_completed"))
+  fi
+  # TODO: Complete non-option parameters with paths and files after equals ign "=".
 }
+
 _e_completion() { _runscript_completion; }
 _q_completion() { _runscript_completion ./run.sh help; }
 _E_completion() { _runscript_completion ~/dotfiles/run.sh; }
-complete -o nosort -F _e_completion e;
-complete -o nosort -F _q_completion q;
-complete -o nosort -F _e_completion ./run.sh;
-complete -o nosort -F _E_completion E;
+# TODO: -o fullquote does not work
+complete -o nosort -F _e_completion e
+complete -o nosort -F _q_completion q
+complete -o nosort -F _e_completion ./run.sh
+complete -o nosort -F _E_completion E
 
 # Bash completion for some of the aliases specified by dotfiles
-_wW_completion()
-{
+_wW_completion() {
   if [ "${#COMP_WORDS[@]}" != "2" ]; then
     return
   fi
 
-  declare flag="${1:-""}";
-  declare IFS=$'\n';
+  declare flag="${1:-""}"
+  declare IFS=$'\n'
 
   # keep the suggestions in a local variable
   declare word_list
-  word_list="$(fc "-${flag}l" -50 | sed -e 's/^[[:blank:]]*//' -e 's/\t/ /g')";
+  word_list="$(fc "-${flag}l" -50 | sed -e 's/^[[:blank:]]*//' -e 's/\t/ /g')"
 
   # Block obsolete because better early processing
   #>&2 echo "WORDLIST [with whitespace] (${#word_list[@]}): [${word_list/+( )/_}]";
   # Replace the leading spaces that fc introduces for no reason
   #word_list="$(sed -ze 's/\n/✖/g' -e 's/✖[[:space:]]*/✖/g' -e 's/✖/\n/g' <<< "$word_list")";
-  >&2 echo "WORDLIST [wi/o whitespace] (${#word_list[@]}): [${word_list}]";
-  >&2 echo "INPUT comp_words: [${COMP_WORDS[1]}]";
+  >&2 echo "WORDLIST [wi/o whitespace] (${#word_list[@]}): [${word_list}]"
+  >&2 echo "INPUT comp_words: [${COMP_WORDS[1]}]"
 
   declare -a suggestions=($(compgen -W "$word_list" -- "${COMP_WORDS[1]}"))
 
@@ -115,9 +128,9 @@ _wW_completion()
 
   #>&2 echo "(${#suggestions[@]} suggestions)";
   if [ "${#suggestions[@]}" -eq "1" ]; then
-    (( $# == 0 )) &&
+    (($# == 0)) &&
       declare number="${suggestions[0]/%% */}" ||
-      declare number="${suggestions[0]}";
+      declare number="${suggestions[0]}"
     #>&2 echo "Using single match: [$number]";
     COMPREPLY=("$number")
     # >&2 IFS="•" eval 'echo "RETURNING: [${COMPREPLY[*]}]"';
@@ -133,26 +146,26 @@ _wW_completion()
 
   fi
 }
-_w_completion() { _wW_completion; };
-_W_completion() { _wW_completion n; };
-complete -F _w_completion w;
-complete -F _W_completion W;
+_w_completion() { _wW_completion; }
+_W_completion() { _wW_completion n; }
+complete -F _w_completion w
+complete -F _W_completion W
 
 # ╭────────────────────────────────────────────────────────────────────────────╮
 # │ Git completion                                                             │
 # ╰────────────────────────────────────────────────────────────────────────────╯
 
-declare -x GIT_COMPLETION_SHOW_ALL="1"; # --allow-empty
-declare -x GIT_COMPLETION_IGNORE_CASE="1";
+declare -x GIT_COMPLETION_SHOW_ALL="1" # --allow-empty
+declare -x GIT_COMPLETION_IGNORE_CASE="1"
 
 # This file is symlinked by the install script
-source ~/.local/share/git-completion.bash;
-__git_complete a git_add;
-__git_complete co git_checkout;
-__git_complete c git_commit;
-__git_complete C git_commit;
-__git_complete di git_diff;
-__git_complete dis git_diff;
-__git_complete die git_diff;
+source ~/.local/share/git-completion.bash
+__git_complete a git_add
+__git_complete co git_checkout
+__git_complete c git_commit
+__git_complete C git_commit
+__git_complete di git_diff
+__git_complete dis git_diff
+__git_complete die git_diff
 
 # vim: ft=bash

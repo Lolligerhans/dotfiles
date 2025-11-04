@@ -8,8 +8,6 @@
 /data
 
 # Editing artifacts
-Session.vim
-Session_active.vim
 tags
 *.swp
 

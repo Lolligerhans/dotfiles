@@ -63,7 +63,7 @@ math.randomseed(os.time())
 ---@param n number Number of elements to select
 ---@return table # Table of n randomly selected elements
 function Select_n(some_table, n)
-  print("logo.lua: Selecting from table with size", #some_table)
+  -- print("logo.lua: Selecting from table with size", #some_table)
   local selected = {}
   for _ = 1, n do
     local rand = math.random(#some_table)

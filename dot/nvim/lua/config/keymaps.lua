@@ -410,13 +410,18 @@ m.set({ "n" }, "<leader>pc", "<cmd>TSContextToggle<cr>", { remap = false, desc =
 
 -- ── FzfLua ─────────────────────────────────────────────────
 -- F (fzf) Find file/buffer (<c-x>, <c-v>, <c-t> to split, vert, tab open them).
--- We place all the things we like under <leader>f, mimicking LazyVim's
+-- We place all the things we like under <leader>F, mimicking LazyVim's
 -- <leader>f. Practically we use LazyVim mappings by activating LazyExtras
--- editor.fzf (except the ones not startign with <leader> because we overwrite
+-- editor.fzf (except the ones not starting with <leader> because we overwrite
 -- them here).
 m.set({ "i", "c", "l" }, "<c-f>", "<cmd>FzfLua complete_path<cr>", { remap = false, desc = "Complete path" })
 m.set({ "n" }, "<leader>Fa", "<cmd>FzfLua global<cr>", { remap = false, desc = "Find anything" })
 m.set({ "n" }, "<leader>Ff", "<cmd>FzfLua files<cr>", { remap = false, desc = "Find file" })
+m.set({ "n" }, "<leader>Fp", function()
+  -- Includes hidden files tracked by git. Includes tracked files within
+  -- dirrectories listed in .gitignore.
+  require("fzf-lua").git_files()
+end, { remap = false, desc = "Find project file" })
 m.set({ "n" }, "<leader>Fb", "<cmd>FzfLua buffers<cr>", { remap = false, desc = "Find buffer" })
 -- m.set({ "n" }, "<leader>Ft", "<cmd>FzfLua btags<cr>", { remap = false, desc = "Search buffer tags" })
 m.set(

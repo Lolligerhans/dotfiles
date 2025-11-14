@@ -57,7 +57,7 @@ symlink_bashrc() {
 
   # Prevent sourcing of .bash_aliases. Hope to prevent sourcing the aliases
   # symlink before our dopt/bashrc_personal has sourced dot/git-completion.bash.
-  sed -i -e '/\(\.\|source\) .*\.bash_aliases/ s/^[^#]/:; # [aliases handled by dotfiles] &/' "$brcp"
+  sed -i -e '/\(\.\|source\) .*\.bash_aliases\( \|$\)/ s/^[^#]/:;\n# [aliases handled by dotfiles] &/' "$brcp"
 
   if grep -q -F "$brcl" "$brcp"; then
     echo "skip"

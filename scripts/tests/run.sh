@@ -60,7 +60,12 @@ command_default() {
   set_args "--help" "$@"
   eval "$get_args"
 
-  subcommand test --automated
+  # Pass --show to the execute_test helper. In the root rundir we use
+  #     test --all
+  # to be thorough when we expect success. Here we run only automatic tests and
+  # print outputs of failed tests because we want to use this default command
+  # when developing new tests.
+  subcommand test --automated -- --show
 
   # test_string_to_array
   # utils_test

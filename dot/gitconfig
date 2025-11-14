@@ -65,8 +65,11 @@
 	cif = commit -m "Fix"
 	cifu = commit --fixup
 	ciane = commit --amend --no-edit
-	cire = commit --reedit-message
+	# cir = commit re{use,edit} messages
+	cire = commit --reedit-message # <commit>
+	ciru = commit --reuse-message # <commit>
 	cirh = commit --reuse-message=HEAD
+	ciruh = commit --reuse-message=HEAD
 	cireh = commit --reedit-message=HEAD
 
 	# Fetch variants
@@ -252,7 +255,7 @@
 	# first line). We configure the colours for diff-highlight and use
 	# '--diff-highlight' to apply them in delta.
 	# All our pagers:
-	#  - diff-highlight | less -rFX
+	#  - diff-highlight | less -RFX
 	#  - delta --color-only
 	# TODO: Can we convince delta to ignore indentation changes?
 	pager = delta --diff-highlight
@@ -318,7 +321,7 @@
 	singlekey = true # Accept by single key stroke, without enter
 	# All our filters:
 	#  - delta --color-only --diff-highlight --features=interactive
-	#  - diff-highlight | less -rFX
+	#  - diff-highlight | less -RFX
 	# Using delta pager for better word-diffing and whitespace errors.
 	diffFilter = delta --color-only --diff-highlight --features=interactive
 
@@ -350,10 +353,10 @@
 [pager]
 	# Overwrite the global pager setting from [core] if needed. The
 	# [interactive] section has its own diffFilter setting.
-	#diff = diff-highlight | less -rFX
-	#show = diff-highlight | less -rFX
+	#diff = diff-highlight | less -RFX
+	#show = diff-highlight | less -RFX
 	# In log --graph -p, git-delta pager doesnt work, so we fallback
-	#log = diff-highlight | less -rFX
+	#log = diff-highlight | less -RFX
 
 [pull]
 	ff = only

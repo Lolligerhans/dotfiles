@@ -673,7 +673,8 @@ show_file_lines() {
 #  errchoi "Versioning available"
 #}
 if ((_run_config["versioning"] == 0)); then
-  errchow "Boilerplate: Versions not checked"
+  # errchow "Boilerplate: Versions not checked"
+  :
 fi
 
 ################################################################################

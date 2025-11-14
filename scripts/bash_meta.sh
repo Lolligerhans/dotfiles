@@ -167,3 +167,29 @@ show_variable() {
   #       work for string variables as well.
   echoi "${_ref_sv_348u928374[@]@A}"
 }
+
+# $1: one SIGNAL. See tap -l.
+# $2: New trap handler to prepend. Not ending with semicolon
+#
+#     trap 'echo ohnoes' ERR
+#     trap_prepend ERR "echo second nose"
+trap_prepend() {
+  declare -r signal="${1:?Missing signal}" # ERR or EXIT or INT or ...
+  declare current_trap=""
+  current_trap="$(trap -p -- "${signal}")"
+  # Start format:
+  #     trap -- 'quoted '\''string' ERR
+  current_trap="${current_trap#trap -- }"
+  current_trap="${current_trap% "$signal"}"
+  # Here this format:
+  #     'quoted '\''string'
+
+  # Unwrap the quoting layer used by bash. Presumably bash guarantees it to be
+  # suitable as input.
+  eval "current_trap=$current_trap"
+  # Here this format:
+  #     quoted 'string
+  new_trap="${2:?Missing command}; ${current_trap}"
+
+  trap -- "$new_trap" "$signal"
+}

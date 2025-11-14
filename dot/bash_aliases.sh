@@ -30,6 +30,7 @@ alias Q='./run.sh interactive'
 # ╰────────────────────────────────────────────────────────────╯
 
 alias g='git'
+alias gx='git annex'
 # TODO We wanted this as git alias 'git reb' but did not know how
 # Git reset backwards
 reb() { git reh "HEAD~${1:-1}"; }
@@ -157,7 +158,7 @@ alias ga='git rev-list --date-order --all' # `ga -3` to list newest 3 commits
 # If the <commit> exclusion is error prone we can also remote it later since
 # cherry-picking should just be a NOP typically.
 gas() {
-  # $1: commit (defaut: HEAD)
+  # $1: commit (defaut: HEAD), passed to git rev-list
   # $2: --options for git rev-list
   ga --since="$(_commit_time "${1:-HEAD}")" --not "${1:-HEAD}" "${@:2}"
 }
@@ -170,7 +171,8 @@ alias gash='gas HEAD' # Allows easier gash --reverse when scripting, like ga -3
 pi() {
   # $1: count (default: 1)
   # $2: --options for git cherry-pick
-  git pi $(ga --reverse -"${1:-1}") "${@:2}"
+  # shellcheck disable=SC2046 # Use word splitting
+  git cherry-pick $(ga --reverse -"${1:-1}") "${@:2}"
 }
 
 # "Pick since"
@@ -183,9 +185,10 @@ pi() {
 # changes are disruptive, build in dev and pick in live using 'pi <count>' or
 # 'pis <hash>' by deducing count/hash from 'alias s' and 'alias ss'..
 pis() {
-  # $1: commit (default: HEAD)
+  # $1: commit (default: HEAD), passed to git rev-list
   # $2: --options for git cherry-pick
-  git pi $(gas "${1:-HEAD}" --reverse) "${@:2}"
+  # shellcheck disable=SC2046 # Use word splitting
+  git cherry-pick $(gas "${1:-HEAD}" --reverse) "${@:2}"
 }
 
 # ╭────────────────────────────────────────────────────────────╮
@@ -553,11 +556,12 @@ function FF() {
 }
 
 # A couple mappings for our fzf wrapper 'find_file' (see find_file --help).
-declare f
-for f in f fp d fd fh dh fph dh fdh ff ffp dd ffd ddh ffh ffph ddh ffdh; do
+declare dotfiles_alias_autogen
+for dotfiles_alias_autogen in f fp d fd fh dh fph dh fdh ff ffp dd ffd ddh ffh ffph ddh ffdh; do
   # shellcheck disable=SC2139
-  alias "${f}"="_find_file_alias ${f}"
+  alias "${dotfiles_alias_autogen}"="_find_file_alias ${dotfiles_alias_autogen}"
 done
+unset dotfiles_alias_autogen
 
 # Helper to make the logic of the aliases more clear
 # Required format:

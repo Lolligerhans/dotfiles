@@ -10,6 +10,7 @@
 bash_meta_test() {
   test_silencing
   test_bash_at_AQ
+  test_trap_prepend
 }
 
 test_silencing() {
@@ -55,4 +56,30 @@ test_bash_at_AQ() {
   declare -r slash="'"
   assert_eq "${quote[@]@Q}" "${solutions["quote"]}" "@Q must quote single quotes"
   assert_eq "${double_quote[@]@Q}" "${solutions["double_quote"]}" "@Q must quote double quotes"
+}
+
+test_trap_prepend() {
+  declare original=""
+  original="$(trap -p ERR)"
+
+  # Test adding a non-first trap
+  (
+    assert_not_eq "$(trap -p ERR)" "" "Subshell keeps traps"
+    trap - ERR
+    assert_eq "$(trap -p ERR)" "" "Reset the ERR trap for this test"
+    trap -- 'echo hi' ERR
+    assert_eq "$(trap -p ERR)" "trap -- 'echo hi' ERR" "Trap before prepend (is - should)"
+    trap_prepend "ERR" "echo lo"
+    assert_eq "$(trap -p ERR)" "trap -- 'echo lo; echo hi' ERR" "Adding a non-first trap works"
+  )
+  assert_eq "$(trap -p ERR)" "$original" "Outer trap remains unchanged"
+
+  # Test adding the first trap
+  (
+    assert_not_eq "$(trap -p ERR)" "" "Subshell keeps traps"
+    trap - ERR
+    assert_eq "$(trap -p ERR)" "" "Reset the ERR trap for this test"
+    trap_prepend "ERR" "echo lo"
+    assert_eq "$(trap -p ERR)" "trap -- 'echo lo; ' ERR" "Ading a first trap works"
+  )
 }

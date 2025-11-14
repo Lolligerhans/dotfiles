@@ -51,12 +51,13 @@ shopt -s nullglob
 # TODO consider shopt -s xpg_echo
 IFS=$'\n\t'
 
-# Remove warnings mannually if behaviour is intended
 if [[ ! "${dotfiles}" -ef "${HOME}/dotfiles" ]]; then
-  1>&2 printf "%s\n" "[!] Loading external dotfiles $dotfiles"
+  # 1>&2 printf "%s\n" "[!] Loading external dotfiles $dotfiles"
+  :
 fi
 if [[ -v DOTFILES ]]; then
-  1>&2 printf "%s\n" "[!] Receiving from temporary dotfiles=$dotfiles"
+  # 1>&2 printf "%s\n" "[!] Receiving from temporary dotfiles=$dotfiles"
+  :
 fi
 if [[ -z "${dotfiles}" ]] || ((${#dotfiles} < 5)); then
   1>&2 printf "%s\n" "[!] dotfiles='$dotfiles', aborting."
@@ -297,7 +298,9 @@ command_rundir() {
   subcommand runscript "${1:?"${FUNCNAME[0]}: Missing input parameter 1"}/run.sh" "${@:2}"
 }
 command_runscript() {
-  if (($# < 1)); then abort "Usage: $text_bi$0$text_normal runscript ${text_italic}path/script.sh$text_normal"; fi
+  if (($# < 1)); then
+    abort "Usage: $text_bi$0$text_normal runscript ${text_italic}path/script.sh$text_normal"
+  fi
   if [[ ! -e "$1" ]]; then abort "${FUNCNAME[0]}: No such file: $1"; fi
 
   command "$1" "${@:2}"
@@ -379,8 +382,8 @@ function subcommand() {
     "command_${1}" "${@:2}"
 
   else
-    subcommand help "${@:1}"
-    abort "Command not found: ${*:1}"
+    subcommand help --match="${*:1:1}"
+    abort "Command not found: ${*:1:1}"
   fi
 }
 

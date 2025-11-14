@@ -5,6 +5,9 @@ return {
     dependencies = { "nvim-tree/nvim-web-devicons" },
 
     opts = {
+      -- NOTE: LSP workspace symbols only choose LSP belonging to the current
+      --       file. For example, using it from within LUA can not find bash
+      --       symbols.
 
       -- BUG: I believe when I turn the default no-hscroll option on, some of
       --      the fallbacks for lsp_workspace_symbols are no longer included.
@@ -43,6 +46,20 @@ return {
 
     keys = {
       {
+        "<leader><leader>",
+        "<cmd>FzfLua git_files<cr>",
+        mode = "n",
+        remap = false,
+        desc = "Find anything",
+      },
+
+      --[[
+      -- 'global' searches only from current directory but I kinda liked the
+      -- project search by default. Current directory seearch is mapped
+      -- separately. Note FzfLua does not do project files, we rely on LazyVim
+      -- default keymap selecting its own picker, enabled via the fzf-lua
+      -- LazyExtra.
+      {
         -- Substitutes the LazyVim default which does file search only
         "<leader><leader>",
         "<cmd>FzfLua global<cr>",
@@ -50,17 +67,7 @@ return {
         remap = false,
         desc = "Find anything",
       },
-
-      -- NOTE: This was a test that is now part of the regular keymaps
-      -- {
-      --   "<localleader>f",
-      --   function()
-      --     require("fzf-lua").tags({ fzf_opts = { ["--no-hscroll"] = true } })
-      --   end,
-      --   mode = "n",
-      --   remap = false,
-      --   desc = "Test hscrolling",
-      -- },
+      --]]
     },
 
     -- opts = {

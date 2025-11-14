@@ -141,6 +141,8 @@ command_install() {
     ["vundle"]="install_vundle"
   )
 
+  declare -i did_anything=0
+
   declare arg="" func=""
   declare -i exit_code
   for arg in "${!install_functions[@]}"; do
@@ -156,8 +158,12 @@ command_install() {
       else
         echow "Install failed: ${arg//_/-}" | tee -a "$logfile"
       fi
+      ((did_anything = 1))
     fi
   done
+  if ((did_anything == 0)); then
+    echow "Install did nothing" | tee -a "$logfile"
+  fi
 }
 
 command_symlink() {
@@ -206,11 +212,14 @@ command_symlink() {
     ["vimrc"]="symlink_vimrc"
   )
 
+  declare -i did_anything=0
+
   declare arg="" func=""
   declare -i exit_code
   for arg in "${!symlink_functions[@]}"; do
     declare -n _arg="$arg" # Reference the variable created by set_args.
     if [[ "$all" == "true" || "$_arg" == "true" ]]; then
+      echol "Symlinking ${arg//_/-}..." | tee -a "$logfile"
       func="${symlink_functions["$arg"]}"
       {
         may_fail exit_code -- "$func"
@@ -220,8 +229,12 @@ command_symlink() {
       else
         echow "Symlink failed: ${arg//_/-}" | tee -a "$logfile"
       fi
+      ((did_anything = 1))
     fi
   done
+  if ((did_anything == 0)); then
+    echow "Symlink did nothing" | tee -a "$logfile"
+  fi
 }
 
 command_add_credentials() {

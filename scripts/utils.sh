@@ -124,6 +124,7 @@ function abort() {
 #                    echoi (info): Log information from the code context that is
 #                    relevant, like variable contents, decisions, ...
 # TODO Use printf, probably faster
+# FIXME: Cannot print "-e" because echo has no -- option
 echod() { echo "[${text_italic}DEBUG${text_normal}]" "$@"; }
 echoe() { echo "${text_br}[${text_blr}ERROR${text_br}]$text_normal" "$@"; }
 # shellcheck disable=SC2145
@@ -165,6 +166,7 @@ _echoInfo() {
 }
 echoK() { _echoInfo echok "$@"; }
 echoL() { _echoInfo echol "$@"; }
+echoE() { _echoInfo echoe "$@"; }
 echoT() { _echoInfo echot "$@"; }
 
 function print_and_execute() {

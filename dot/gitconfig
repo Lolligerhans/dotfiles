@@ -390,7 +390,7 @@
 	# Behaves like --recursive for fetch, checkout, ...
 	; recurse = false
 
-[url "git@github.com"]
+[url "github.com"]
 	# Replaces https clones with ssh automatically
 	#insteadOf = "https://github.com/"
 	# Replaces only when pushing

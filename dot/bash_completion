@@ -60,7 +60,7 @@ _runscript_completion() {
     else
       # NOTE: Important to prevent running a command by accident from the
       #       completion script.
-      1>&2 echo "bash_completion: No completion available for command '$gen_command'"
+      1>&2 echo "bash_completion: No completion available for option '$gen_command'"
     fi
     return
   fi

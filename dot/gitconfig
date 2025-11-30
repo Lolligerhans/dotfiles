@@ -66,11 +66,11 @@
 	cifu = commit --fixup
 	ciane = commit --amend --no-edit
 	# cir = commit re{use,edit} messages
-	cire = commit --reedit-message # <commit>
-	ciru = commit --reuse-message # <commit>
-	cirh = commit --reuse-message=HEAD
-	ciruh = commit --reuse-message=HEAD
-	cireh = commit --reedit-message=HEAD
+	cire = commit --reset-author --reedit-message # <commit>
+	ciru = commit --reset-author --reuse-message # <commit>
+	cirh = commit --reset-author --reuse-message=HEAD
+	ciruh = commit --reset-author --reuse-message=HEAD
+	cireh = commit --reset-author --reedit-message=HEAD
 
 	# Fetch variants
 	# Use fp/fu: 'git fu dev:dev' to update local branch 'dev'
@@ -305,7 +305,7 @@
 	prompt = false
 
 [fetch]
-	recurseSubmodules = "on-demand"
+	; recurseSubmodules = "on-demand"
 
 [help]
 	autocorrect = prompt
@@ -388,7 +388,7 @@
 
 [submodule]
 	# Behaves like --recursive for fetch, checkout, ...
-	recurse = true
+	; recurse = false
 
 [url "git@github.com"]
 	# Replaces https clones with ssh automatically

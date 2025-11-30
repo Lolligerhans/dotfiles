@@ -212,20 +212,20 @@ deploy_test() {
   [[ -L "$test_dir/abc" ]]
   #assert_eq "$(sed -nie '$=' -- "$test_dir/abc")" "1" "1.: Deploying as link is basically just a file with 1 line"
 
-  &>/dev/null subcommand run "$dotfiles" deploy "--file=$dotfiles/snippets/runscript.sh" "--dir=$test_dir" --name=abc --yes <<<"y"
+  &>/dev/null subcommand rundir "$dotfiles" deploy "--file=$dotfiles/snippets/runscript.sh" "--dir=$test_dir" --name=abc --yes <<<"y"
   ((show_results)) && ls -alF "$test_dir"
   [[ -L "$test_dir/abc" ]]
   #assert_eq "$(sed -ne '$=' -- "$test_dir/abc")" "1" "2.: Deploying as link is basically just a file with 1 line"
 
   # TODO Detect if the commands consumed stdin
 
-  &>/dev/null subcommand run "$dotfiles" deploy --copy=true "--file=$dotfiles/snippets/runscript.sh" "--dir=$test_dir" --name=abc_copy --yes <<<"y"
+  &>/dev/null subcommand rundir "$dotfiles" deploy --copy=true "--file=$dotfiles/snippets/runscript.sh" "--dir=$test_dir" --name=abc_copy --yes <<<"y"
   ((show_results)) && ls -alF "$test_dir"
   [[ -f "$test_dir/abc" ]]
   #assert_not_eq "$(sed -ne '$=' "$test_dir/abc")" "1" "3.: Deploying as copy produces more lines"
   #head -v "$test_dir/abc_copy"
 
-  &>/dev/null subcommand run "$dotfiles" deploy --copy=true "--file=$dotfiles/snippets/runscript.sh" "--dir=$test_dir" --name=abc_copy --yes <<<"y"
+  &>/dev/null subcommand rundir "$dotfiles" deploy --copy=true "--file=$dotfiles/snippets/runscript.sh" "--dir=$test_dir" --name=abc_copy --yes <<<"y"
   ((show_results)) && ls -alF "$test_dir"
   [[ -f "$test_dir/abc" ]]
   #assert_not_eq "$(sed -ne '$=' "$test_dir/abc")" "1" "4.: Deploying as copy produces more lines"

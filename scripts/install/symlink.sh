@@ -71,68 +71,68 @@ symlink_bashrc() {
 }
 
 symlink_btopconf() {
-  subcommand run "$dotfiles" deploy --yes --keep \
+  subcommand rundir "$dotfiles" deploy --yes --keep \
     --file="$dotfiles/dot/btop.conf" --dir="${HOME}/.config/btop"
 }
 
 symlink_ectags() {
   errchoe "Deprecated because exuberant ctags is outdated. Use symlink_uctags instead."
-  subcommand run "$dotfiles" deploy --yes --keep \
+  subcommand rundir "$dotfiles" deploy --yes --keep \
     --file="$dotfiles/dot/ctags" --name=".ctags" --dir="$HOME"
 }
 
 symlink_uctags() {
-  # subcommand run "$dotfiles" deploy --yes --keep \
+  # subcommand rundir "$dotfiles" deploy --yes --keep \
   #   --file="$dotfiles/dot/ignore.ctags" --dir="$HOME/.config/ctags"
-  # subcommand run "$dotfiles" deploy --yes --keep \
+  # subcommand rundir "$dotfiles" deploy --yes --keep \
   #   --file="$dotfiles/dot/langmap.ctags" --dir="$HOME/.config/ctags"
 
   # linnking to ~/.config/ctags/ used to work but current it does not. Per
   # readme on GitHub only ~/.ctags.d/ is considered.
 
-  subcommand run "$dotfiles" deploy --yes --keep \
+  subcommand rundir "$dotfiles" deploy --yes --keep \
     --file="$dotfiles/dot/ignore.ctags" --dir="$HOME/.ctags.d"
-  subcommand run "$dotfiles" deploy --yes --keep \
+  subcommand rundir "$dotfiles" deploy --yes --keep \
     --file="$dotfiles/dot/langmap.ctags" --dir="$HOME/.ctags.d"
 }
 
 symlink_gdbinit() {
-  subcommand run "$dotfiles" deploy --yes --keep \
+  subcommand rundir "$dotfiles" deploy --yes --keep \
     --file="$dotfiles/dot/gdbinit" --name=".gdbinit" --dir="$HOME/"
 }
 
 symlink_gitconfig() {
-  subcommand run "$dotfiles" deploy --yes --keep \
+  subcommand rundir "$dotfiles" deploy --yes --keep \
     --file="$dotfiles/dot/gitconfig" --name=".gitconfig" --dir="$HOME"
 }
 
 symlink_gitignore_global() {
-  subcommand run "$dotfiles" deploy --yes --keep \
+  subcommand rundir "$dotfiles" deploy --yes --keep \
     --file="$dotfiles/dot/gitignore_global" --name=".gitignore_global" --dir="$HOME"
 }
 
 symlink_iftoprc() {
-  subcommand run "$dotfiles" deploy --yes --keep \
+  subcommand rundir "$dotfiles" deploy --yes --keep \
     --file="$dotfiles/dot/iftoprc" --name=".iftoprc" --dir="$HOME"
 }
 
 symlink_inputrc() {
-  subcommand run "$dotfiles" deploy --yes --keep \
+  subcommand rundir "$dotfiles" deploy --yes --keep \
     --file="$dotfiles/dot/inputrc" --name=".inputrc" --dir="$HOME"
 }
 
 symlink_neovim() {
-  subcommand run "$dotfiles" deploy --yes --keep \
+  subcommand rundir "$dotfiles" deploy --yes --keep \
     --file="$dotfiles/dot/nvim" --dir="$HOME/.config"
 }
 
 symlink_ripgrep_config() {
-  subcommand run "$dotfiles" deploy --yes --keep \
+  subcommand rundir "$dotfiles" deploy --yes --keep \
     --file="$dotfiles/dot/ripgrep.conf" --dir="$HOME/.config"
 }
 
 symlink_shellcheck_config() {
-  subcommand run "$dotfiles" deploy --yes --keep \
+  subcommand rundir "$dotfiles" deploy --yes --keep \
     --file="$dotfiles/dot/shellcheckrc" --name=".shellcheckrc" --dir="$HOME"
 }
 
@@ -143,12 +143,12 @@ symlink_ssh_config() {
 }
 
 symlink_toprc() {
-  subcommand run "$dotfiles" deploy --yes --keep \
+  subcommand rundir "$dotfiles" deploy --yes --keep \
     --file="$dotfiles/dot/toprc" --dir="$HOME/.config/procps/"
 }
 
 symlink_vim_ftplugin() {
-  may_fail -- subcommand run "$dotfiles" deploy --yes --keep \
+  may_fail -- subcommand rundir "$dotfiles" deploy --yes --keep \
     --file="$dotfiles/dot/ftplugin" --dir="$HOME/.vim"
 }
 
@@ -173,7 +173,7 @@ symlink_vim_operatorhighlight() {
 }
 
 symlink_vimrc() {
-  subcommand run "$dotfiles" deploy --yes --keep \
+  subcommand rundir "$dotfiles" deploy --yes --keep \
     --file="$dotfiles/dot/vimrc" --name=".vimrc" --dir="$HOME"
 }
 

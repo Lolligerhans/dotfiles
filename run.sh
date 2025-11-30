@@ -74,7 +74,7 @@ command_default() {
   # set_args "--help" "$@"
   # eval "$get_args"
 
-  subcommand run scripts/tests
+  subcommand rundir scripts/tests
   # subcommand "help" "$@"
 }
 

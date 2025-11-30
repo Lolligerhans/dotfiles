@@ -281,19 +281,6 @@ command_interactive() {
   done
 }
 
-# Execute script:     runscript <file>
-# Execute from dir:   rundir <path>
-# Auto:               run <path>
-#                     run <file>
-command_run() {
-  declare name
-  name="$(basename "${1:?Missing input parameter 1}")"
-  if [[ "$name" == "run.sh" ]]; then
-    subcommand runscript "$@"
-  else
-    subcommand rundir "$@"
-  fi
-}
 command_rundir() {
   subcommand runscript "${1:?"${FUNCNAME[0]}: Missing input parameter 1"}/run.sh" "${@:2}"
 }

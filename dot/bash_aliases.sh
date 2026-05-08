@@ -1,6 +1,11 @@
-#!/bin/false
+#!/usr/bin/env false
 
 # Bash aliases, sourced in bashrc_personal
+
+# shellcheck disable=SC1008
+
+# shellcheck source=./scripts/termcap.sh
+source ~/dotfiles/scripts/termcap.sh
 
 # We reserve single-character commands for moment-to-moment workflows. If you
 # want you special short command, use a leader like "," or "+" or whatever.
@@ -21,9 +26,36 @@ alias p3='python3'
 # "Execute" command because "r" is already used by our git aliases
 alias e='./run.sh'
 alias E='~/dotfiles/run.sh'
-alias t="E run scripts/tests" # Probably remove this some time :D
+alias t="E rundir scripts/tests" # Probably remove this some time :D
 alias q='./run.sh help'
+alias qq='_dotfiles_alias_qq'
 alias Q='./run.sh interactive'
+
+_dotfiles_alias_qq() {
+  # This helper relays the user input to the appropriate "--help"-appended
+  # command of the runscript. We add completion to match that of the "e" alias
+  # runnig the runscripts. Because it can be called the same way any only adds
+  # a --help option.
+  declare -a inputs=()
+  declare used_command
+  if (($# == 0)) || [[ "${*:1:1}" == "-"* ]]; then
+    inputs=("--help" "${@}")
+    # Implicitly called later when generating with "--help", but needed to test
+    # for "has_help".
+    used_command="default"
+  else
+    inputs=("${@:1:1}" "--help" "${@:2}")
+    used_command="${*:1:1}"
+  fi
+  declare has_help
+  has_help="$(2>/dev/null ./run.sh has_completion "$used_command")"
+  if [[ "$has_help" == "true" ]]; then
+    echo "${inputs[@]@A}"
+    ./run.sh "${inputs[@]}"
+  else
+    echo "No help for ${text_bd}${text_red}${used_command}"
+  fi
+}
 
 # ╭────────────────────────────────────────────────────────────╮
 # │ git                                                        │
@@ -57,9 +89,9 @@ _toggle_delta_side_by_side() {
 }
 
 # Our symlinked 'git-completion.bash' file is sourced by our own
-# 'bash_completion' file. Default Ubuntu bashrc sources our 'bash_completion'.
-# If it did not we would have to source 'bash_completion' in our
-# 'bashrc_personal'.
+# 'bash_completion.sh' file. Default Ubuntu bashrc sources our
+# 'bash_completion.sh'. If Ubuntu did not we would have to source
+# 'bash_completion.sh' in our 'bashrc_personal'.
 __git_complete g __git_main
 
 # Returns the name of the default branch. The "default branch" concept is a bit
@@ -87,6 +119,8 @@ alias HH='git qHH'
 
 alias n='git st'
 alias m='git st --short --branch'
+alias nu='git st --untracked-files'
+alias mu='git st --short --branch --untracked-files'
 
 alias P='_toggle_delta_side_by_side; pp' # Toggles behaviour of 'pp' and 'rr'
 alias p='git q-di-p; git q-di-p2'
@@ -103,9 +137,9 @@ alias u='git add -u'
 alias c='git ci'
 alias C='_alias_git_commit_message'
 alias ca='git cia'
+alias ct='git ci -m "Tmp"'
+alias cfi='git ci -m "Fix"'
 alias cf='git cif HEAD'
-alias ct='git cit'
-alias cf='git cif'
 alias ch='git cirh'
 alias ce='git cireh' # TODO: Which one, ce or cr?
 alias cr='git cireh'
@@ -115,7 +149,7 @@ alias di='git di'
 alias dis='git dis'
 alias die='git die'
 alias dim='git di "$(__dot_default_branch)"'
-alias dims='git di "$(__dot_default_branch)" --stat'
+alias dims='git dis "$(__dot_default_branch)"'
 alias dime='git di "$(__dot_default_branch)" --no-ext-diff'
 alias dip='git di @{push}'
 alias diu='git di @{upstream}'
@@ -124,7 +158,7 @@ alias gg='cd "$(git rev-parse --show-cdup)"' # Move relative to base repo
 alias gp='git push'
 alias gpf='git push --force'
 alias gpu='git push --set-upstream'
-alias gt='git add -u && git cit; git push' # Git Tmp: update + commit as "Tmp"
+alias gt='git add -u && git ci -m "Tmp" && git push' # Git Tmp: update + commit as "Tmp"
 
 # Show commiter time of git commit (in whatever format git prefers). Helper for
 # git stuff below.
@@ -205,7 +239,7 @@ alias v='_vim_open'
 alias newvim='nvim -u NONE -U NONE -N -i NONE'
 _vim_open() {
   if (("$(jobs -p "command nvim" | command wc -l)" == 0)); then
-    command nvim "$@" || :
+    command nvim "$@" || true
   else
     fg "command nvim"
   fi
@@ -260,14 +294,14 @@ alias wget='wget -c'
 supercd() {
   if (($# == 0)); then
     declare -a _o=()
-    IFS=$'\n' _o=($(find . -path '*/.*' -prune -o -type d -print | fzf -1 --print-query --preview "ls --color=always -Fh {}"))
+    mapfile -t _o < <(find . -path '*/.*' -prune -o -type d -print | fzf -1 --print-query --preview "ls --color=always -Fh {}")
     #    >&2 echo "fzf result: [${_o[@]}]";
     if ((${#_o[@]} > 1)); then
       _p="${_o[1]}"
       if [[ -d "${_o[1]}" ]]; then
         #        >&2 echo "Directory found: ${_o[@]}";
         #        >&2 echo "Moving to: ${_p}";
-        cd "$_p"
+        cd "$_p" || return
       else
         # TODO Obsolete: using "-type d" now now
         # If fzf found something that means the user accepted the suggestion. Go
@@ -284,12 +318,12 @@ supercd() {
       fi
     else
       >&2 echo "supercd: Ony the query is left :("
-      cd "$_o" ||
+      cd "${_o[0]}" ||
         {
           ret="$?"
           #        >&2 printf "%s\n" "supercd: TODO: enter \", $_o\" for the user when this happens";
           #        set -vx
-          bind '"\e[0n": ", '"${_o}"'"'
+          bind '"\e[0n": ", '"${_o[0]}"'"'
           printf '\e[5n'
           #        set +vx;
           return "$ret"
@@ -297,7 +331,8 @@ supercd() {
       return 0
     fi
   else
-    # TODO use it as input for fzf instead
+    # TODO use $1 as input for fzf instead (?)
+    # shellcheck disable=SC2164
     cd "$1"
     declare -i ret=$?
     (($# >= 2)) && printf "%s\n" "supercd: more than one argument" >&2
@@ -326,10 +361,11 @@ export -f _preview_path # Make available for fzf
 # Wrapper for _find_file that automatically inserts "--" after the first argument
 # not starting with "-".
 find_file() {
+  declare IFS=' ' # Concatenate with spaces
   declare -i i=0
   for ((i = 1; i <= $#; i++)); do
     #echo "DEBUG testing word [${@:i:1}]";
-    if [[ ! "${@:i:1}" =~ ^- ]]; then
+    if [[ ! "${*:i:1}" =~ ^- ]]; then
       #echo "DEBUG: First non-option word: ${@:i:1}, Adding -- before ${@:i:1}";
       break
     fi
@@ -425,7 +461,7 @@ _find_file() {
   fi
   declare fzf_command="cat"
   if ((!list_only)); then
-    fzf_command=(fzf -1 --query="$fzf_query" --preview "_preview_path {}")
+    fzf_command=(fzf --no-hscroll -1 --query="$fzf_query" --preview "_preview_path {}")
   fi
 
   #>&2 echo "DEBUGGING: ${FUNCNAME[0]}: fzf_query=$fzf_query"
@@ -510,7 +546,7 @@ _find_file() {
   if ((dopushd)); then # TODO rename to dir_push?
     _pushd -- "$out"
   elif ((change)); then # TODO rename to dir_change?
-    cd -- "$out"
+    cd -- "$out" || return
   elif ((pager)); then
     if [[ -d "$out" ]]; then
       command ls --color=always -Fhl -- "$out" | batcat --color=always
@@ -631,7 +667,7 @@ _find_file_alias() {
   find_file $flags "$path" "${@}"
 }
 
-# Echo current bash directory stack
+# Print current bash directory stack
 _dirs() {
   #echoi() { command echo "$text_bly$@"; command echo; };
   declare out="" prefix=""
@@ -647,15 +683,16 @@ _dirs() {
   mapfile -t outa <<<"${out#*$'\n'}"
   #echoi ${outa[@]@A};
 
-  echo "$text_user_soft$prefix…$text_normal  ${outa[@]//"${prefix}"/…}"
+  declare IFS=' '
+  printf -- "%s\n" "$text_user_soft$prefix…$text_normal  ${outa[*]//"${prefix}"/…}"
 }
 
 _pushd() {
-  pushd "${@:-"."}" >/dev/null
+  pushd "${@:-"."}" >/dev/null || return
   _dirs
 }
 _popd() {
-  popd >/dev/null
+  popd >/dev/null || return
   _dirs
 }
 
@@ -697,7 +734,7 @@ alias lS='command ls --color=auto -Fh -A -lSr' # List by size
 alias la='command ls --color=auto -Fh -ltr' # Hide hidden files
 alias ls='command ls --color=auto -Fh -A'   # Names only (table)
 # List N last modified files with 'L -N'
-alias L='command ls --color=auto -FhA -t | head'
+alias L='command ls --color=never -FhA -t | head'
 alias tree='tree -CF'
 
 # Name matches the entry in .bash_completion
@@ -720,5 +757,11 @@ alias ,='supercd'
       --preview-window 'up,60%,border-bottom,+{2}+3/3,~3' \
       --bind 'enter:become(vim {1} +{2})'
 }
+
+_dotfiles_ping_test() {
+  ping "${1:-"1.1.1.1"}"
+}
+
+alias pingtest='_dotfiles_ping_test'
 
 # vim: set ft=bash:

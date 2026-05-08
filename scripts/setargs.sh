@@ -327,7 +327,7 @@ set_args() {
       _setargs_helpstr+=" $a"
       # We enforce to only use [a-zA-Z0-9_-] in parameter names
       sed_expression+=";s/$p=\\(\\w*\\)/$p=${text_italic}\\1${text_normal}/g" # Make value after '=' italic
-      sed_expression+=";s/$p/${name_colour}${p}${text_normal}/g"              # Make --name coloured
+      sed_expression+=";s/$p\\b/${name_colour}${p}${text_normal}/g"           # Make --name coloured
     done                                                                      # Append available parameters colourized
 
     # Append argv

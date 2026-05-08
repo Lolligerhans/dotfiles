@@ -5,4 +5,8 @@
 --    than helpful.
 -- The plugin has no way to specify disabled-by-default. Blacklisting or 'nil'
 -- strategy would make it impossible to activate later.
-require('rainbow-delimiters').disable(0)
+--
+-- Update: The operator highlighting currently has higher priority so everything
+-- works out of the box. There is no longer a need to disable rainbow.
+
+-- require('rainbow-delimiters').disable(0)

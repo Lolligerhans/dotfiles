@@ -30,7 +30,7 @@ declare -gri debug_error_routine=0 # Set by hand to debug
 
 declare -gri _error_handling_frames=99
 declare -gri _error_handling_skipnoise=0
-declare -gr _error_handling_noisepattern="@(command_run|command_rundir|command_runscript|subcommand|main)"
+declare -gr _error_handling_noisepattern="@(command_rundir|command_runscript|subcommand|main)"
 
 # ┌────────────────────────┐
 # │ Error handling         │

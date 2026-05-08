@@ -27,6 +27,8 @@ load_version "$dotfiles/scripts/utils.sh" 0.0.0
 # │ 🖩 Utils              │
 # ╰──────────────────────╯
 
+# Generates directory named by $1 if it does not exist yet. Including parent
+# directories. Prints some messages about it.
 ensure_directory() {
   if (($# != 1)); then
     abort "${FUNCNAME[0]}: Expected 1 argument, got $#"
@@ -149,24 +151,27 @@ wget_verify_sha256() {
   show_variable verify_string
 
   echol "Get: $filename ($link)"
-  pushd "${HOME}/Downloads" || return
+  # Use subshell to avoid accidental working directory change more easily
+  (
+    pushd "${HOME}/Downloads" || return
 
-  command wget --quiet --continue --show-progress "$link" || true
+    command wget --quiet --continue --show-progress --https-only "$link" || true
 
-  declare verify="false"
-  checksum_verify_sha256 verify "${verify_string}"
-  if [[ "$verify" != "true" ]]; then
-    command mv -vf "${filename}" "${filename}.bad"
-    errchoe "Failed to verify checksum"
-    return 1
-  fi
+    declare verify="false"
+    checksum_verify_sha256 verify "${verify_string}"
+    if [[ "$verify" != "true" ]]; then
+      command mv -vf "${filename}" "${filename}.bad"
+      errchoe "Failed to verify checksum"
+      return 1
+    fi
 
-  popd || return
+    popd || return
+  )
   echok Got: "$filename"
 }
 
 # $1  (out)  Output variable (set to "true" on success)
-# $2  (in)   sha256sum test string (e.g., "b94d2...7b99 test.txt")
+# $2  (in)   sha256sum test string (e.g., "b94d2...7b99  test.txt")
 # This function allows writing the result of sha256sum -c into a variable
 # (instead of returning 0 or 1).
 checksum_verify_sha256() {

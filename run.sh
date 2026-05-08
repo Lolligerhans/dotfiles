@@ -112,7 +112,7 @@ command_nvim() {
     command mv ~/.cache/nvim{."$extension",}
   fi
 
-  echon "Curretn state:"
+  echon "Current state:"
   command ls --color=auto -Fh -A -ltr ~/.config/ | command grep nvim
   command ls --color=auto -Fh -A -ltr ~/.local/share/ | command grep nvim
   command ls --color=auto -Fh -A -ltr ~/.local/state/ | command grep nvim
@@ -1070,9 +1070,6 @@ OPTIONS
 
 declare -r unun_help_string='Remove undofiles from current directory'
 
-declare -r run_help_string='Ephemeral command for whatever is required at the moment
-DESCIPTION
-  Better not rely on this command to have any specific effect.'
 declare -r test_help_string="Run tests
 SYNOPSIS
   test

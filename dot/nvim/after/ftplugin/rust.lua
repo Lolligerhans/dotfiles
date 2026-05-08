@@ -1,1 +1,1 @@
-require("rainbow-delimiters").disable(0)
+-- require("rainbow-delimiters").disable(0)

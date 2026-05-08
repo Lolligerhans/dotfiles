@@ -130,10 +130,10 @@ install_fzf() {
 }
 
 install_gcc() {
-  abort "Too cumbersome to build manually stay with 14 from apt"
+  # abort "Too cumbersome to build manually stay with 14 from apt"
   manually \
-    "Download https://ftp.gwdg.de/pub/misc/gcc/releases/gcc-15.1.0/gcc-15.1.0.tar.xz" \
-    "Verify checksum from https://ftp.gwdg.de/pub/misc/gcc/releases/gcc-15.1.0/" \
+    "Download https://ftp.gwdg.de/pub/misc/gcc/releases/gcc-15.2.0/gcc-15.2.0.tar.xz or https://ftp.gwdg.de/pub/misc/gcc/releases/gcc-15.1.0/gcc-15.1.0.tar.xz" \
+    "Verify checksum from https://ftp.gwdg.de/pub/misc/gcc/releases/gcc-15.2.0/ or https://ftp.gwdg.de/pub/misc/gcc/releases/gcc-15.1.0/" \
     "Extract with tar using -J for the .xz compression, creating the gcc-someversion/ folder"
   echok "Installed gcc 15"
 }
@@ -216,23 +216,11 @@ install_nvim() {
     return
   fi
 
-  declare -r link="https://github.com/neovim/neovim-releases/releases/download/v0.11.4/nvim-linux-x86_64.deb"
+  declare -r link="https://github.com/neovim/neovim-releases/releases/download/v0.12.0/nvim-linux-x86_64.deb"
+  wget_verify_sha256 "$link" "46418143822a6efecbf9a3a3059306bfa612f6d342a829063f667664fa502720"
   declare filename
   filename="$(command basename "$link")"
-  declare -r filename
-
-  pushd ~/Downloads || return
-  command wget -q --show-progress --https-only -c "$link"
-  declare check="false"
-  checksum_verify_sha256 check "31c064bfce880426a739eae598b9216e83c16598dde07fbc5892fd27e8fdf53a  $filename"
-
-  if [[ "$check" != "true" ]]; then
-    command mv -vf "$filename" "${filename}.bad"
-    errchoe "Failed to verify checksum"
-    return 1
-  fi
-  command sudo apt install ./"$filename" || return
-  popd
+  print_and_execute command sudo apt install ~/Downloads/"$filename" || return
 }
 
 install_tree_sitter() {

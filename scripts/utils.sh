@@ -164,9 +164,10 @@ _echoInfo() {
   # This means it is typically pointless to call this function elsewhere.
   "$1" "${text_brightblack}$(date -Iseconds) ${text_lightblue}${FUNCNAME[2]} ${text_dim}${BASH_LINENO[1]}${text_normal}" "${@:2}"
 }
+echoE() { _echoInfo echoe "$@"; }
 echoK() { _echoInfo echok "$@"; }
 echoL() { _echoInfo echol "$@"; }
-echoE() { _echoInfo echoe "$@"; }
+echoS() { _echoInfo echos "$@"; }
 echoT() { _echoInfo echot "$@"; }
 
 function print_and_execute() {
@@ -175,7 +176,7 @@ function print_and_execute() {
     return 1
   fi
 
-  echol "Executing: $(print_values "command" "$@")"
+  echoL "Executing: $(print_values "command" "$@")"
   "${@}"
 
   return "$?"

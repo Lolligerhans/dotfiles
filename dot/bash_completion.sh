@@ -87,7 +87,9 @@ _runscript_completion() {
   if [[ "$has_completion" == "true" ]]; then
     COMPREPLY=($(compgen -o default -W "$(2>/dev/null "$path" "$gen_command" "--autocomplete")" -- "${to_be_completed}"))
   else
-    1>&2 echo "bash_completion: No completion available for command '$gen_command'"
+    # If we actually want the default completion, printing this error is
+    # immensely annoying. For debugging we can enable it.
+    # 1>&2 echo "bash_completion: No completion available for command '$gen_command'"
     COMPREPLY=($(compgen -o default -- "$to_be_completed"))
   fi
   # TODO: Complete non-option parameters with paths and files after equals ign "=".
@@ -99,6 +101,7 @@ _E_completion() { _runscript_completion ~/dotfiles/run.sh; }
 # TODO: -o fullquote does not work
 complete -o nosort -F _e_completion e
 complete -o nosort -F _q_completion q
+complete -o nosort -F _e_completion qq
 complete -o nosort -F _e_completion ./run.sh
 complete -o nosort -F _E_completion E
 

@@ -25,11 +25,14 @@
 
 [alias]
 
-	# Delete branch and remote tracking branch. The 2nd argument can be used to
-	# specify a remote other than "origin".
+	# Delete both branch and remote tracking branch/tag. The 2nd argument can be
+	# used to specify a remote, defaulting to "origin".
 	#   git rmb my-branch
 	#   git rmb my-branch upstream
+	# Short for "remove branch"
 	rmb = "!_git_rmb() { git branch -d \"$1\"; git push --delete \"${2:-origin}\" \"$1\"; }; _git_rmb"
+	# Short for "remove tag"
+	rmt = "!_git_rmt() { git tag -d \"$1\"; git push --delete \"${2:-origin}\" \"$1\"; }; _git_rmt"
 
 	# Shorthands
 	bi = bisect
@@ -49,7 +52,7 @@
 
 	# Diff variants
 	die = di --no-ext-diff
-	dis = di --stat
+	dis = di --stat --dirstat=0
 	dim = di AUTO_MERGE
 	# Use --no-ext-diff because difft doesnt do word diff
 	diw = di --color-words --no-ext-diff
@@ -61,9 +64,7 @@
 
 	# Commit variants
 	cia = commit --amend
-	cit = commit -m "Tmp"
-	cif = commit -m "Fix"
-	cifu = commit --fixup
+	cif = commit --fixup # <commit>
 	ciane = commit --amend --no-edit
 	# cir = commit re{use,edit} messages
 	cire = commit --reset-author --reedit-message # <commit>
@@ -144,20 +145,23 @@
 	q-di-rw = diw --staged
 	q-di-rw2 = die --staged --stat
 
-	; Nicely formatted git stash list
+	# Nicely formatted git stash list
 	qsl = stash list \
 		--pretty=format:'%C(dim yellow)%gd %C(reset 5)(%cr) %C(auto)%s %C(8)• %an %C(reset dim)%ar'
 
-	; Nicely formatter git log
-	; Use %ar/%cr when %ah/%ch does not yet work on a platform.
+	# Nicely formatted git log
+	# Use %ar/%cr when %ah/%ch does not yet work on a platform.
+	# There is a bug that mangles the graph output with --patch. Using 'tformat'
+	# instead of 'format' as a work around because it looks like it will not be
+	# fixed.
 	qSS = log --graph --abbrev-commit \
-		--pretty=format:'%C(dim yellow)%h %C(dim cyan)(%ch) %C(auto)%s %C(8)• %an %C(reset)%C(dim)%ah%C(auto)%d' --all
+		--pretty=tformat:'%C(dim yellow)%h %C(dim cyan)(%ch) %C(auto)%s %C(8)• %an %C(reset)%C(dim)%ah%C(auto)%d' --all
 	qHH = log --graph --abbrev-commit \
-		--pretty=format:'%C(dim yellow)%h %C(dim 12)(%ch) %C(auto)%s %C(8)• %an %C(reset)%C(dim)%ah%C(auto)%d'
+		--pretty=tformat:'%C(dim yellow)%h %C(dim 12)(%ch) %C(auto)%s %C(8)• %an %C(reset)%C(dim)%ah%C(auto)%d'
 
 	# Author and committer + both times
 	lo = log --graph --abbrev-commit --decorate \
-		--format=format:'%C(yellow)%h%C(reset) %C(cyan)%ci %C(12)(%ch) %C(8)• %cn%C(reset)%C(auto)%d%C(reset)%n%C(dim)%w(,8,8)%ai (%ah) %C(reset)%C(8)• %an%C(reset)%n%C(bold)%s%n%b'
+		--format=tformat:'%C(yellow)%h%C(reset) %C(cyan)%ci %C(12)(%ch) %C(8)• %cn%C(reset)%C(auto)%d%C(reset)%n%C(dim)%w(,8,8)%ai (%ah) %C(reset)%C(8)• %an%C(reset)%n%C(bold)%s%n%b'
 
 [branch]
 	# We don't use this because we use "git s" alias to check branches, but can

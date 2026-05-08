@@ -191,7 +191,7 @@ command_help() {
       #      usage="$(subcommand "$com" "--help")"
       #      usage="$(head -n1 <<< "$usage")"
     else
-      str="$text_dim(no help available)$text_normal"
+      str="$text_dim(no --help available)$text_normal"
       #      usage=""
     fi
 
@@ -328,10 +328,17 @@ command_print_commands() {
   return 0
 }
 
-# Test if a command can be called with "--autocomplete" as argument. Dy
+# Test if a command can be called with "--autocomplete" as argument. By
 # convention, commands opt in to this behaviour by having defined a help string
 # to be used with set_args, since set_args also handles the --autocomplete
 # argument.
+# This hack is needed because we must determing whether completion exists before
+# calling the command: The completion invokes the command with just
+# "--autocomplete" which would cause the function to be run normally should
+# 'set_args' not be used. The help string makes sense only when set_args is
+# used, confirming this without having to invoke the command to test it.
+# Therefore, this function currently implies the semantics of an imaginary
+# "has_help_for" command.
 command_has_completion() {
   declare cmd="${1:?"FUNCNAME: Missing name of the command to check"}"
   # Indication an option with starting dash "-" by convention

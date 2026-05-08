@@ -7,6 +7,24 @@ local m = vim.keymap
 -- LazyVim defaults (not repeated here)
 --m.set({ "i", "x", "n", "s" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save File" })
 
+-- ╭───────────────────────────────────────────────────────────────────────────╮
+-- │ Replacements / Changes                                                    │
+-- ╰───────────────────────────────────────────────────────────────────────────╯
+
+-- Replaced with our own in fzf.lua (remains at <leader>ff). If we were to
+-- delete it here, that would overwrite the plugin keymap, too!
+-- m.del("n", "<leader><leader>")
+
+-- We replace keymaps for moving lines up and down by adding a 'Ctrl' to them. We already use the Alt based maps for
+-- fold open/close/jump.
+m.del({ "n", "i", "v" }, "<A-j>")
+m.del({ "n", "i", "v" }, "<A-k>")
+m.del({ "n", "x", "o" }, "<C-Space>")
+-- The <BS> mapping for flash.nvim treesitter selection does not show up in the output of :map. But I can use it so
+-- I guess it must be somewhere. We do not delete it because we get a "no such mapping error". I speculate that
+-- flash.nvim has its own special plugin-internal mode that does not correspond to any regular vim mode.
+-- m.del({ "n", "x", "o" }, "<BS>")
+
 -- ╭───────────────────────────────────────────────────────────╮
 -- │ Technical                                                 │
 -- ╰───────────────────────────────────────────────────────────╯
@@ -27,19 +45,11 @@ m.set({ "", "!", "l" }, "<F31>", "<C-F7>", { remap = true })
 m.set({ "", "!", "l" }, "<F32>", "<C-F8>", { remap = true })
 -- m.set({ "", "!", "l" }, "<A-ß>", "<A-Bslash>", { remap = true }) -- Did not work
 
--- ╭───────────────────────────────────────────────────────────────────────────╮
--- │ Replacements / Changes                                                    │
--- ╰───────────────────────────────────────────────────────────────────────────╯
-
--- Replaced with our own in fzf.lua (remains at <leader>ff). If we were to
--- delete it here, that would overwrite the plugin keymap, too!
--- m.del("n", "<leader><leader>")
-
 -- ╭───────────────────────────────────────────────────────────╮
 -- │ Build and Run                                             │
 -- ╰───────────────────────────────────────────────────────────╯
 
-m.set("n", "<leader>cE", "<cmd>%source<cr>", { remap = false, desc = "Soruce current buffer" })
+m.set("n", "<leader>cE", "<cmd>%source<cr>", { remap = false, desc = "Source current buffer" })
 
 -- ╭───────────────────────────────────────────────────────────╮
 -- │ Debug Adapter Protocol                                    │
@@ -147,9 +157,9 @@ m.set({ "", "!", "l", "t", "o" }, "öö", "[[", { remap = true })
 m.set({ "", "o" }, "ää", "]]", { remap = true })
 m.set({ "i" }, "ÖÖ", "{{", { remap = true }) -- for imap {{
 m.set({ "i" }, "ÄÄ", "}}", { remap = true }) -- for imap }}
-m.set({ "!", "l", "t" }, "ü", "_", { remap = true })
--- Helps with when using caps for typing macros
-m.set({ "!", "l", "t" }, "Ü", "_", { remap = true })
+m.set({ "!", "l", "t" }, "ü", "_", { remap = true }) -- Helps with snake case identifiers in python or rust
+m.set({ "!", "l", "t" }, "Ü", "_", { remap = true }) -- Helps with when using caps for typing macros
+m.set({ "!", "l", "t" }, "ß", "/", { remap = true }) -- Helps with typing paths
 -- Quitting
 m.set("n", "<c-q>", ":q<cr>", { desc = "Close window hard" })
 m.set("n", "<leader>Q", ":sus<cr>", { remap = false, desc = "suspend" })
@@ -171,15 +181,15 @@ m.set("n", "<leader>qw", "<cmd>xa<cr>", { remap = false, desc = "Write & Quit" }
 
 m.set("i", "<F1>", "<nop>", { remap = false }) -- Remove nvim default mapping
 -- Use ":h makeprg" in .nvim.lua of any given project
-m.set("n", "<F1>", "<cmd>cclose<cr><cmd>make|bo cw<cr>", { remap = false })
-m.set("n", "<F2>", "<cmd>bo split term://./run.sh<cr>", { remap = false })
+m.set("n", "<F1>", "<cmd>cclose<cr><cmd>make|bo cw<cr>", { remap = false, desc = "Build project" })
+m.set("n", "<F2>", "<cmd>bo split term://./run.sh<cr>", { remap = false, desc = "Run project" })
 
 -- Delete errors for Shellcheck error code under cursor
 m.set("n", "<leader>ces", "m`*<cmd>g//-2,+2d<cr>``", { remap = false, desc = "Code edit [s]hellcheck" })
 
 -- Git add using bash alias 'a' in the LazyVim terminal popup
 -- m.set("n", "<F5>", "<c-/>a<cr>", { remap = true, desc = "Git add" })
-m.set("t", "<esc><esc>", "<c-/><c-n>", { remap = false })
+m.set("t", "<esc><esc>", [[<C-\><C-n>]], { remap = false })
 
 -- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Windows, tabs and viewing                                                 │
@@ -187,7 +197,8 @@ m.set("t", "<esc><esc>", "<c-/><c-n>", { remap = false })
 
 -- ── Jumping and tags ───────────────────────────────────────
 m.set("n", "<A-+>", "<C-w>v*", { remap = false, desc = "Search word in split window" })
-m.set("n", "<A-9>", "<cmd>tab split<cr><C-]>zz", { remap = false, desc = "Jump to ta in new tab" })
+-- Would prefer to map "<A-9>" but that is not a thing. Test with "<C-v><A-9>".
+m.set("n", "<A-]>", "<cmd>tab split<cr><C-]>zz", { remap = false, desc = "Jump to ta in new tab" })
 
 -- ── Tabs ───────────────────────────────────────────────────
 -- Switch tabs using AltGr-h AltGr-l. The main benefit is that we can cycle n tabs
@@ -198,7 +209,7 @@ m.set("n", "ł", "gt", { remap = false, desc = "tabnext" })
 -- start a new buffer.
 m.set("n", "<c-w><c-t>", "<cmd>tab split<cr>", { remap = false, desc = "new tab" })
 
--- LazyVim defaults increases only 2 only
+-- LazyVim defaults resizes by only 2, but that is way to little
 m.del("n", "<c-left>")
 m.del("n", "<c-right>")
 m.del("n", "<c-up>")
@@ -244,6 +255,14 @@ m.set("n", "<leader>bmt", "<cmd>fin %:t:r.test<cr>", { remap = false, desc = ".t
 -- For now we will be using the default terminal mode maps for mocing etc.
 m.set("n", "<leader>wt", "<cmd>-tab terminal<cr>", { remap = false, desc = "Terminal" })
 
+-- ── Switching windows for terminal mode ────────────────────
+m.set("t", "<C-h>", [[<C-\><C-n><C-w>h]], { desc = "Go window left in terminal mode" })
+m.set("t", "<C-l>", [[<C-\><C-n><C-w>l]], { desc = "Go window right in terminal mode" })
+m.set("t", "<C-j>", [[<C-\><C-n><C-w>j]], { desc = "Go window below in terminal mode" })
+m.set("t", "<C-k>", [[<C-\><C-n><C-w>k]], { desc = "Go window above in terminal mode" })
+-- We may want wo delete words in terminal mode using this
+-- m.set("t", "<C-w><C-w>", [[<C-\><C-n><C-w><C-w>]], { desc = "Go next window in terminal mode" })
+
 -- TODO: How to define which-key group?
 m.set("n", "<leader>tc", function()
   vim.opt.cursorcolumn = not vim.opt.cursorcolumn:get()
@@ -259,6 +278,46 @@ m.set("n", "<A-k>", "zk", { remap = true, desc = "Jump to previous fold" })
 -- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Editing / Insert mode                                                     │
 -- ╰───────────────────────────────────────────────────────────────────────────╯
+
+-- ── Moving lines ───────────────────────────────────────────
+-- Restore LazyVim default key maps for moving lines, but using <c-s-j> and
+-- <c-s-k> instead of <A-j> and <A-k>, because we try to associate the alt keys
+-- with folds, and up and down are used to jump to folds. This is convenient
+-- when the folds define useful jump points, which can often be the case in long
+-- files of functions. And the foldmethod can potentially help, too. For example
+-- when using foldmethod indent.
+-- While we do not use <A-S-j> and <A-S-k> I want to keep the option open to map
+-- them to jumping folds, same as <A-j> and <A-k>.
+m.set("n", "<C-A-j>", "<Cmd>execute 'move .+' . v:count1<CR>==", {
+  remap = false,
+  desc = "Move down line",
+  silent = true,
+})
+m.set("v", "<C-A-j>", [[:<C-U>execute "'<,'>move '>+" . v:count1<CR>gv=gv]], {
+  remap = false,
+  desc = "Move down selection",
+  silent = true,
+})
+m.set("i", "<C-A-j>", [[<Esc><Cmd>m .+1<CR>==gi]], {
+  remap = false,
+  desc = "Move down cursor line",
+  silent = true,
+})
+m.set("n", "<C-A-k>", "<Cmd>execute 'move .-' . (v:count1 + 1)<CR>==", {
+  remap = false,
+  desc = "Move up line",
+  silent = true,
+})
+m.set("v", "<C-A-k>", [[:<C-U>execute "'<,'>move '<-" . (v:count1 + 1)<CR>gv=gv]], {
+  remap = false,
+  desc = "Move up selection",
+  silent = true,
+})
+m.set("i", "<C-A-k>", [[<Esc><Cmd>m .-2<CR>==gi]], {
+  remap = false,
+  desc = "Move up cursor line",
+  silent = true,
+})
 
 m.set({ "n", "v" }, "<A-s>", "s", { remap = false, desc = "Substitute" })
 
@@ -280,7 +339,7 @@ m.set("n", "<leader>d<space>", "gElcw<space><esc>", { remap = false, desc = "Shr
 m.set("i", "{{", "{<cr>}<esc>O", { remap = false, desc = "Open block line" })
 m.set("i", "{;", "{<cr>};<esc>O", { remap = false, desc = "Open block line with ;" })
 m.set("i", "{,", "{<cr>},<esc>O", { remap = false, desc = "Open block line with ," })
-m.set("i", "}}", "{<cr>}<left>", { remap = false, desc = "Open empty block line" })
+m.set("i", "}}", "<esc>]}a", { remap = false, desc = "Jump behind closing }" }) -- Use when {{ (or mini-pairs) generate two braces
 -- NOTE: This one got too annoying because we cannot close braces with  };
 --       anymore.
 -- TODO: The no-newline overloads are obsolete when using formatters. Consider
@@ -414,6 +473,10 @@ m.set({ "n" }, "<leader>pc", "<cmd>TSContextToggle<cr>", { remap = false, desc =
 -- <leader>f. Practically we use LazyVim mappings by activating LazyExtras
 -- editor.fzf (except the ones not starting with <leader> because we overwrite
 -- them here).
+m.set({ "n" }, "<leader>ß", "<cmd>FzfLua<cr>", {
+  remap = false,
+  desc = "Search FzfLua searches",
+})
 m.set({ "i", "c", "l" }, "<c-f>", "<cmd>FzfLua complete_path<cr>", { remap = false, desc = "Complete path" })
 m.set({ "n" }, "<leader>Fa", "<cmd>FzfLua global<cr>", { remap = false, desc = "Find anything" })
 m.set({ "n" }, "<leader>Ff", "<cmd>FzfLua files<cr>", { remap = false, desc = "Find file" })
@@ -513,7 +576,7 @@ m.set("i", "<c-l>", "<c-k>", { remap = false, desc = "digraph" })
 
 ---Map any text in input mode after double <C-l>
 local inputMap = function(input, output)
-  m.set({ "i" }, "<C-l><C-l>" .. input, output, { remap = false })
+  m.set({ "i", "c", "l" }, "<C-l><C-l>" .. input, output, { remap = false })
 end
 
 -- Symbol representing vertical (non-breaking) space. Use <sp><sp> or NS for the
@@ -539,9 +602,11 @@ asDigraph("fo", "128448", "🗀 folder")
 asDigraph("bo", "128366", "🕮  book")
 asDigraph("ve", "127301", "🅅 Letter v in box ('version')")
 -- xx/ok symbols in variants
-asDigraph("xx", "10006", "✕ Multipliction x")
-asDigraph("Xx", "10006", "✖ Heavy multipliction x")
+asDigraph("xx", "10006", "✖ Heavy multipliction x")
+asDigraph("Xx", "10005", "✕ Multipliction x")
 asDigraph("ok", "10004", "✔ Heavy check mark")
+asDigraph("Ok", "10003", "✓ Light check mark")
+asDigraph("tt", "10013", "✝ Cross")
 -- Emoji variants
 inputMap("xx", "✖️")
 inputMap("ok", "✔️")
@@ -551,21 +616,22 @@ asDigraph("**", "10033", "✱ Heavy Asterisk")
 asDigraph("xX", "10062", "❎")
 asDigraph("oK", "9989", "✅")
 -- emoji box empty
--- ☑️ emoji box with checkmark
+-- ☑️ emoji box with check mark
 -- Checkmark-box and empty checkmark-box
 asDigraph("bb", "9744", "☐ (box empty)")
 asDigraph("bv", "9745", "☑ (box with check mark)")
 asDigraph("bx", "9746", "☒ (box with x)")
 asDigraph("XX", "10060", "❌")
--- Underscores _ should not be useed (reserved) but we do anyway
+-- Underscores _ should not be used (reserved) but we do anyway
 asDigraph("__", "128711", "🛇")
 asDigraph("_-", "128683", "🚫")
 asDigraph("-_", "9940", "⛔  No entry sign")
 -- Ornament exclamation and question marks to mark stuff in code
-asDigraph("??", "10068", "? emoji")
-asDigraph("!!", "10069", "! emoji")
-asDigraph("?.", "10067", "? ornament")
-asDigraph("!.", "10071", "! ornament")
+asDigraph("??", "8263", "⁇ double question mark")
+asDigraph(".?", "10068", "❔ emoji")
+asDigraph(".!", "10069", "❕ emoji")
+asDigraph("?.", "10067", "❓ ornament")
+asDigraph("!.", "10071", "❗ ornament")
 asDigraph("wa", "9888", "⚠ (triangle attention sign)")
 inputMap("warning", "⚠️")
 -- git branch
@@ -604,6 +670,9 @@ asDigraph("r1", "9584", "╰")
 -- inoremap <leader>ux <c-v>u02e3
 -- inoremap <leader>uy <c-v>u02b8
 -- inoremap <leader>uz <c-v>u1db
+
+-- Math symbols
+inputMap("element", "∈") -- Digraph "(-"
 
 inputMap("wood", "🪵")
 inputMap("brick", "🧱")
@@ -672,3 +741,4 @@ m.set("i", "cosnt", "const", { remap = false })
 m.set("i", "tempalte", "template", { remap = false })
 m.set("i", "incldue", "include", { remap = false })
 m.set("i", "decalre", "declare", { remap = false })
+m.set("i", "vlaue", "value", { remap = false })

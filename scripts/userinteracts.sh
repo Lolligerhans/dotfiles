@@ -25,6 +25,12 @@ source "$dotfiles/scripts/utils.sh"
 
 # 1-tap version of boolean_prompt. Prints "true" or "false".
 # if $2 is given, output is assigned to it by reference.
+#
+# $1: Prompt text
+# $2 optional: variable to write result into
+#
+# One drawback is that this leaves the terminal's write position on the same
+# line just after the y/n type by the user.
 ask_user() {
   if (($# < 1 || 2 < $#)); then abort "Wrong usage"; fi
   declare _au_confirm_384734

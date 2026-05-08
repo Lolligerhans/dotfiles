@@ -22,6 +22,14 @@
 return {
   {
     "https://git.sr.ht/~foosoft/argonaut.nvim",
+    -- FIXME: Failed to load lazyly on keybind gS. Not sure why but loading unlazy as quickfix.
+    lazy= false,
+    opts = {
+      -- comma_last = true,
+      by_filetype = {
+        rust = { comma_last = true },
+      },
+    },
     keys = {
       {
         "gS",

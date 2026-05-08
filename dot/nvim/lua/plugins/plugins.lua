@@ -32,13 +32,13 @@ return {
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "catppuccin",
-      -- "retrobox",
-      -- "gruvbox",
-      -- "tokyonight-night",
-      -- "onedark",
-      -- "everforest",
-      -- "nightfox",
+      colorscheme = "catppuccin-nvim",
+      -- colorscheme = "retrobox",
+      -- colorscheme = "gruvbox",
+      -- colorscheme = "tokyonight-night",
+      -- colorscheme = "onedark",
+      -- colorscheme = "everforest",
+      -- colorscheme = "nightfox",
       -- {
       --   "hrsh7th/nvim-cmp",
       --   dependencies = { "hrsh7th/cmp-emoji" },

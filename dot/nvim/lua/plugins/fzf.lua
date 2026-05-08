@@ -45,6 +45,14 @@ return {
     },
 
     keys = {
+
+      -- NOTE: If we define keymaps here, no need to delete the keymap in
+      --       keymaps.lua, because we add it to the plugin configuration for
+      --       lazy.nvim, the default keymap would not be created anyway.
+
+
+      --[[
+      -- Search git files by default.
       {
         "<leader><leader>",
         "<cmd>FzfLua git_files<cr>",
@@ -52,6 +60,7 @@ return {
         remap = false,
         desc = "Find anything",
       },
+      --]]
 
       --[[
       -- 'global' searches only from current directory but I kinda liked the

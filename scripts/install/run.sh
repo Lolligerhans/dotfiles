@@ -62,7 +62,7 @@ declare -r logfile="log/install.log"
 : >"$logfile"
 
 # TODO Create global array with paths of dotfiles? Just for install runscript?
-declare -r completion_path="$dotfiles/dot/bash_completion"
+declare -r completion_path="$dotfiles/dot/bash_completion.sh"
 # Ansers HTTP 404
 #declare -r git_diff_hl_url="https://raw.githubusercontent.com/git/git/master/contrib/diff-highlight/diff-highlight"
 declare -r default_workspace_name="example"
@@ -373,8 +373,10 @@ command_install_collected_apt() {
 
     sudo apt install \
       git \
+      unzip \
       python3-venv \
       bat \
+      cmake \
       ripgrep \
       xclip \
       net-tools \
@@ -555,13 +557,14 @@ DESCRIPTION
 declare -r symlink_help_string="Symlink files
 SYNOPSIS
   symlink --all
-  symlink --which [--more, ...]
+  symlink --TARGET [--TARGETS, ...]
 DESCRIPTION
-  Symlink predefined targets to their predefined locations. The exact actions
-  are specified by the functions in 'symlink.sh'. Typically, lready existing
+  Symlink predefined targets to their predefined locations. The targets are
+  implemented by the functions in 'symlink.sh'. Typically, lready existing
   files are not replaced.
   In the first version, symlink all predefined targets.
   In the second version, symlink only the specified targets.
+  See the command function 'command_symlink' for available --target values.
 OPTIONS
   --all: Symlink all targets.
   --TARGET: Symlink the specified TARGET (hardcoded parameters)."

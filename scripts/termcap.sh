@@ -4,6 +4,8 @@
 
 # shellcheck disable=2155
 
+# See also: Manpage $(man terminfo) and $(man termcap)
+
 if [[ -v _sourced_files["termcap"] ]]; then
   return 0
 fi
@@ -114,12 +116,15 @@ readonly term_delete_line="$(tput dl1)"
 readonly term_front="$(tput cr)"
 # Doesnt work Ubuntu 22 (does it?) TODO might have beed a bug. try again
 readonly term_last_line_front="$(tput cup "$(tput lines)" 0)"
-readonly term_restore_cursor="$(tput rc)"
 readonly term_save_cursor="$(tput sc)"
+readonly term_restore_cursor="$(tput rc)"
 readonly term_scroll_backward="$(tput ri)"
 readonly term_scroll_forward="$(tput ind)"
 readonly term_up3="$(tput cuu 3)"
+readonly term_up2="$(tput cuu 2)"
 readonly term_up="$(tput cuu1)"
+readonly term_down="$(tput cud1)"
+readonly term_down2="$(tput cud 2)"
 readonly text_left1="$(tput cub1)"
 readonly term_erase_forward="$(tput ed)"
 

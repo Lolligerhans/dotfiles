@@ -72,10 +72,9 @@ provide_help() {
 # │ Help strings           │
 # └────────────────────────┘
 
-# TODO Maybe help strings should be read from files? This is starting to appear
-# sort of excessive to read every time on script startup. THe colourability is
-# nice though.
-# FIXME Yeah they should DEFINITELY not fucking hang around here.
+# TODO: Maybe help strings should be read from files? This is starting to appear
+#       sort of excessive to read every time on script startup. The
+#       colourability is nice though.
 declare -g help_help_string link_this_help_string quit_help_string interactive_help_string run_help_string rundir_help_string runscript_help_string function_help_string debug_help_string print_commands_help_string
 help_help_string="$(
   cat <<-EOF
@@ -129,9 +128,6 @@ does not go well with error tracing.
 
 interactive_help_string=$'[TODO] Start script in interactive mode
 \nShows available commands and prompts for a selection. Command arguments can be specified separately for each command'
-
-run_help_string=$'Delegate remaining arguments to different runscript
-\nProvide path to another (directory containing a) runscript to be executed.'
 
 rundir_help_string=$'Delegate remaining arguments to different runscript (directory only)
 \nProvide path to another directory containing a runscript to be executed.'

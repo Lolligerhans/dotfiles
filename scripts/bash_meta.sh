@@ -160,11 +160,24 @@ run_silent_both() {
   "${@}" >&/dev/null
 }
 
-# Show content of a variable in unambiguous way. For testing.
+# Pritns assignments of variables in an unambiguous way. For testing.
+#
+# $1: name of a variable
+# $n (optional): more names of variables
 show_variable() {
+  declare unique_name_1987341937
+  for unique_name_1987341937 in "$@"; do
+    # Helper to print content of a single variable
+    _show_variable_implementation "$unique_name_1987341937"
+  done
+}
+
+_show_variable_implementation() {
   declare -n _ref_sv_348u928374="${1:?Missing variable name}"
-  # HACK: We use the array/dictionary notation array_name[@]. This happens to
-  #       work for string variables as well.
+  (($# == 1)) || return # Sanity check: Do not attempt to pass more arguments
+  # We use the dictionary notation array_name[@]. In Bash, all variables are
+  # implicitly dictionaries. Arrays are just dictionaries using keys "0", "1",
+  # and so on. Strings are just dictionaries using key "0" exclusively.
   echoi "${_ref_sv_348u928374[@]@A}"
 }
 
@@ -179,8 +192,8 @@ trap_prepend() {
   current_trap="$(trap -p -- "${signal}")"
   # Start format:
   #     trap -- 'quoted '\''string' ERR
-  current_trap="${current_trap#trap -- }"
-  current_trap="${current_trap% "$signal"}"
+  current_trap="${current_trap#"trap -- "}"
+  current_trap="${current_trap%" $signal"}"
   # Here this format:
   #     'quoted '\''string'
 

@@ -1,5 +1,7 @@
 #!/bin/false
 
+# shellcheck disable=SC2016 # For prompt strings
+
 # ╭────────────────────────────────────────────────────────────╮
 # │ PATH                                                       │
 # ╰────────────────────────────────────────────────────────────╯
@@ -48,6 +50,7 @@ shopt -s histappend
 # ╭────────────────────────────────────────────────────────────╮
 # │ Bash prompt with git branch                                │
 # ╰────────────────────────────────────────────────────────────╯
+
 source ~/dotfiles/extern/git-prompt.sh
 # Unstaged: *
 # staged: +
@@ -82,10 +85,51 @@ source ~/dotfiles/scripts/termcap.sh
 # Termcap for bold text has a fallthrough in the __git_ps1 format string
 #  PROMPT_COMMAND='declare _ret="$?" _base="$(basename "$(git rev-parse --show-toplevel)")"; __git_ps1 "$_before_git_ps1" "$_after_git_ps1" " (\[${text_bdiw}\]$(git config --get user.name)\[$text_normal${text_blg}\]⎇  %s)"';
 
+declare -agi _timer_stack=() # Push $SECONDS incrementally using a DEBUG trap
+declare -agi _timer_diffs    # Pairwise difference of _timer_stack
+declare -gi _timer_total
+declare -g _timer_report # Relevant entries of _timer_diffs
+
+_timer_start() {
+  _timer_stack+=("$SECONDS")
+}
+
+trap '_timer_start' DEBUG
+
+_timer_stop() {
+  declare -i command_count
+  ((command_count = ${#PROMPT_COMMAND[@]}))
+  if ((command_count < 1)); then 1>&2 printf -- "%s\n" "Warning: Expected non-empty PROMPT_COMMAND"; fi
+  ((_timer_total = 0))
+  _timer_diffs=()
+  declare -i i _diff
+  for ((i = command_count; i < ${#_timer_stack[@]}; ++i)); do
+    ((diff = _timer_stack[i] - _timer_stack[i - 1]))
+    ((_timer_total += diff))
+    _timer_diffs+=("$diff")
+  done
+  _timer_stack=()
+}
+
+# declare -gr _prompt_current_date_and_time_minutes='\[${text_bdy}\]\D{%F} \[${text_bly}\]\A\[${text_normal}\]'
+declare -gr _prompt_current_date_and_time_seconds='\[${text_bdy}\]\D{%F} \[${text_bly}\]\T\[${text_normal}\]'
+declare -gr _prompt_virtual_env_indicator='$([[ -n "$VIRTUAL_ENV" ]] && printf " \[${text_purple}\]${_venv_dir}/\[${text_normal}${text_blp}\]${_venv_base}\[${text_normal}\]")'
+declare -gr _prompt_user_and_host='\[${text_dim}\] \u ⌂ \H\[${text_normal}\]'
+declare -gr _prompt_pwd='\[${text_italic}${text_blue}\]${_pwd_dir}/\[${text_blb}\]${_pwd_name}\[${text_normal}\]'
+declare -rg _prompt_dirs='$(((_dirs_count!=0))&&printf " %s" "\[${text_bb}\]<\[${text_blb}\]$((_dirs_count+1))\[${text_bb}\]>\[${text_normal}\]")'
+declare -gr _prompt_jobs='$(((\j!=0))&&printf "\[${text_bc}\][\[${text_blc}\]\j\[${text_bc}\]]\[${text_normal}\] ")\[${text_normal}\]'
+declare -gr _prompt_command_counters='\[${text_brightwhite}${text_dim}\]\! \[${text_normal}${text_brightblack}\]\#'
+declare -gr _prompt_execution_report='$( (($_prompt_ret!=0)) && printf "\[${text_br}\]${_timer_report} (${_prompt_ret})" || printf "\[${text_bg}\]${_timer_report}")'
+
 PROMPT_COMMAND='_prompt_command_wrapper'
+# shellcheck disable=SC2016 # Expansion done when the prompt is used
 _prompt_command_wrapper() {
   # Get return value first so it is the return value of the last user command
   declare -gi _prompt_ret="$?"
+
+  _timer_stop
+  printf -v _timer_report -- "%s" "${_timer_diffs[*]}"
+  _timer_report+=" Σ $_timer_total"
 
   # Working dir
   declare -g _pwd_dir="${PWD/#"${HOME}"/"~"}" # == "~/example/dir"
@@ -125,29 +169,19 @@ _prompt_command_wrapper() {
   #  \[${text_dim}\]\! \# \s\V\[${text_normal}\] (\l)
 
   # TODO Move this out of funciton. Is static anyway
-  declare -r _new_before_git_ps1='\[${text_bdy}\]\D{%F} \[${text_bly}\]\A\[${text_normal}\]$([[ -n "$VIRTUAL_ENV" ]] && printf " \[${text_purple}\]${_venv_dir}/\[${text_normal}${text_blp}\]${_venv_base}\[${text_normal}\]")\[${text_dim}\] \u ⌂ \H\[${text_normal}\]\n\[${text_italic}${text_blue}\]${_pwd_dir}/\[${text_blb}\]${_pwd_name}\[${text_normal}\]$(((_dirs_count!=0))&&printf " %s" "\[${text_bb}\]<\[${text_blb}\]$((_dirs_count+1))\[${text_bb}\]>\[${text_normal}\]")'
-  declare -r _new_after_git_ps1=' $(((\j!=0))&&printf "\[${text_bc}\][\[${text_blc}\]\j\[${text_bc}\]]\[${text_normal}\] ")\[${text_normal}\]\[${text_normal}\]\[${text_brightwhite}${text_dim}\]\! \[${text_normal}${text_brightblack}\]\# $( (($_prompt_ret!=0)) && printf "\[${text_br}\]($((${_prompt_ret}))) " || printf "\[${text_bg}\]")\$›\[$text_normal\] '
-  declare -r _new_git_ps1_format=' (\[${text_dim}$text_white\]$(git config --get user.name)\[${text_normal}\]\[${_git_col}\]$_git_repo\[$text_green\]⎇\[${text_normal}\]  %s)'
+  declare -r _new_before_git_ps1="${_prompt_pwd}${_prompt_dirs}"
+  declare -r _new_after_git_ps1=' '"${_prompt_jobs}${_prompt_command_counters}"' '"${_prompt_execution_report}"' \$›\[${text_normal}\] '
+  declare -r _new_git_ps1_format=' (\[${text_dim}${text_white}\]$(git config --get user.name)\[${text_normal}\]\[${_git_col}\]${_git_repo}\[${text_green}\]⎇\[${text_normal}\]  %s)'
   #    declare _ret="$?";
   # Termcap for bold text has a fallthrough in the __git_ps1 format string
   __git_ps1 "$_new_before_git_ps1" "$_new_after_git_ps1" "$_new_git_ps1_format"
 
-  # if [[ "${IFS}" != $' \t\n' ]] || (( RANDOM%10 == 0 )); then
-  #   declare col;
-  #   if [[ "${IFS}" != $' \t\n' ]]; then
-  #     col="${text_blr}";
-  #   else
-  #     col="${text_dim}";
-  #   fi
-  #   echo
-  #   echo "${col}Prompt: Currently ${IFS@A}${text_normal}";
-  #   echo
-  # fi
-}
+} # _prompt_command_wrapper()
 
-# The other bash prompt parts
-# After the input
-PS0="\[$text_normal\]"
+# ── The other bash prompt parts ───────────────────────────────
+# After reading the input: Scroll back and update the time
+# PS0='\[${term_restore_cursor}\]'"$_prompt_current_date_and_time_seconds"'\[${term_down2}${term_front}\]'
+PS0="${_prompt_current_date_and_time_seconds}${_prompt_virtual_env_indicator}${_prompt_user_and_host}\\n"
 # Secondary prompt
 PS2="\[$text_user\]›\[${text_normal}\]"
 # Select prompt
@@ -164,11 +198,13 @@ source -- ~/.bash_aliases_local || true # Dynamically created by dotfiles/run.sh
 # │ Programs                                                   │
 # ╰────────────────────────────────────────────────────────────╯
 
-# ── mcfly bash history search ─────────────────────────────────
-if command -v mcfly &>/dev/null; then
-  # Doing this twice leads to errors!
-  eval -- "$(mcfly init bash)"
-fi
+if true; then {
+  # ── mcfly bash history search ─────────────────────────────────
+  if command -v -- mcfly &>/dev/null; then
+    # Doing this twice leads to errors!
+    eval -- "$(mcfly init bash)"
+  fi
+}; fi
 
 # ── ripgrep ───────────────────────────────────────────────────
 declare -gx RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep.conf"

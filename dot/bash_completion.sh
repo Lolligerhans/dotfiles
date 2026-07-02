@@ -13,13 +13,13 @@ _supercd_completion() {
   # instead of ".". That way at least it doesnt search "./.git".
   declare -a list
   IFS=$'\n' list=(
-    $(find . -maxdepth 3 -type d -not -path '*/.*' -iregex ".*${COMP_WORDS[1]}.*")
+    "$(find . -maxdepth 3 -type d -not -path '*/.*' -iregex ".*${COMP_WORDS[1]}.*")"
   )
   #grep ---color=auto -e "git")\
 
   #>&2 printf "\n[list] {%s}\n" "${list[*]}";
-
-  COMPREPLY=("${list[@]#+(./)}")
+  declare IFS=" "
+  mapfile -t COMPREPLY <<<"${list[*]#+(./)}"
 
   #>&2 printf "\n[reply] {%s}\n" "${COMPREPLY[*]}";
 }
@@ -56,7 +56,7 @@ _runscript_completion() {
   # a dash.
   if [[ "${to_be_completed:0:1}" == "-" ]]; then
     if [[ "$has_completion" == "true" ]]; then
-      COMPREPLY=($(compgen -o default -W "$(2>/dev/null "$path" "$gen_command" "--autocomplete")" -- "${to_be_completed}"))
+      mapfile -t COMPREPLY < <(compgen -o default -W "$(2>/dev/null "$path" "$gen_command" "--autocomplete")" -- "${to_be_completed}")
     else
       # NOTE: Important to prevent running a command by accident from the
       #       completion script.
@@ -66,31 +66,40 @@ _runscript_completion() {
   fi
 
   # Case 2: Completing the command itself
+  # 1>&2 echo "${path@A}"
+  # 1>&2 echo "${to_be_completed@A}"
+  # 1>&2 echo "${runscript_command@A}"
+  # 1>&2 echo "${COMP_CWORD@A}"
   if ((COMP_CWORD == 1)); then
-    COMPREPLY=($(compgen -W "$(2>/dev/null "$path" "print_commands")" -- "${to_be_completed}"))
+    # 1>&2 echo DEBUG: 2
+    mapfile -t COMPREPLY < <(compgen -W "$(2>/dev/null "$path" "print_commands")" -- "${to_be_completed}")
     return
   fi
 
   if [[ "$runscript_command" == "help" ]]; then
+    # 1>&2 echo DEBUG: 3
     # The "help" command gets special treatment by always completing by
     # abailable command names.
-    COMPREPLY=($(compgen -W "$(2>/dev/null "$path" "print_commands")" -- "${to_be_completed}"))
+    mapfile -t COMPREPLY < <(compgen -W "$(2>/dev/null "$path" "print_commands")" -- "${to_be_completed}")
     return
   fi
 
   if [[ -z "${to_be_completed}" ]]; then
-    COMPREPLY=($(compgen -o default))
+    # 1>&2 echo DEBUG: 4
+    mapfile -t COMPREPLY < <(compgen -o default)
     return
   fi
 
   # Users need to type the first dash manually to enable options completion
   if [[ "$has_completion" == "true" ]]; then
-    COMPREPLY=($(compgen -o default -W "$(2>/dev/null "$path" "$gen_command" "--autocomplete")" -- "${to_be_completed}"))
+    # 1>&2 echo DEBUG: 5
+    mapfile -t COMPREPLY < <(compgen -o default -W "$(2>/dev/null "$path" "$gen_command" "--autocomplete")" -- "${to_be_completed}")
   else
+    # 1>&2 echo DEBUG: 6
     # If we actually want the default completion, printing this error is
     # immensely annoying. For debugging we can enable it.
     # 1>&2 echo "bash_completion: No completion available for command '$gen_command'"
-    COMPREPLY=($(compgen -o default -- "$to_be_completed"))
+    mapfile -t COMPREPLY < <(compgen -o default -- "$to_be_completed")
   fi
   # TODO: Complete non-option parameters with paths and files after equals ign "=".
 }
@@ -125,15 +134,19 @@ _wW_completion() {
   >&2 echo "WORDLIST [wi/o whitespace] (${#word_list[@]}): [${word_list}]"
   >&2 echo "INPUT comp_words: [${COMP_WORDS[1]}]"
 
-  declare -a suggestions=($(compgen -W "$word_list" -- "${COMP_WORDS[1]}"))
+  declare -a suggestions
+  mapfile -t suggestions < <(compgen -W "$word_list" -- "${COMP_WORDS[1]}")
 
   #>&2 IFS="•" eval 'echo "Raw compgen suggestions [${#suggestions[@]}]:" "${suggestions[*]}"';
 
   #>&2 echo "(${#suggestions[@]} suggestions)";
   if [ "${#suggestions[@]}" -eq "1" ]; then
-    (($# == 0)) &&
-      declare number="${suggestions[0]/%% */}" ||
-      declare number="${suggestions[0]}"
+    declare number=""
+    if (($# == 0)); then
+      number="${suggestions[0]/%% */}"
+    else
+      number="${suggestions[0]}"
+    fi
     #>&2 echo "Using single match: [$number]";
     COMPREPLY=("$number")
     # >&2 IFS="•" eval 'echo "RETURNING: [${COMPREPLY[*]}]"';
@@ -161,7 +174,8 @@ complete -F _W_completion W
 declare -x GIT_COMPLETION_SHOW_ALL="1" # --allow-empty
 declare -x GIT_COMPLETION_IGNORE_CASE="1"
 
-# This file is symlinked by the install script
+# The 'git-completion.bash' file is a symlink created by the install script
+# shellcheck disable=SC1090
 source ~/.local/share/git-completion.bash
 __git_complete a git_add
 __git_complete co git_checkout

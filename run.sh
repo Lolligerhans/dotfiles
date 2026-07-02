@@ -725,7 +725,7 @@ command_init_runscript() {
 #      file (better than aborting).
 # Deploy a dotfile to a location
 command_deploy() {
-  set_args "--file= --dir= --copy=false --name --yes --keep --quiet --help" "$@"
+  set_args "--file= --dir= --copy=false --name --yes --keep --quiet --chmod --help" "$@"
   eval "$get_args"
 
   declare be_quiet="false"
@@ -815,6 +815,13 @@ command_deploy() {
   else
     ln --verbose --symbolic -T "$source_file" "$target_file" || return
   fi
+
+  # chmod
+  if [[ "$chmod" != "false" ]]; then
+    # TODO: Add test for --chmod
+    chmod "$chmod" "$target_file" || return
+  fi
+
   echok "Deployed $text_italic$source_file$text_normal ➜ ${text_italic}$target_dir/${text_bold}$target_name$text_normal"
 }
 
@@ -896,8 +903,12 @@ command_info() {
     set +e
     { print_and_execute lsb_release -a || errchow "lsb_release failed"; } >>"$info_path"
     set -e
-    { print_and_execute uname -a; } >>"$info_path"
-    { print_and_execute lscpu; } >>"$info_path"
+    {
+      print_and_execute ldd --version # Show glibc version
+      print_and_execute uname -a
+      print_and_execute lscpu
+      # print_and_execute getconf -a
+    } >>"$info_path"
   fi
   if [[ "$inet" == "true" ]]; then
     { print_and_execute sudo netstat -ltnp; } >>"$info_path"
@@ -1296,6 +1307,7 @@ declare -r deploy_help_string="Copy or symlink dotfile to a specified location
 SYNOPSIS
   deploy --help
   deploy --file=FILE --dir=DIR [--copy=false] [--name=NAME] [--yes]
+  deploy --file=ssh_config --dir=~/.ssh --name=config --yes --chmod=600
 DESCRIPTION
   Deploy dotfile ${text_bold}FILE${text_normal} to directory ${text_bold}DIR${text_normal} by symlink (by copy if --copy is given).
   ${text_bold}FILE${text_normal}: Source dotfile to be deployed.
@@ -1308,7 +1320,9 @@ OPTIONS
   --copy=false: Set to 'true' to create copy instead of symlink (default false).
   --yes: If present, skip confirmation prompt when no problem occurs.
   --quiet: Return 0 when user rejects replacing an existing file. Normally
-    returns nonzero"
+    returns nonzero
+  --chmod=CHMOD: Runs 'chmod CHMOD <file> on the newly create file'. This is
+                 meant to deploy the SSH config file with CHMOD=600."
 
 declare -r import_help_string='Import a file/directory as new dotfile
 SYNOPSIS

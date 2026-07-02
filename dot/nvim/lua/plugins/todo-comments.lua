@@ -13,9 +13,19 @@ return {
         PAUSE = { icon = " ", color = "pause", alt = { "LATER", "BREAK" } },
         -- Stopped to work on something else
         STOPPED = { icon = " ", color = "pause", alt = { "STOP", "HALT", "WAIT" } },
+        SHIT = {
+          icon = " ",
+          color = "shitty",
+          alt = {
+            "SHITTY",
+            "POOP",
+          },
+        },
       },
+      -- POOP: Testing
       merge_keywords = true, -- when true, custom keywords will be merged with the defaults
       colors = {
+        shitty = { "#804820" },
         deprecated = { "DiagnosticUnnecessary", "#ff5000" },
         pause = { "DiagnosticOk", "#40C020" },
       },

@@ -153,7 +153,12 @@ wget_verify_sha256() {
   echol "Get: $filename ($link)"
   # Use subshell to avoid accidental working directory change more easily
   (
-    pushd "${HOME}/Downloads" || return
+    declare -r download_directory="${HOME}/Downloads"
+
+    # On some Debian 11 the Downloads folder didnt exist yet
+    ensure_directory "$download_directory"
+
+    pushd "$download_directory" || return
 
     command wget --quiet --continue --show-progress --https-only "$link" || true
 

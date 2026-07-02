@@ -119,6 +119,7 @@ command_install() {
     --mcfly \
     --mpk \
     --nvim \
+    --rust \
     --tree-sitter \
     --vundle \
     -- \
@@ -137,6 +138,7 @@ command_install() {
     ["mcfly"]="install_mcfly"
     ["mpk"]="install_mpk"
     ["nvim"]="install_nvim"
+    ["rust"]="install_rust"
     ["tree_sitter"]="install_tree_sitter"
     ["vundle"]="install_vundle"
   )
@@ -172,6 +174,7 @@ command_symlink() {
     --bash-completion \
     --bash-gitcompletion \
     --bashrc \
+    --batcat-config \
     --btop \
     --ctags \
     --gdbinit \
@@ -195,6 +198,7 @@ command_symlink() {
     ["bash_completion"]="symlink_bash_completion"
     ["bash_gitcompletion"]="symlink_bash_gitcompletion"
     ["bashrc"]="symlink_bashrc"
+    ["batcat_config"]="symlink_batcat_config"
     ["btop"]="symlink_btopconf"
     ["ctags"]="symlink_uctags"
     ["gdbinit"]="symlink_gdbinit"
@@ -381,6 +385,7 @@ command_install_collected_apt() {
       xclip \
       net-tools \
       curl \
+      clang \
       iftop \
       shellcheck \
       git-delta \
@@ -388,6 +393,7 @@ command_install_collected_apt() {
       libc++-dev \
       htop \
       btop \
+      tree \
       npm ||
       echoe "Installing apt packages failed"
 

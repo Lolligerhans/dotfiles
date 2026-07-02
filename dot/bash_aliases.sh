@@ -150,11 +150,18 @@ alias dis='git dis'
 alias die='git die'
 alias dim='git di "$(__dot_default_branch)"'
 alias dims='git dis "$(__dot_default_branch)"'
-alias dime='git di "$(__dot_default_branch)" --no-ext-diff'
+alias dime='git di --no-ext-diff "$(__dot_default_branch)"'
 alias dip='git di @{push}'
 alias diu='git di @{upstream}'
 
-alias gg='cd "$(git rev-parse --show-cdup)"' # Move relative to base repo
+gg() {
+  # Go Git root
+  declare root_directory=""
+  root_directory="$(git rev-parse --show-cdup)" || return
+  if [[ -z "$root_directory" ]]; then
+    1>&2 printf -- "%s\n" "gg: No root directory"
+  fi
+}
 alias gp='git push'
 alias gpf='git push --force'
 alias gpu='git push --set-upstream'
@@ -263,6 +270,10 @@ alias svg='eog'
 # │ system                                                     │
 # ╰────────────────────────────────────────────────────────────╯
 
+# Re-source the bashrc. This is for using 'dotfiles/run.sh alias' via 'E alias'.
+# Also nice when we edit bashrc dotfiles to test the edits.
+alias resource='source ~/.bashrc'
+
 alias ven='source ./venv/bin/activate'
 
 # Activate a python virtual environment
@@ -275,6 +286,7 @@ function venv() {
 }
 
 alias bat="batcat"
+alias pat="batcat --plain"
 alias iftop='sudo iftop -c $HOME/.iftoprc'
 alias j="jupyter lab"
 # Used for bash completion based on history
@@ -538,7 +550,7 @@ _find_file() {
   # For cd or pushd, if out is a file, replace out by its dirname to allow
   # changing into it.
   if ((change || dopushd)) && [[ ! -d "$out" ]]; then
-    >&2 echo "${FUNCNAME[0]}: DEBUG: '${out}' is not a directory, using dirname"
+    # >&2 echo "${FUNCNAME[0]}: DEBUG: '${out}' is not a directory, change to dirname"
     out="$(dirname "$out")"
   fi
 
@@ -582,13 +594,35 @@ alias Dot='pushd ~/dotfiles'
 alias DOT='Dotr; Dot'
 alias dotr='cd ~/workspace/dotfiles-repo'
 alias Dotr='pushd ~/workspace/dotfiles-repo'
+alias dow='cd ~/Downaloads'
+alias Dow='pushd ~/Downaloads'
 alias des='cd ~/Desktop'
 alias muse='cd ~/Documents/MuseScore4/Scores'
 
-alias fin='find . -iname'
-alias F='find_file'
+function F() {
+  # Faster to type shorthand for 'find_file'
+  find_file "$@"
+}
+
 function FF() {
+  # 'find_file' from home directory w/o query argumenta, but with options
   find_file "$@" ~
+}
+
+function fin() {
+  declare -r IFS="*"
+  declare -r search="${*}"
+  echo "${search@A}"
+  find -- . -iname "*${*}*"
+}
+
+# Example:
+#   Fin pthread
+function Fin() {
+  declare -r IFS="*"
+  declare -r search="${*}"
+  echo "${search@A}"
+  find -- / -ipath '*'"${search}"'*' 2>/dev/null
 }
 
 # A couple mappings for our fzf wrapper 'find_file' (see find_file --help).

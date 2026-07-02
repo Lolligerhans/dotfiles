@@ -70,6 +70,14 @@ symlink_bashrc() {
   fi
 }
 
+symlink_batcat_config() {
+  declare -r source_path="${dotfiles}/dot/batcat_config"
+  declare -r target_directory="${HOME}/.config/bat"
+  declare -r target_filename="config"
+  subcommand rundir "${dotfiles}" deploy --yes --keep \
+    --file="$source_path" --name="$target_filename" --dir="$target_directory"
+}
+
 symlink_btopconf() {
   subcommand rundir "$dotfiles" deploy --yes --keep \
     --file="$dotfiles/dot/btop.conf" --dir="${HOME}/.config/btop"
@@ -138,8 +146,8 @@ symlink_shellcheck_config() {
 
 symlink_ssh_config() {
   subcommand rundir "$dotfiles" deploy --keep --yes \
-    --file="$dotfiles/dot/ssh_config" --name="config" --dir="${HOME}/.ssh/"
-  chmod 600 "${HOME}/.ssh/config"
+    --file="$dotfiles/dot/ssh_config" --name="config" --dir="${HOME}/.ssh/" \
+    --chmod="600"
 }
 
 symlink_toprc() {

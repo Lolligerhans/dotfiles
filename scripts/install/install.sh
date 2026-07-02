@@ -223,6 +223,11 @@ install_nvim() {
   print_and_execute command sudo apt install ~/Downloads/"$filename" || return
 }
 
+install_rust() {
+  print_and_execute sudo apt install rustup
+  rustup default stable
+}
+
 install_tree_sitter() {
   if which tree-sitter >/dev/null; then
     echos "(found) tree-sitter"

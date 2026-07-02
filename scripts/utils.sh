@@ -162,7 +162,7 @@ _echoInfo() {
   # the caller of, e.g., 'echoL' gets referenced, not the '_echoInfo' or 'echoL'
   # contexts themselves.
   # This means it is typically pointless to call this function elsewhere.
-  "$1" "${text_brightblack}$(date -Iseconds) ${text_lightblue}${FUNCNAME[2]} ${text_dim}${BASH_LINENO[1]}${text_normal}" "${@:2}"
+  "$1" "${text_brightblack}$(date --rfc-3339=seconds) ${text_lightblue}${FUNCNAME[2]} ${text_dim}${BASH_LINENO[1]}${text_normal}" "${@:2}"
 }
 echoE() { _echoInfo echoe "$@"; }
 echoK() { _echoInfo echok "$@"; }

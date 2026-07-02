@@ -166,6 +166,7 @@ return {
       vim.list_extend(opts.ensure_installed, {
         "cpp",
         "bash",
+        "cmake",
         "css",
         "html",
         "javascript",
@@ -228,13 +229,14 @@ return {
       -- TODO: Not sure what this does. I think these need to be mirrored in
       --       nvim-lspconfig or something?
       ensure_installed = {
-        "cpptools",
-        "clangd",
         "clang-format",
-        "stylua",
+        "clangd",
+        "cmakelang",
+        "cpptools",
+        "flake8",
         "shellcheck",
         "shfmt",
-        "flake8",
+        "stylua",
       },
     },
   },

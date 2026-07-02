@@ -147,6 +147,11 @@ m.set("n", "<C-F4>", "<cmd>bo cw|n<cr>", { remap = false, desc = "arg next" })
 -- FIXME: None of these mappings work with flash.nvim
 -- FIXME: None of these work in "replace-pending" mode
 
+-- Needed?
+m.set({ "n" }, "<A-9>", "<C-]>", { remap = false, desc = "jump to tag" })
+-- Ctrl-v alternative for WSL
+m.set({ "n" }, "<A-v>", "<C-v>", { remap = true, desc = "Ctrl+v" })
+
 -- Try mapping öäÖÄ to produce []{} always, except for i_CTRL-V
 -- m.set({ "", "!", "l" }, "<c-c>", "<esc>", { desc = "[Esc]" })
 m.set({ "", "!", "l", "t", "o" }, "ö", "[", { remap = true })
@@ -198,7 +203,7 @@ m.set("t", "<esc><esc>", [[<C-\><C-n>]], { remap = false })
 -- ── Jumping and tags ───────────────────────────────────────
 m.set("n", "<A-+>", "<C-w>v*", { remap = false, desc = "Search word in split window" })
 -- Would prefer to map "<A-9>" but that is not a thing. Test with "<C-v><A-9>".
-m.set("n", "<A-]>", "<cmd>tab split<cr><C-]>zz", { remap = false, desc = "Jump to ta in new tab" })
+m.set("n", "<A-]>", "<cmd>tab split<cr><C-]>zz", { remap = false, desc = "Jump to tag in new tab" })
 
 -- ── Tabs ───────────────────────────────────────────────────
 -- Switch tabs using AltGr-h AltGr-l. The main benefit is that we can cycle n tabs
@@ -340,6 +345,7 @@ m.set("i", "{{", "{<cr>}<esc>O", { remap = false, desc = "Open block line" })
 m.set("i", "{;", "{<cr>};<esc>O", { remap = false, desc = "Open block line with ;" })
 m.set("i", "{,", "{<cr>},<esc>O", { remap = false, desc = "Open block line with ," })
 m.set("i", "}}", "<esc>]}a", { remap = false, desc = "Jump behind closing }" }) -- Use when {{ (or mini-pairs) generate two braces
+m.set("i", "(;", "(<cr>);<esc>O", { remap = false, desc = "Open parentheses line with ;" })
 -- NOTE: This one got too annoying because we cannot close braces with  };
 --       anymore.
 -- TODO: The no-newline overloads are obsolete when using formatters. Consider
@@ -737,8 +743,13 @@ inputMap("}b", "⎭")
 -- ╰───────────────────────────────────────────────────────────╯
 
 -- ── Typos ──────────────────────────────────────────────────
-m.set("i", "cosnt", "const", { remap = false })
-m.set("i", "tempalte", "template", { remap = false })
-m.set("i", "incldue", "include", { remap = false })
-m.set("i", "decalre", "declare", { remap = false })
-m.set("i", "vlaue", "value", { remap = false })
+m.set({ "i", "c", "l" }, "constepxr", "constexpr", { remap = false })
+m.set({ "i", "c", "l" }, "constepxr", "constexpr", { remap = false })
+m.set({ "i", "c", "l" }, "cosnt", "const", { remap = false })
+m.set({ "i", "c", "l" }, "decalre", "declare", { remap = false })
+m.set({ "i", "c", "l" }, "incldue", "include", { remap = false })
+m.set({ "i", "c", "l" }, "namesapce", "namespace", { remap = false })
+m.set({ "i", "c", "l" }, "tempalte", "template", { remap = false })
+m.set({ "i", "c", "l" }, "templatey", "template<", { remap = false })
+m.set({ "i", "c", "l" }, "vlaue", "value", { remap = false })
+m.set({ "i", "c", "l" }, "sampel", "sample", { remap = false })

@@ -9,6 +9,22 @@ local o = vim.opt
 vim.g.autoformat = true
 vim.g.snacks_animate = false
 
+-- ╭───────────────────────────────────────────────────────────╮
+-- │ Building                                                  │
+-- ╰───────────────────────────────────────────────────────────╯
+
+-- FIXME: For some reason none of these attempts worked. Can try again later, there exist discussions about Neovim bugs
+--        similar to this.
+-- o.errorformat = vim.list_extend({ "%+G[LOG]%.%#" }, o.errorformat:get())
+-- -- or alternatively
+-- local default_efm = vim.opt.errorformat:get()
+-- vim.opt.errorformat = {
+--   "%+G[LOG]%.%#", -- Ignore lines starting with [LOG]
+--   unpack(default_efm),
+-- }
+
+vim.cmd([[set errorformat^=%-G[LOG]%.%#,]])
+
 -- ╭───────────────────────────────────────────────────────────────────────────╮
 -- │ Look/Display                                                              │
 -- ╰───────────────────────────────────────────────────────────────────────────╯
@@ -66,7 +82,7 @@ o.path:append({ "**" })
 o.wildignore:append({ "tags", ".git" })
 o.wildignorecase = true
 o.fileignorecase = true
-o.makeprg = "./run.sh build"
+o.makeprg = "DOTFILES_COLOUR=false ./run.sh build"
 
 -- vim.opt.foldmethid = "indent" -- not sure we want this
 o.foldenable = true

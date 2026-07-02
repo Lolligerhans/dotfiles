@@ -33,6 +33,18 @@ load_version "$dotfiles/scripts/utils.sh" 0.0.0
 # ╭──────────────────────╮
 # │ 🖩 Utils              │
 # ╰──────────────────────╯
+
+# Get relative path to git's root directory
+#   - stdout: path without terminating \n
+git_root_directory_relative() {
+  declare root_directory=""
+  root_directory="$(git rev-parse --show-cdup)"
+  if [[ -z "$root_directory" ]]; then
+    root_directory="."
+  fi
+  printf -- "%s" "$root_directory"
+}
+
 # Return 0 if clean, else return 1. Must be within git directory
 git_test_clean() {
   # TODO Verify that we are in a git directory (see how we do it in bash prompt)

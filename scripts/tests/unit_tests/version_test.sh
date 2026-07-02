@@ -91,13 +91,17 @@ test_version_compare() {
     "1.2.3-no.42 ? 1.2.3-no.143"
     "1.2.3-n100 ? 1.2.3-n9"
     "1.2.3-n.3.0x100 ? 1.2.3-n.3.0x900"
-    # ❕ Bash compares [aA] < [bB] and a < A, so we use that instead
-    "1.2.3-a ? 1.2.3-A"
+    # NOTE: Bash compares [aA] < [bB] and a < A, so we use that instead. Semver
+    #       officially sorts by ASCII indices, where [A-Z] < [a-z]:
+    "1.2.3-A ? 1.2.3-a"
+    "1.2.3-A ? 1.2.3-B"
     "1.2.3-A ? 1.2.3-b"
-    "1.2.3-a ? 1.2.3-B"
+    "1.2.3-B ? 1.2.3-a"
+    "1.2.3-B ? 1.2.3-b"
+    "1.2.3-B ? 1.2.3-c"
     "1.2.3-SHORT ? 1.2.3-SHORT.LONG"
     "1.2.3-- ? 1.2.3-A"
-    "1.2.3-a ? 1.2.3-A+WHATEVER"
+    "1.2.3-A ? 1.2.3-a+WHATEVER"
   )
   declare inp
   declare out

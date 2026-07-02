@@ -366,7 +366,7 @@ filetype on
 "command! MakeTags !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q . *.h *.inc *.cpp
 ":noh
 "command! MakeTags !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q *.h *.inc *.cpp *.test
-command MakeTags !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q
+command MakeTags !ctags -R --c++-kinds=+p --fields=+iaS --extras=+q
 
 " ______________________________________________________________________________
 " File type config

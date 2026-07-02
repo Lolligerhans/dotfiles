@@ -161,7 +161,7 @@
 
 	# Author and committer + both times
 	lo = log --graph --abbrev-commit --decorate \
-		--format=tformat:'%C(yellow)%h%C(reset) %C(cyan)%ci %C(12)(%ch) %C(8)• %cn%C(reset)%C(auto)%d%C(reset)%n%C(dim)%w(,8,8)%ai (%ah) %C(reset)%C(8)• %an%C(reset)%n%C(bold)%s%n%b'
+		--format=tformat:'%C(yellow)%h%C(reset) %C(cyan)%ci %C(12)(%ch) %C(8)• %cn %C(reset)%C(dim)%ce%C(auto)%d%C(reset)%n%w(,8,8)%C(dim 15)%ai (%ah) %C(reset)%C(8)• %an %C(reset)%C(dim)%ae%C(reset)%n%C(bold)%s%n%b'
 
 [branch]
 	# We don't use this because we use "git s" alias to check branches, but can

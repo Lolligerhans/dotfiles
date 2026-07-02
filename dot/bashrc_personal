@@ -26,6 +26,11 @@ export PATH="${PATH}:${HOME}/Downloads/idea-IDE/bin" # Written in command_instal
 
 export PATH="${PATH}:${HOME}/.cargo/bin"
 
+# Boost https://www.boost.org/doc/user-guide/getting-started.html
+export BOOST_ROOT=/usr/local
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+export CPLUS_INCLUDE_PATH=/usr/local/include:$CPLUS_INCLUDE_PATH
+
 # homebrew
 #eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)";
 
